@@ -114,7 +114,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 				System.out.println("Epoch " + UtilMethods.format(i) + ":");
 				System.out.println();
 				System.out.println(UtilMethods.makeStr('-', 5) + " Before " + UtilMethods.makeStr('-', 5));
-				UtilMethods.printNN(this);
+				//UtilMethods.printNN(this);
 				System.out.println(UtilMethods.makeStr('-', 18));
 				System.out.println();
 			}
@@ -147,15 +147,17 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					totalError += Math.pow(target[j][k] - result[result.length - 1][k], 2.0);
 				}
 				
-				if(verbose && (i == epochs - 1 || ((epochs < 10 ? 0 : (i % (epochs / 10))) == 0 && (input.length < 10 ? 0 : (j % (input.length / 10))) == 0))){
+				if(verbose && ((i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0) && (input.length < 10 ? 0 : (j % (input.length / 10))) == 0)){
 					System.out.print("Input: ");
 					UtilMethods.printArray(input[j]);
 					System.out.print("Output: ");
 					UtilMethods.printArray(result[result.length - 1], getOutputSize());
+					System.out.print("Target: ");
+					UtilMethods.printArray(target[j]);
 					System.out.println();
 				}
 				
-				Deltas delta = optimizer.optimize(this, result, loss.loss(result[result.length - 1], target[j], lambda * weightSum), target[j], lambda);
+				Deltas delta = optimizer.optimize(this, result, loss.loss(result[result.length - 1], target[j], lambda * weightSum), lambda);
 				
 				if(deltaW == null || deltaB == null){
 					deltaW = new double[delta.getDelta1().length][delta.getDelta1()[0].length];
@@ -184,10 +186,16 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('-', 5) + " After " + UtilMethods.makeStr('-', 6));
-				UtilMethods.printNN(this);
+				//UtilMethods.printNN(this);
 				System.out.println(UtilMethods.makeStr('-', 18));
-				System.out.println();
+			}
+			if(i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0){
+				if(verbose){
+					System.out.println();
+				}
 				System.out.println("Deviation: " + UtilMethods.format(Math.sqrt(totalError / input.length)));
+			}
+			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('=', 30));
 			}
 		}

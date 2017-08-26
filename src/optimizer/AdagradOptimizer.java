@@ -20,7 +20,7 @@ public class AdagradOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public Deltas optimize(NeuralNetwork nn, double[][] result, double[] error, double[] target, double lambda){
+	public Deltas optimize(NeuralNetwork nn, double[][] result, double[] error, double lambda){
 		int max = 0;
 		int max2 = 0;
 		for(int i = 0; i < nn.size(); i++){
@@ -38,14 +38,14 @@ public class AdagradOptimizer implements Optimizer{
 			double[] newError = new double[l.prevSize()];
 			for(int j = 0; j < l.edges().length; j++){
 				Edge e = l.edges()[j];
-				double g = error[e.getNodeB()] * result[i][e.getNodeA()] * l.getActivationP().activate(result[i + 1][e.getNodeB()], i == nn.size() - 1 ? new double[]{target[e.getNodeB()]} : null);
+				double g = error[e.getNodeB()] * result[i][e.getNodeA()] * l.getActivationP().activate(result[i + 1][e.getNodeB()], null);
 				h[i][j] += g * g;
 				g += lambda * e.getWeight();
 				delta[i][j] = -learnRate * (g / (Math.sqrt(h[i][j]) + epsilon));
-				newError[e.getNodeA()] += e.getWeight() * error[e.getNodeB()] * l.getActivationP().activate(result[i + 1][e.getNodeB()], i == nn.size() - 1 ? new double[]{target[e.getNodeB()]} : null);
+				newError[e.getNodeA()] += e.getWeight() * error[e.getNodeB()] * l.getActivationP().activate(result[i + 1][e.getNodeB()], null);
 			}
 			for(int j = 0; j < l.nextSize(); j++){
-				double g = error[j] * l.getActivationP().activate(result[i + 1][j], i == nn.size() - 1 ? new double[]{target[j]} : null);
+				double g = error[j] * l.getActivationP().activate(result[i + 1][j], null);
 				hb[i][j] += g * g;
 				biasDelta[i][j] = -learnRate * (g / (Math.sqrt(hb[i][j]) + epsilon));
 			}

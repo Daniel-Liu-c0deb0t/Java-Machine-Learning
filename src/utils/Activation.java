@@ -50,7 +50,7 @@ public interface Activation{
 	};
 	
 	public static final Activation softmaxP = (y, arr) -> {
-		return y - arr[0];
+		return 1.0;
 	};
 	
 	public double activate(double val, double[] arr);

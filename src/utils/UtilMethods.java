@@ -43,11 +43,11 @@ public class UtilMethods{
 	}
 	
 	public static void printNN(NeuralNetwork nn){
-		System.out.println("Neural Network:");
 		int max1 = nn.getInputSize();
 		for(int i = 0; i < nn.size(); i++){
 			max1 = Math.max(max1, nn.layers().get(i).nextSize());
 		}
+		System.out.println("Neural Network:");
 		char[][] chars = new char[max1][nn.size() + 1];
 		for(int i = 0; i < max1; i++){
 			for(int j = 0; j < nn.size() + 1; j++){
@@ -137,5 +137,39 @@ public class UtilMethods{
 			}
 		}
 		return maxIndex;
+	}
+	
+	public static int unsignedByteToInt(byte b){
+		int result = 0;
+		for(int i = 0; i < 8; i++){
+			if((b & (1 << i)) != 0)
+				result += 1 << i;
+		}
+		return result;
+	}
+	
+	public static void printImage(double[][] image){
+		int sideLength = (int)Math.sqrt(image[0].length);
+		char[][][] chars = new char[image.length][sideLength][sideLength];
+		for(int i = 0; i < image.length; i++){
+			for(int j = 0; j < image[i].length; j++){
+				if(image[i][j] < 0.3){
+					chars[i][j / sideLength][j % sideLength] = ' ';
+				}else if(image[i][j] > 0.6){
+					chars[i][j / sideLength][j % sideLength] = '#';
+				}else{
+					chars[i][j / sideLength][j % sideLength] = '.';
+				}
+			}
+		}
+		for(int i = 0; i < chars.length; i++){
+			for(int j = 0; j < chars[i].length; j++){
+				for(int k = 0; k < chars[i][j].length; k++){
+					System.out.print(chars[i][j][k] + " ");
+				}
+				System.out.println();
+			}
+			System.out.println();
+		}
 	}
 }

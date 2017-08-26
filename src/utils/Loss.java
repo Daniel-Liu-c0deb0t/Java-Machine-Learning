@@ -12,7 +12,7 @@ public interface Loss{
 	public static final Loss crossEntropy = (x, t, reg) -> {
 		double[] result = new double[t.length];
 		for(int i = 0; i < t.length; i++){
-			result[i] = -Math.log(x[i]) + reg;
+			result[i] = x[i] - t[i] + reg;
 		}
 		return result;
 	};
