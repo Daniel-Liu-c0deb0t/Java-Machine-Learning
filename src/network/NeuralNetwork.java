@@ -14,4 +14,6 @@ public interface NeuralNetwork{
 	public double[][] predictFull(double[] input);
 	public int getInputSize();
 	public int getOutputSize();
+	public void saveToFile(String path);
+	public void loadFromFile(String path);
 }

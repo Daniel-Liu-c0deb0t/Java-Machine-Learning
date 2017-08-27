@@ -172,4 +172,22 @@ public class UtilMethods{
 			System.out.println();
 		}
 	}
+	
+	public static double classificationAccuracy(double[][] output, double[][] target){
+		int totalCorrect = 0;
+		for(int i = 0; i < output.length; i++){
+			if(argMax(output[i]) == argMax(target[i])){
+				totalCorrect++;
+			}
+		}
+		return (double)totalCorrect / (double)output.length;
+	}
+	
+	public static double averageDeviation(double[][] output, double[][] target){
+		double sum = 0.0;
+		for(int i = 0; i < output.length; i++){
+			sum += Math.sqrt(Loss.squared.loss(output[i], target[i], 0.0)[0]);
+		}
+		return (double)sum / (double)output.length;
+	}
 }

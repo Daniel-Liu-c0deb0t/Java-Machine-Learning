@@ -1,5 +1,8 @@
 package network;
 
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -96,18 +99,18 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 	
 	@Override
 	public void fit(double[][] input, double[][] target, int epochs, int batchSize, boolean verbose){
-		fit(input, target, epochs, batchSize, Loss.squared, new SGDOptimizer(), verbose);
+		fit(input, target, epochs, batchSize, Loss.squaredP, new SGDOptimizer(), Loss.squared, verbose);
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean verbose){
-		fit(input, target, epochs, batchSize, loss, optimizer, 0.0, verbose);
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss lossP, Optimizer optimizer, Loss loss, boolean verbose){
+		fit(input, target, epochs, batchSize, lossP, optimizer, 0.0, loss, verbose);
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double lambda, boolean verbose){
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss lossP, Optimizer optimizer, double lambda, Loss loss, boolean verbose){
 		for(int i = 0; i < epochs; i++){
-			double totalError = 0.0;
+			double totalLoss = 0.0;
 			
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('=', 30));
@@ -143,9 +146,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					}
 				}
 				
-				for(int k = 0; k < target[j].length; k++){
-					totalError += Math.pow(target[j][k] - result[result.length - 1][k], 2.0);
-				}
+				totalLoss += loss.loss(result[result.length - 1], target[j], 0.0)[0];
 				
 				if(verbose && ((i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0) && (input.length < 10 ? 0 : (j % (input.length / 10))) == 0)){
 					System.out.print("Input: ");
@@ -157,7 +158,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					System.out.println();
 				}
 				
-				Deltas delta = optimizer.optimize(this, result, loss.loss(result[result.length - 1], target[j], lambda * weightSum), lambda);
+				Deltas delta = optimizer.optimize(this, result, lossP.loss(result[result.length - 1], target[j], lambda * weightSum), lambda);
 				
 				if(deltaW == null || deltaB == null){
 					deltaW = new double[delta.getDelta1().length][delta.getDelta1()[0].length];
@@ -193,10 +194,47 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 				if(verbose){
 					System.out.println();
 				}
-				System.out.println("Deviation: " + UtilMethods.format(Math.sqrt(totalError / input.length)));
+				System.out.println("Loss: " + UtilMethods.format(totalLoss / input.length));
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('=', 30));
+			}
+		}
+	}
+	
+	@Override
+	public void saveToFile(String path){
+		int totalLayerSize = 0;
+		for(int i = 0; i < layers.size(); i++){
+			totalLayerSize += layers.get(i).byteSize();
+		}
+		ByteBuffer bb = ByteBuffer.allocate(totalLayerSize);
+		for(int i = 0; i < layers.size(); i++){
+			bb.put(layers.get(i).toBytes());
+		}
+		bb.flip();
+		try{
+			Files.write(Paths.get(path), bb.array());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void loadFromFile(String path){
+		byte[] bytes = null;
+		try{
+			bytes = Files.readAllBytes(Paths.get(path));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		ByteBuffer bb = ByteBuffer.wrap(bytes);
+		for(int i = 0; i < layers.size(); i++){
+			for(int j = 0; j < layers.get(i).edges().length; j++){
+				layers.get(i).edges()[j].setWeight(bb.getDouble());
+			}
+			for(int j = 0; j < layers.get(i).getBias().length; j++){
+				layers.get(i).getBias()[j] = bb.getDouble();
 			}
 		}
 	}

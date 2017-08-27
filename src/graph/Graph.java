@@ -24,6 +24,11 @@ public class Graph{
 	private String xLabel;
 	private String yLabel;
 	private ColorFunction colorFunction;
+	private boolean customScale = false;
+	private double minX;
+	private double maxX;
+	private double minY;
+	private double maxY;
 	
 	public Graph(ColorFunction colorFunction){
 		this(500, 500, colorFunction);
@@ -61,7 +66,18 @@ public class Graph{
 					this.points.add(new Point(xData[i], yData[i], cData[i]));
 			}
 		}
-		draw();
+	}
+	
+	public void useCustomScale(double minX, double maxX, double minY, double maxY){
+		this.minX = minX;
+		this.maxX = maxX;
+		this.minY = minY;
+		this.maxY = maxY;
+		this.customScale = true;
+	}
+	
+	public void usePointScale(){
+		this.customScale = false;
 	}
 	
 	public void draw(){
@@ -70,20 +86,27 @@ public class Graph{
 		double xMin = Double.MAX_VALUE;
 		double yMax = Double.MIN_VALUE;
 		double yMin = Double.MAX_VALUE;
-		for(int i = 0; i < points.size(); i++){
-			xMax = Math.max(xMax, points.get(i).getX());
-			xMin = Math.min(xMin, points.get(i).getX());
-			yMax = Math.max(yMax, points.get(i).getY());
-			yMin = Math.min(yMin, points.get(i).getY());
+		if(customScale){
+			xMax = maxX;
+			xMin = minX;
+			yMax = maxY;
+			yMin = minY;
+		}else{
+			for(int i = 0; i < points.size(); i++){
+				xMax = Math.max(xMax, points.get(i).getX());
+				xMin = Math.min(xMin, points.get(i).getX());
+				yMax = Math.max(yMax, points.get(i).getY());
+				yMin = Math.min(yMin, points.get(i).getY());
+			}
+			if(xMax == Double.MIN_VALUE)
+				xMax = 10;
+			if(xMin == Double.MAX_VALUE)
+				xMin = 0;
+			if(yMax == Double.MIN_VALUE)
+				yMax = 10;
+			if(yMin == Double.MAX_VALUE)
+				yMin = 0;
 		}
-		if(xMax == Double.MIN_VALUE)
-			xMax = 10;
-		if(xMin == Double.MAX_VALUE)
-			xMin = 0;
-		if(yMax == Double.MIN_VALUE)
-			yMax = 10;
-		if(yMin == Double.MAX_VALUE)
-			yMin = 0;
 		
 		if(colorFunction != null){
 			int xSize = 500;
@@ -141,12 +164,10 @@ public class Graph{
 	
 	public void addPoint(double x, double y, Color c){
 		points.add(new Point(x, y, c));
-		draw();
 	}
 	
 	public void addPoint(double x, double y){
 		points.add(new Point(x, y));
-		draw();
 	}
 	
 	public BufferedImage getGraph(){

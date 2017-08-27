@@ -23,10 +23,14 @@ public interface Activation{
 	
 	public static final Activation softmax = (x, arr) -> {
 		double sum = 0.0;
+		double offset = 0.0;
 		for(int i = 0; i < arr.length; i++){
-			sum += Math.exp(arr[i]);
+			offset = Math.max(offset, arr[i]);
 		}
-		return Math.exp(x) / sum;
+		for(int i = 0; i < arr.length; i++){
+			sum += Math.exp(arr[i] - offset);
+		}
+		return Math.exp(x - offset) / sum;
 	};
 	
 	public static final Activation linearP = (y, arr) -> {

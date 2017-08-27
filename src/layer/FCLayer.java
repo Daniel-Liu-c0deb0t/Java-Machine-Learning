@@ -1,5 +1,7 @@
 package layer;
 
+import java.nio.ByteBuffer;
+
 import edge.Edge;
 import utils.Activation;
 
@@ -107,5 +109,23 @@ public class FCLayer implements Layer{
 	@Override
 	public double getDropout(){
 		return dropout;
+	}
+	
+	@Override
+	public int byteSize(){
+		return 8 * edges.length + 8 * bias.length;
+	}
+	
+	@Override
+	public ByteBuffer toBytes(){
+		ByteBuffer bb = ByteBuffer.allocate(byteSize());
+		for(int i = 0; i < edges.length; i++){
+			bb.putDouble(edges[i].getWeight());
+		}
+		for(int i = 0; i < bias.length; i++){
+			bb.putDouble(bias[i]);
+		}
+		bb.flip();
+		return bb;
 	}
 }

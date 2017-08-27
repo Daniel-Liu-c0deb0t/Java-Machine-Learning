@@ -1,5 +1,7 @@
 package layer;
 
+import java.nio.ByteBuffer;
+
 import edge.Edge;
 import utils.Activation;
 
@@ -14,4 +16,6 @@ public interface Layer{
 	public Activation getActivation();
 	public Activation getActivationP();
 	public double getDropout();
+	public int byteSize();
+	public ByteBuffer toBytes();
 }
