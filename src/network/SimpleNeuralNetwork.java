@@ -146,7 +146,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					}
 				}
 				
-				totalLoss += loss.loss(result[result.length - 1], target[j], 0.0)[0];
+				totalLoss += loss.loss(result[result.length - 1], target[j])[0];
 				
 				if(verbose && ((i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0) && (input.length < 10 ? 0 : (j % (input.length / 10))) == 0)){
 					System.out.print("Input: ");
@@ -158,7 +158,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					System.out.println();
 				}
 				
-				Deltas delta = optimizer.optimize(this, result, lossP.loss(result[result.length - 1], target[j], lambda * weightSum), lambda);
+				Deltas delta = optimizer.optimize(this, result, lossP.loss(result[result.length - 1], target[j]), lambda, weightSum);
 				
 				if(deltaW == null || deltaB == null){
 					deltaW = new double[delta.getDelta1().length][delta.getDelta1()[0].length];

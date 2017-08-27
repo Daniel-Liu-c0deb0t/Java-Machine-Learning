@@ -8,7 +8,7 @@ import graph.Graph;
 import graph.GraphPanel;
 import layer.FCLayer;
 import network.SimpleNeuralNetwork;
-import optimizer.AdamOptimizer;
+import optimizer.*;
 import utils.Activation;
 import utils.Loss;
 import utils.UtilMethods;
@@ -47,7 +47,7 @@ public class Test1{
 		//UtilMethods.printArray(result);
 		//System.out.println();
 		
-		net.fit(x, y, 1000, 4, Loss.crossEntropyP, new AdamOptimizer(0.1), 0.0, Loss.crossEntropy, true);
+		net.fit(x, y, 1000, 4, Loss.crossEntropyP, new SGDOptimizer(0.1), 0, Loss.crossEntropy, true);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];
