@@ -13,7 +13,9 @@ For example code on how to use the library, look in the test folder, where there
 - L2 regularization
 - Cross entropy + softmax for classification, with one-hot encoding
 - Squared error for regression
-- Graphing for points and for classification
+- Graphing for points and for 2D classification
+- MNIST dataset loader
+- Save/load weights to/from files
 
 ### Planned Features (hopefully!):
 - Convolution Neural Network
