@@ -99,16 +99,16 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 	
 	@Override
 	public void fit(double[][] input, double[][] target, int epochs, int batchSize, boolean verbose){
-		fit(input, target, epochs, batchSize, Loss.squaredP, new SGDOptimizer(), Loss.squared, verbose);
+		fit(input, target, epochs, batchSize, Loss.squared, new SGDOptimizer(), verbose);
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss lossP, Optimizer optimizer, Loss loss, boolean verbose){
-		fit(input, target, epochs, batchSize, lossP, optimizer, 0.0, loss, verbose);
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean verbose){
+		fit(input, target, epochs, batchSize, loss, optimizer, 0.0, verbose);
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss lossP, Optimizer optimizer, double lambda, Loss loss, boolean verbose){
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double lambda, boolean verbose){
 		for(int i = 0; i < epochs; i++){
 			double totalLoss = 0.0;
 			
@@ -146,7 +146,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					}
 				}
 				
-				totalLoss += loss.loss(result[result.length - 1], target[j])[0];
+				totalLoss += loss.loss(result[result.length - 1], target[j]);
 				
 				if(verbose && ((i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0) && (input.length < 10 ? 0 : (j % (input.length / 10))) == 0)){
 					System.out.print("Input: ");
@@ -158,7 +158,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					System.out.println();
 				}
 				
-				Deltas delta = optimizer.optimize(this, result, lossP.loss(result[result.length - 1], target[j]), lambda, weightSum);
+				Deltas delta = optimizer.optimize(this, result, loss.derivative(result[result.length - 1], target[j]), lambda, weightSum);
 				
 				if(deltaW == null || deltaB == null){
 					deltaW = new double[delta.getDelta1().length][delta.getDelta1()[0].length];

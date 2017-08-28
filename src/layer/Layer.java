@@ -14,7 +14,6 @@ public interface Layer{
 	public Edge[] edges();
 	public double[] forwardPropagate(double[] input);
 	public Activation getActivation();
-	public Activation getActivationP();
 	public double getDropout();
 	public int byteSize();
 	public ByteBuffer toBytes();

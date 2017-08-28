@@ -186,7 +186,7 @@ public class UtilMethods{
 	public static double averageDeviation(double[][] output, double[][] target){
 		double sum = 0.0;
 		for(int i = 0; i < output.length; i++){
-			sum += Math.sqrt(Loss.squared.loss(output[i], target[i])[0]);
+			sum += Math.sqrt(Loss.squared.loss(output[i], target[i]));
 		}
 		return (double)sum / (double)output.length;
 	}

@@ -44,15 +44,14 @@ public class AdagradOptimizer implements Optimizer{
 			double[] newError2 = new double[l.prevSize()];
 			for(int j = 0; j < l.edges().length; j++){
 				Edge e = l.edges()[j];
-				double g = (error[e.getNodeB()] + lambda * weightSum) * result[i][e.getNodeA()] * l.getActivationP().activate(result[i + 1][e.getNodeB()], null);
+				double g = (error[e.getNodeB()] + lambda * weightSum) * result[i][e.getNodeA()] * l.getActivation().derivative(result[i + 1][e.getNodeB()]);
 				h[i][j] += g * g;
-				g += lambda * e.getWeight();
-				delta[i][j] = -learnRate * (g / (Math.sqrt(h[i][j]) + epsilon));
-				newError[e.getNodeA()] += e.getWeight() * (error[e.getNodeB()] + lambda * weightSum) * l.getActivationP().activate(result[i + 1][e.getNodeB()], null);
-				newError2[e.getNodeA()] += e.getWeight() * error2[e.getNodeB()] * l.getActivationP().activate(result[i + 1][e.getNodeB()], null);
+				delta[i][j] = -learnRate * (g / (Math.sqrt(h[i][j]) + epsilon) + lambda * e.getWeight());
+				newError[e.getNodeA()] += e.getWeight() * (error[e.getNodeB()] + lambda * weightSum) * l.getActivation().derivative(result[i + 1][e.getNodeB()]);
+				newError2[e.getNodeA()] += e.getWeight() * error2[e.getNodeB()] * l.getActivation().derivative(result[i + 1][e.getNodeB()]);
 			}
 			for(int j = 0; j < l.nextSize(); j++){
-				double g = error2[j] * l.getActivationP().activate(result[i + 1][j], null);
+				double g = error2[j] * l.getActivation().derivative(result[i + 1][j]);
 				hb[i][j] += g * g;
 				biasDelta[i][j] = -learnRate * (g / (Math.sqrt(hb[i][j]) + epsilon));
 			}

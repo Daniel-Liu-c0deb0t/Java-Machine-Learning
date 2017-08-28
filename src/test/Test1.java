@@ -16,8 +16,8 @@ import utils.UtilMethods;
 public class Test1{
 	public static void main(String[] args){
 		SimpleNeuralNetwork net = new SimpleNeuralNetwork(2);
-		net.add(new FCLayer(3, Activation.sigmoid, Activation.sigmoidP));
-		net.add(new FCLayer(4, Activation.softmax, Activation.softmaxP));
+		net.add(new FCLayer(3, Activation.sigmoid));
+		net.add(new FCLayer(4, Activation.softmax));
 		
 		double[][] x = {
 				{0, 0},
@@ -47,7 +47,7 @@ public class Test1{
 		//UtilMethods.printArray(result);
 		//System.out.println();
 		
-		net.fit(x, y, 1000, 4, Loss.crossEntropyP, new SGDOptimizer(0.1), 0.01, Loss.crossEntropy, true);
+		net.fit(x, y, 1000, 4, Loss.crossEntropy, new SGDOptimizer(0.1), 0.01, true);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

@@ -14,8 +14,8 @@ import utils.UtilMethods;
 public class Test2{
 	public static void main(String[] args){
 		SimpleNeuralNetwork net = new SimpleNeuralNetwork(2);
-		net.add(new FCLayer(3, Activation.sigmoid, Activation.sigmoidP));
-		net.add(new FCLayer(4, Activation.softmax, Activation.softmaxP));
+		net.add(new FCLayer(3, Activation.sigmoid));
+		net.add(new FCLayer(4, Activation.softmax));
 		net.loadFromFile("model.nn");
 		
 //		double[] xData = new double[x.length];

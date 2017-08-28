@@ -8,7 +8,6 @@ import utils.Activation;
 public class FCLayer implements Layer{
 	private Edge[] edges;
 	private Activation activation;
-	private Activation activationP;
 	private int prevSize;
 	private int nextSize;
 	private double[] bias;
@@ -17,23 +16,20 @@ public class FCLayer implements Layer{
 	public FCLayer(int nextSize){
 		this.nextSize = nextSize;
 		this.activation = Activation.linear;
-		this.activationP = Activation.linearP;
 		this.bias = new double[nextSize];
 		this.dropout = 0.0;
 	}
 	
-	public FCLayer(int nextSize, Activation activation, Activation activationP){
+	public FCLayer(int nextSize, Activation activation){
 		this.nextSize = nextSize;
 		this.activation = activation;
-		this.activationP = activationP;
 		this.bias = new double[nextSize];
 		this.dropout = 0.0;
 	}
 	
-	public FCLayer(int nextSize, Activation activation, Activation activationP, double dropout){
+	public FCLayer(int nextSize, Activation activation, double dropout){
 		this.nextSize = nextSize;
 		this.activation = activation;
-		this.activationP = activationP;
 		this.bias = new double[nextSize];
 		this.dropout = dropout;
 	}
@@ -99,11 +95,6 @@ public class FCLayer implements Layer{
 	@Override
 	public Activation getActivation(){
 		return activation;
-	}
-	
-	@Override
-	public Activation getActivationP(){
-		return activationP;
 	}
 	
 	@Override
