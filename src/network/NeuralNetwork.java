@@ -3,6 +3,7 @@ package network;
 import java.util.ArrayList;
 
 import layer.Layer;
+import optimizer.Optimizer;
 
 public interface NeuralNetwork{
 	public int size();
@@ -12,6 +13,7 @@ public interface NeuralNetwork{
 	public double[][] predict(double[][] input);
 	public double[] predict(double[] input);
 	public double[][] predictFull(double[] input);
+	public void backPropagate(double[][] result, double[] error, double lambda, double weightSum, Optimizer optimizer, int max, int max2);
 	public int getInputSize();
 	public int getOutputSize();
 	public void saveToFile(String path);

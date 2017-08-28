@@ -19,7 +19,7 @@ public class MNISTTest1{
 		Instant start = Instant.now();
 		double[][] x = MNISTDataSetLoader.loadImages("train-images-idx3-ubyte", Integer.MAX_VALUE);
 		double[][] y = MNISTDataSetLoader.loadLabels("train-labels-idx1-ubyte", Integer.MAX_VALUE);
-		nn.fit(x, y, 100, 50, Loss.crossEntropy, new AdamOptimizer(0.0003), 0.0001, true);
+		nn.fit(x, y, 100, 50, Loss.crossEntropy, new AdamOptimizer(0.0001), 0.0, true);
 		System.out.println("Training time: " + Duration.between(start, Instant.now()).toString());
 		nn.saveToFile("mnist_weights.nn");
 		double[][] testX = MNISTDataSetLoader.loadImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import layer.Layer;
-import optimizer.Deltas;
+import optimizer.Update;
 import optimizer.Optimizer;
 import optimizer.SGDOptimizer;
 import utils.Loss;
@@ -109,6 +109,17 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 	
 	@Override
 	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double lambda, boolean verbose){
+		double weightSum = 0.0;
+		int max = 0;
+		int max2 = 0;
+		for(int i = 0; i < layers.size(); i++){
+			for(int j = 0; j < layers.get(i).edges().length; j++){
+				weightSum += layers.get(i).edges()[j].getWeight();
+			}
+			max = Math.max(max, layers.get(i).edges().length);
+			max2 = Math.max(max2, layers.get(i).nextSize());
+		}
+		
 		for(int i = 0; i < epochs; i++){
 			double totalLoss = 0.0;
 			
@@ -122,16 +133,7 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 				System.out.println();
 			}
 			
-			double[][] deltaW = null;
-			double[][] deltaB = null;
-			double weightSum = 0.0;
 			Random r = new Random();
-			
-			for(int k = 0; k < layers.size(); k++){
-				for(int l = 0; l < layers.get(k).edges().length; l++){
-					weightSum += layers.get(k).edges()[l].getWeight();
-				}
-			}
 			
 			for(int j = 0; j < input.length; j++){
 				double[][] result = predictFull(input[j]);
@@ -158,29 +160,14 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					System.out.println();
 				}
 				
-				Deltas delta = optimizer.optimize(this, result, loss.derivative(result[result.length - 1], target[j]), lambda, weightSum);
+				backPropagate(result, loss.derivative(result[result.length - 1], target[j]), lambda, weightSum, optimizer, max, max2);
 				
-				if(deltaW == null || deltaB == null){
-					deltaW = new double[delta.getDelta1().length][delta.getDelta1()[0].length];
-					deltaB = new double[delta.getDelta2().length][delta.getDelta2()[0].length];
-				}
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
 					weightSum = 0.0;
-				}
-				for(int k = 0; k < layers.size(); k++){
-					for(int l = 0; l < layers.get(k).edges().length; l++){
-						deltaW[k][l] += delta.getDelta1()[k][l];
-						if(j + 1 % batchSize == 0 || j == input.length - 1){
-							layers.get(k).edges()[l].addWeight(deltaW[k][l]);
-							deltaW[k][l] = 0.0;
+					for(int k = 0; k < layers.size(); k++){
+						layers.get(k).update();
+						for(int l = 0; l < layers.get(k).edges().length; l++){
 							weightSum += layers.get(k).edges()[l].getWeight();
-						}
-					}
-					for(int l = 0; l < layers.get(k).nextSize(); l++){
-						deltaB[k][l] += delta.getDelta2()[k][l];
-						if(j + 1 % batchSize == 0 || j == input.length - 1){
-							layers.get(k).getBias()[l] += deltaB[k][l];
-							deltaB[k][l] = 0.0;
 						}
 					}
 				}
@@ -199,6 +186,19 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('=', 30));
 			}
+		}
+	}
+	
+	@Override
+	public void backPropagate(double[][] result, double[] error, double lambda, double weightSum, Optimizer optimizer, int max, int max2){
+		double[] error2 = new double[error.length];
+		for(int i = 0; i < error.length; i++){
+			error2[i] = error[i];
+		}
+		for(int i = size() - 1; i >= 0; i--){
+			Update update = layers.get(i).backPropagate(i, result[i], result[i + 1], error, error2, lambda, weightSum, optimizer, layers.size(), max, max2);
+			error = update.getError();
+			error2 = update.getError2();
 		}
 	}
 	

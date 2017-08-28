@@ -1,8 +1,7 @@
 package optimizer;
 
 import edge.Edge;
-import layer.Layer;
-import network.NeuralNetwork;
+import utils.Activation;
 
 public class AdamOptimizer implements Optimizer{
 	private static final double epsilon = 0.00000001;
@@ -36,52 +35,34 @@ public class AdamOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public Deltas optimize(NeuralNetwork nn, double[][] result, double[] error, double lambda, double weightSum){
-		int max = 0;
-		int max2 = 0;
-		for(int i = 0; i < nn.size(); i++){
-			max = Math.max(max, nn.layers().get(i).edges().length);
-			max2 = Math.max(max, nn.layers().get(i).nextSize());
-		}
+	public double optimizeWeight(int l, Edge e, double[] prevResult, double[] nextResult, double[] error, double lambda, double weightSum, Activation activation, int size, int max, int nextSize){
 		if(m == null || v == null){
-			m = new double[nn.size()][max];
-			v = new double[nn.size()][max];
-			mb = new double[nn.size()][max2];
-			vb = new double[nn.size()][max2];
-			beta3 = beta1;
-			beta4 = beta2;
-		}
-		
-		double[] error2 = new double[error.length];
-		for(int i = 0; i < error.length; i++){
-			error2[i] = error[i];
-		}
-		double[][] delta = new double[nn.size()][max];
-		double[][] biasDelta = new double[nn.size()][max2];
-		for(int i = nn.size() - 1; i >= 0; i--){
-			Layer l = nn.layers().get(i);
-			double[] newError = new double[l.prevSize()];
-			double[] newError2 = new double[l.prevSize()];
-			for(int j = 0; j < l.edges().length; j++){
-				Edge e = l.edges()[j];
-				double g = (error[e.getNodeB()] + lambda * weightSum) * result[i][e.getNodeA()] * l.getActivation().derivative(result[i + 1][e.getNodeB()]);
-				m[i][j] = (beta1 * m[i][j] + (1 - beta1) * g);
-				v[i][j] = (beta2 * v[i][j] + (1 - beta2) * g * g);
-				delta[i][j] = -learnRate * ((m[i][j] / (1 - beta3)) / (Math.sqrt(v[i][j] / (1 - beta4)) + epsilon) + lambda * e.getWeight());
-				newError[e.getNodeA()] += e.getWeight() * (error[e.getNodeB()] + lambda * weightSum) * l.getActivation().derivative(result[i + 1][e.getNodeB()]);
-				newError2[e.getNodeA()] += e.getWeight() * error2[e.getNodeB()] * l.getActivation().derivative(result[i + 1][e.getNodeB()]);
+			m = new double[size][max];
+			v = new double[size][max];
+			if(mb == null || vb == null){
+				beta3 = beta1;
+				beta4 = beta2;
 			}
-			for(int j = 0; j < l.nextSize(); j++){
-				double g = error2[j] * l.getActivation().derivative(result[i + 1][j]);
-				mb[i][j] = (beta1 * mb[i][j] + (1 - beta1) * g);
-				vb[i][j] = (beta2 * vb[i][j] + (1 - beta2) * g * g);
-				biasDelta[i][j] = -learnRate * (mb[i][j] / (1 - beta3)) / (Math.sqrt(vb[i][j] / (1 - beta4)) + epsilon);
-			}
-			error = newError;
-			error2 = newError2;
-			beta3 *= beta1;
-			beta4 *= beta2;
 		}
-		return new Deltas(delta, biasDelta);
+		double g = (error[e.getNodeB()] + lambda * weightSum) * prevResult[e.getNodeA()] * activation.derivative(nextResult[e.getNodeB()]);
+		m[l][e.getNodeA() * nextSize + e.getNodeB()] = (beta1 * m[l][e.getNodeA() * nextSize + e.getNodeB()] + (1 - beta1) * g);
+		v[l][e.getNodeA() * nextSize + e.getNodeB()] = (beta2 * v[l][e.getNodeA() * nextSize + e.getNodeB()] + (1 - beta2) * g * g);
+		return -learnRate * ((m[l][e.getNodeA() * nextSize + e.getNodeB()] / (1 - beta3)) / (Math.sqrt(v[l][e.getNodeA() * nextSize + e.getNodeB()] / (1 - beta4)) + epsilon) + lambda * e.getWeight());
+	}
+	
+	@Override
+	public double optimizeBias(int l, int i, double[] nextResult, double[] error, Activation activation, int size, int max){
+		if(mb == null || vb == null){
+			mb = new double[size][max];
+			vb = new double[size][max];
+			if(m == null || v == null){
+				beta3 = beta1;
+				beta4 = beta2;
+			}
+		}
+		double g = error[i] * activation.derivative(nextResult[i]);
+		mb[l][i] = (beta1 * mb[l][i] + (1 - beta1) * g);
+		vb[l][i] = (beta2 * vb[l][i] + (1 - beta2) * g * g);
+		return -learnRate * (mb[l][i] / (1 - beta3)) / (Math.sqrt(vb[l][i] / (1 - beta4)) + epsilon);
 	}
 }

@@ -3,6 +3,8 @@ package layer;
 import java.nio.ByteBuffer;
 
 import edge.Edge;
+import optimizer.Optimizer;
+import optimizer.Update;
 import utils.Activation;
 
 public class FCLayer implements Layer{
@@ -11,12 +13,14 @@ public class FCLayer implements Layer{
 	private int prevSize;
 	private int nextSize;
 	private double[] bias;
+	private double[] deltaBias;
 	private double dropout;
 	
 	public FCLayer(int nextSize){
 		this.nextSize = nextSize;
 		this.activation = Activation.linear;
 		this.bias = new double[nextSize];
+		this.deltaBias = new double[nextSize];
 		this.dropout = 0.0;
 	}
 	
@@ -24,6 +28,7 @@ public class FCLayer implements Layer{
 		this.nextSize = nextSize;
 		this.activation = activation;
 		this.bias = new double[nextSize];
+		this.deltaBias = new double[nextSize];
 		this.dropout = 0.0;
 	}
 	
@@ -31,6 +36,7 @@ public class FCLayer implements Layer{
 		this.nextSize = nextSize;
 		this.activation = activation;
 		this.bias = new double[nextSize];
+		this.deltaBias = new double[nextSize];
 		this.dropout = dropout;
 	}
 	
@@ -90,6 +96,33 @@ public class FCLayer implements Layer{
 			result[i] = activation.activate(result[i], result);
 		}
 		return result;
+	}
+	
+	@Override
+	public Update backPropagate(int l, double[] prevResult, double[] nextResult, double[] error, double[] error2, double lambda, double weightSum, Optimizer optimizer, int size, int max, int max2){
+		double[] newError = new double[prevSize()];
+		double[] newError2 = new double[prevSize()];
+		for(int i = 0; i < edges.length; i++){
+			Edge e = edges[i];
+			e.addWeight(optimizer.optimizeWeight(l, e, prevResult, nextResult, error, lambda, weightSum, activation, size, max, nextSize));
+			newError[e.getNodeA()] += e.getWeight() * (error[e.getNodeB()] + lambda * weightSum) * activation.derivative(nextResult[e.getNodeB()]);
+			newError2[e.getNodeA()] += e.getWeight() * error2[e.getNodeB()] * activation.derivative(nextResult[e.getNodeB()]);
+		}
+		for(int i = 0; i < nextSize(); i++){
+			deltaBias[i] += optimizer.optimizeBias(l, i, nextResult, error2, activation, size, max2);
+		}
+		return new Update(newError, newError2);
+	}
+	
+	@Override
+	public void update(){
+		for(int i = 0; i < edges.length; i++){
+			edges[i].update();
+		}
+		for(int i = 0; i < nextSize(); i++){
+			bias[i] += deltaBias[i];
+			deltaBias[i] = 0.0;
+		}
 	}
 	
 	@Override

@@ -5,6 +5,7 @@ import java.util.Random;
 public class Edge{
 	private static final Random rand = new Random();
 	private double weight;
+	private double deltaWeight;
 	private int nodeA;
 	private int nodeB;
 	
@@ -24,12 +25,17 @@ public class Edge{
 		return weight;
 	}
 	
-	public void setWeight(double weight){
-		this.weight = weight;
+	public void setWeight(double w){
+		this.weight = w;
 	}
 	
-	public void addWeight(double weight){
-		this.weight += weight;
+	public void addWeight(double w){
+		this.deltaWeight += w;
+	}
+	
+	public void update(){
+		this.weight += this.deltaWeight;
+		this.deltaWeight = 0.0;
 	}
 	
 	public int getNodeA(){
