@@ -190,4 +190,20 @@ public class UtilMethods{
 		}
 		return (double)sum / (double)output.length;
 	}
+	
+	public static int[] centerOfMass(double[][] arr){
+		double sumX = 0.0;
+		double sumY = 0.0;
+		double total = 0.0;
+		for(int i = 0; i < arr.length; i++){
+			for(int j = 0; j < arr[i].length; j++){
+				if(arr[i][j] > 0.0){
+					sumX += i * arr[i][j];
+					sumY += j * arr[i][j];
+					total += arr[i][j];
+				}
+			}
+		}
+		return new int[]{(int)(sumX / total), (int)(sumY / total)};
+	}
 }
