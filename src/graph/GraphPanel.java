@@ -1,5 +1,6 @@
 package graph;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
@@ -10,6 +11,7 @@ public class GraphPanel extends JPanel{
 	
 	public GraphPanel(Graph graph){
 		this.graph = graph;
+		setPreferredSize(new Dimension(graph.getWidth(), graph.getHeight()));
 	}
 	
 	@Override

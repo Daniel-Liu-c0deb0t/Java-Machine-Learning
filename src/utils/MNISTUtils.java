@@ -67,12 +67,17 @@ public class MNISTUtils{
 				arr[i][j] = 1.0 - ((image.getRGB(i, j) & 0xFF) / 255.0);
 			}
 		}
+		
+		return centerData(arr, width, height);
+	}
+	
+	public static double[] centerData(double[][] arr, int width, int height){
 		double[][] centeredArr = new double[width][height];
 		int[] centerOfMass = UtilMethods.centerOfMass(arr);
-		for(int i = 0; i < image.getWidth(); i++){
-			for(int j = 0; j < image.getHeight(); j++){
+		for(int i = 0; i < arr.length; i++){
+			for(int j = 0; j < arr[i].length; j++){
 				if(arr[i][j] > 0.0)
-					centeredArr[(width - image.getWidth()) / 2 + i + image.getWidth() / 2 - centerOfMass[0]][(height - image.getHeight()) / 2 + j + image.getHeight() / 2 - centerOfMass[1]] = arr[i][j];
+					centeredArr[(width - arr.length) / 2 + i + arr.length / 2 - centerOfMass[0]][(height - arr[i].length) / 2 + j + arr[i].length / 2 - centerOfMass[1]] = arr[i][j];
 			}
 		}
 		double[] result = new double[width * height];
