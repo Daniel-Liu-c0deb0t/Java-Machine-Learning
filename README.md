@@ -16,6 +16,7 @@ For example code on how to use the library, look in the test folder, where there
 - Graphing for points and for 2D classification
 - MNIST dataset loader
 - Save/load weights to/from files
+- Drawing GUI for MNIST
 
 ### Planned Features (hopefully!):
 - Convolution Neural Network
