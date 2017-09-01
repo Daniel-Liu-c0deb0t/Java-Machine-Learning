@@ -33,8 +33,10 @@ public class DrawablePanel extends JPanel{
 		addMouseMotionListener(new MouseMotionListener(){
 			@Override
 			public void mouseDragged(MouseEvent e){
-				graphics.fillRect(e.getX() / (width / xSize), e.getY() / (height / ySize), 1, 1);
-				arr[e.getX() / (width / xSize)][e.getY() / (height / ySize)] = 1.0;
+				if(e.getX() / (width / xSize) < arr.length && e.getX() / (width / xSize) >= 0 && e.getY() / (height / ySize) < arr[0].length && e.getY() / (height / ySize) >= 0){
+					graphics.fillRect(e.getX() / (width / xSize), e.getY() / (height / ySize), 1, 1);
+					arr[e.getX() / (width / xSize)][e.getY() / (height / ySize)] = 1.0;
+				}
 				repaint();
 			}
 			
