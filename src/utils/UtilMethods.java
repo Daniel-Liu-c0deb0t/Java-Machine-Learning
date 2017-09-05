@@ -206,4 +206,26 @@ public class UtilMethods{
 		}
 		return new int[]{(int)(sumX / total), (int)(sumY / total)};
 	}
+	
+	public static double[] flattenData(double[][] arr){
+		double[] result = new double[arr.length * arr[0].length];
+		for(int i = 0; i < arr[0].length; i++){
+			for(int j = 0; j < arr.length; j++){
+				result[i * arr.length + j] = arr[j][i];
+			}
+		}
+		return result;
+	}
+	
+	public static double[][] centerData(double[][] arr, int width, int height){
+		double[][] centeredArr = new double[width][height];
+		int[] centerOfMass = UtilMethods.centerOfMass(arr);
+		for(int i = 0; i < arr.length; i++){
+			for(int j = 0; j < arr[i].length; j++){
+				if(arr[i][j] > 0.0)
+					centeredArr[(width - arr.length) / 2 + i + arr.length / 2 - centerOfMass[0]][(height - arr[i].length) / 2 + j + arr[i].length / 2 - centerOfMass[1]] = arr[i][j];
+			}
+		}
+		return centeredArr;
+	}
 }

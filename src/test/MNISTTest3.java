@@ -11,7 +11,6 @@ import draw.DrawablePanel;
 import layer.FCLayer;
 import network.SimpleNeuralNetwork;
 import utils.Activation;
-import utils.MNISTUtils;
 import utils.UtilMethods;
 
 public class MNISTTest3{
@@ -23,7 +22,7 @@ public class MNISTTest3{
 		
 		JFrame frame = new JFrame();
 		frame.setLayout(new FlowLayout());
-		DrawablePanel drawablePanel = new DrawablePanel(1000, 1000, 20, 20);
+		DrawablePanel drawablePanel = new DrawablePanel(1000, 1000, 100, 100);
 		frame.add(drawablePanel);
 		
 		JLabel label = new JLabel("Result: ");
@@ -34,8 +33,8 @@ public class MNISTTest3{
 		submitButton.setPreferredSize(new Dimension(200, 100));
 		submitButton.setFont(submitButton.getFont().deriveFont(30.0f));
 		submitButton.addActionListener((e) -> {
-			double[] image = MNISTUtils.centerData(drawablePanel.getData(), 28, 28);
-			double[] result = nn.predict(image);
+			double[] data = drawablePanel.getData(20, 20, 28, 28);
+			double[] result = nn.predict(data);
 			label.setText("Result: " + UtilMethods.argMax(result));
 		});
 		frame.add(submitButton);

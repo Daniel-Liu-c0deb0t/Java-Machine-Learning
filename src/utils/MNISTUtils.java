@@ -68,24 +68,6 @@ public class MNISTUtils{
 			}
 		}
 		
-		return centerData(arr, width, height);
-	}
-	
-	public static double[] centerData(double[][] arr, int width, int height){
-		double[][] centeredArr = new double[width][height];
-		int[] centerOfMass = UtilMethods.centerOfMass(arr);
-		for(int i = 0; i < arr.length; i++){
-			for(int j = 0; j < arr[i].length; j++){
-				if(arr[i][j] > 0.0)
-					centeredArr[(width - arr.length) / 2 + i + arr.length / 2 - centerOfMass[0]][(height - arr[i].length) / 2 + j + arr[i].length / 2 - centerOfMass[1]] = arr[i][j];
-			}
-		}
-		double[] result = new double[width * height];
-		for(int i = 0; i < height; i++){
-			for(int j = 0; j < width; j++){
-				result[i * width + j] = centeredArr[j][i];
-			}
-		}
-		return result;
+		return UtilMethods.flattenData(UtilMethods.centerData(arr, width, height));
 	}
 }
