@@ -73,7 +73,7 @@ public class DrawablePanel extends JPanel{
 		g.dispose();
 		for(int i = minX; i < maxX; i++){
 			for(int j = minY; j < maxY; j++){
-				if(i >= 0 && i < width && j >= 0 && j < height){
+				if(i >= 0 && i < xSize && j >= 0 && j < ySize){
 					temp.setRGB(i - minX, j - minY, image.getRGB(i, j));
 				}
 			}
