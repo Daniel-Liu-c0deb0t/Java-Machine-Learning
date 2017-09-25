@@ -2,6 +2,7 @@ package utils;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Random;
 
 import edge.Edge;
 import layer.Layer;
@@ -227,5 +228,26 @@ public class UtilMethods{
 			}
 		}
 		return centeredArr;
+	}
+	
+	public static double[][] standardDist(double x, double y, double s, int n){
+		double[][] result = new double[n][2];
+		Random r = new Random();
+		for(int i = 0; i < n; i++){
+			result[i][0] = x + r.nextGaussian() * s;
+			result[i][1] = y + r.nextGaussian() * s;
+		}
+		return result;
+	}
+	
+	public static double[][] concat(double[][] a, double[][] b){
+		double[][] result = new double[a.length + b.length][b[0].length];
+		for(int i = 0; i < a.length; i++){
+			result[i] = a[i];
+		}
+		for(int i = 0; i < b.length; i++){
+			result[i + a.length] = b[i];
+		}
+		return result;
 	}
 }

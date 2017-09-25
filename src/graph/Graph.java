@@ -150,7 +150,7 @@ public class Graph{
 		//draw points
 		for(int i = 0; i < points.size(); i++){
 			graphics.setColor(points.get(i).getColor());
-			graphics.fillOval(padding * 2 + (int)(points.get(i).getX() / (xMax - xMin) * (width - padding * 3)) - 8, (height - padding * 2) - (int)(points.get(i).getY() / (yMax - yMin) * (height - padding * 3)) - 8, 16, 16);
+			graphics.fillOval(padding * 2 + (int)((points.get(i).getX() - xMin) / (xMax - xMin) * (width - padding * 3)) - 8, (height - padding * 2) - (int)((points.get(i).getY() - yMin) / (yMax - yMin) * (height - padding * 3)) - 8, 16, 16);
 		}
 	}
 	
