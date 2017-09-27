@@ -19,7 +19,7 @@ public class GraphTest1{
 		net.add(new FCLayer(3, Activation.sigmoid));
 		net.add(new FCLayer(4, Activation.softmax));
 		
-		double[][] x = UtilMethods.concat(UtilMethods.concat(UtilMethods.standardDist(-1, 0, 0.1, 100), UtilMethods.standardDist(0, 1, 0.1, 100)), UtilMethods.concat(UtilMethods.standardDist(1, 0, 0.1, 100), UtilMethods.standardDist(1, 1, 0.1, 100)));
+		double[][] x = UtilMethods.concat(UtilMethods.concat(UtilMethods.standardDist(0, 0, 0.1, 100), UtilMethods.standardDist(0, 1, 0.1, 100)), UtilMethods.concat(UtilMethods.standardDist(1, 0, 0.1, 100), UtilMethods.standardDist(1, 1, 0.1, 100)));
 		double[][] y1 = new double[100][4];
 		for(int i = 0; i < y1.length; i++){
 			y1[i] = UtilMethods.oneHotEncode(0, 4);
@@ -37,7 +37,7 @@ public class GraphTest1{
 			y4[i] = UtilMethods.oneHotEncode(3, 4);
 		}
 		double[][] y = UtilMethods.concat(UtilMethods.concat(y1, y2), UtilMethods.concat(y3, y4));
-		net.fit(x, y, 1000, 4, Loss.crossEntropy, new SGDOptimizer(0.01), 0.01, true);
+		net.fit(x, y, 100, 1, Loss.crossEntropy, new SGDOptimizer(0.01), 0, true, false);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];
@@ -65,6 +65,6 @@ public class GraphTest1{
 		graph.saveToFile("classification_example3.png", "png");
 		graph.dispose();
 		
-		net.saveToFile("model2.nn");
+		//net.saveToFile("model2.nn");
 	}
 }

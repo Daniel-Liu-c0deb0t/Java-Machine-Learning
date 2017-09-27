@@ -31,7 +31,7 @@ public class GraphTest2{
 				{3 + 20 + 1}
 		};
 		
-		nn.fit(x, y, 10, 1, Loss.squared, new SGDOptimizer(0.01), 0, true);
+		nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), 0, true, true);
 		
 		UtilMethods.printArray(nn.predict(new double[]{5}));
 		

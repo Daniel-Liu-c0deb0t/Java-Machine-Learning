@@ -159,10 +159,13 @@ public class Graph{
 		
 		//draw points
 		for(int i = 0; i < points.size(); i++){
+			graphics.setColor(Color.black);
+			graphics.fillOval(padding * 2 + (int)((points.get(i).getX() - xMin) / (xMax - xMin) * (width - padding * 3)) - 10, (height - padding * 2) - (int)((points.get(i).getY() - yMin) / (yMax - yMin) * (height - padding * 3)) - 10, 20, 20);
 			graphics.setColor(points.get(i).getColor());
 			graphics.fillOval(padding * 2 + (int)((points.get(i).getX() - xMin) / (xMax - xMin) * (width - padding * 3)) - 8, (height - padding * 2) - (int)((points.get(i).getY() - yMin) / (yMax - yMin) * (height - padding * 3)) - 8, 16, 16);
 		}
 		
+		//draw line
 		for(int i = 0; i < lines.size(); i++){
 			graphics.setColor(lines.get(i).getColor());
 			double y1 = lines.get(i).getM() * xMin + lines.get(i).getB();

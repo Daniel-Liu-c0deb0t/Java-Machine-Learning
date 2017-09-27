@@ -93,22 +93,22 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, boolean verbose){
-		fit(input, target, 1000, 1, verbose);
+	public void fit(double[][] input, double[][] target, boolean verbose, boolean printNet){
+		fit(input, target, 1000, 1, verbose, printNet);
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, boolean verbose){
-		fit(input, target, epochs, batchSize, Loss.squared, new SGDOptimizer(), verbose);
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, boolean verbose, boolean printNet){
+		fit(input, target, epochs, batchSize, Loss.squared, new SGDOptimizer(), verbose, printNet);
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean verbose){
-		fit(input, target, epochs, batchSize, loss, optimizer, 0.0, verbose);
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean verbose, boolean printNet){
+		fit(input, target, epochs, batchSize, loss, optimizer, 0.0, verbose, printNet);
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double lambda, boolean verbose){
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double lambda, boolean verbose, boolean printNet){
 		double weightSum = 0.0;
 		int max = 0;
 		int max2 = 0;
@@ -128,7 +128,8 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 				System.out.println("Epoch " + UtilMethods.format(i) + ":");
 				System.out.println();
 				System.out.println(UtilMethods.makeStr('-', 5) + " Before " + UtilMethods.makeStr('-', 5));
-				//UtilMethods.printNN(this);
+				if(printNet)
+					UtilMethods.printNN(this);
 				System.out.println(UtilMethods.makeStr('-', 18));
 				System.out.println();
 			}
@@ -174,7 +175,8 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('-', 5) + " After " + UtilMethods.makeStr('-', 6));
-				//UtilMethods.printNN(this);
+				if(printNet)
+					UtilMethods.printNN(this);
 				System.out.println(UtilMethods.makeStr('-', 18));
 			}
 			if(i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0){

@@ -24,7 +24,7 @@ public class Gates{
 				{0},
 				{0}
 		};
-		net.fit(x, y, 10000, 4, Loss.squared, new AdamOptimizer(0.1), 0.0, false);
+		net.fit(x, y, 10000, 4, Loss.squared, new AdamOptimizer(0.1), 0.0, false, false);
 		
 		UtilMethods.printArray(net.predict(new double[]{1, 0}));
 	}
