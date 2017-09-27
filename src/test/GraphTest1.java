@@ -19,7 +19,7 @@ public class GraphTest1{
 		net.add(new FCLayer(3, Activation.sigmoid));
 		net.add(new FCLayer(4, Activation.softmax));
 		
-		double[][] x = UtilMethods.concat(UtilMethods.concat(UtilMethods.standardDist(0, 0, 0.1, 100), UtilMethods.standardDist(0, 1, 0.1, 100)), UtilMethods.concat(UtilMethods.standardDist(1, 0, 0.1, 100), UtilMethods.standardDist(1, 1, 0.1, 100)));
+		double[][] x = UtilMethods.concat(UtilMethods.concat(UtilMethods.standardDist(-1, 0, 0.1, 100), UtilMethods.standardDist(0, 1, 0.1, 100)), UtilMethods.concat(UtilMethods.standardDist(1, 0, 0.1, 100), UtilMethods.standardDist(1, 1, 0.1, 100)));
 		double[][] y1 = new double[100][4];
 		for(int i = 0; i < y1.length; i++){
 			y1[i] = UtilMethods.oneHotEncode(0, 4);

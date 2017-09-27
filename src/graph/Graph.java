@@ -16,6 +16,7 @@ public class Graph{
 	private BufferedImage graph;
 	private Graphics2D graphics;
 	private ArrayList<Point> points = new ArrayList<Point>();
+	private ArrayList<Line> lines = new ArrayList<Line>();
 	private int width;
 	private int height;
 	private int xTicks;
@@ -106,6 +107,15 @@ public class Graph{
 				yMax = 10;
 			if(yMin == Double.MAX_VALUE)
 				yMin = 0;
+			if(xMax - xMin > yMax - yMin){
+				double diff = xMax - xMin - yMax + yMin;
+				yMin -= diff / 2;
+				yMax += diff / 2;
+			}else{
+				double diff = yMax - yMin - xMax + xMin;
+				xMin -= diff / 2;
+				xMax += diff / 2;
+			}
 		}
 		
 		if(colorFunction != null){
@@ -152,6 +162,13 @@ public class Graph{
 			graphics.setColor(points.get(i).getColor());
 			graphics.fillOval(padding * 2 + (int)((points.get(i).getX() - xMin) / (xMax - xMin) * (width - padding * 3)) - 8, (height - padding * 2) - (int)((points.get(i).getY() - yMin) / (yMax - yMin) * (height - padding * 3)) - 8, 16, 16);
 		}
+		
+		for(int i = 0; i < lines.size(); i++){
+			graphics.setColor(lines.get(i).getColor());
+			double y1 = lines.get(i).getM() * xMin + lines.get(i).getB();
+			double y2 = lines.get(i).getM() * xMax + lines.get(i).getB();
+			graphics.drawLine(padding * 2, (height - padding * 2) - (int)((y1 - yMin) / (yMax - yMin) * (height - padding * 3)), padding * 2 + width - padding * 3, (height - padding * 2) - (int)((y2 - yMin) / (yMax - yMin) * (height - padding * 3)));
+		}
 	}
 	
 	public void saveToFile(String path, String type){
@@ -168,6 +185,14 @@ public class Graph{
 	
 	public void addPoint(double x, double y){
 		points.add(new Point(x, y));
+	}
+	
+	public void addLine(double m, double b, Color c){
+		lines.add(new Line(m, b, c));
+	}
+	
+	public void addLine(double m, double b){
+		lines.add(new Line(m, b));
 	}
 	
 	public BufferedImage getGraph(){
