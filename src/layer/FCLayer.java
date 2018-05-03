@@ -14,6 +14,7 @@ public class FCLayer implements Layer{
 	private int nextSize;
 	private double[] bias;
 	private double[] deltaBias;
+	private int changeCount;
 	private double dropout;
 	
 	public FCLayer(int nextSize){
@@ -99,30 +100,41 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public Update backPropagate(int l, double[] prevResult, double[] nextResult, double[] error, double[] error2, double lambda, double weightSum, Optimizer optimizer, int size, int max, int max2){
+	public double[] backPropagate(double[] prevResult, double[] nextResult, double[] error, double regLambda, Optimizer optimizer, int l, int size, int max, int max2){
 		double[] newError = new double[prevSize()];
-		double[] newError2 = new double[prevSize()];
+		
 		for(int i = 0; i < edges.length; i++){
 			Edge e = edges[i];
-			e.addWeight(optimizer.optimizeWeight(l, e, prevResult, nextResult, error, lambda, weightSum, activation, size, max, nextSize));
-			newError[e.getNodeA()] += e.getWeight() * (error[e.getNodeB()] + lambda * weightSum) * activation.derivative(nextResult[e.getNodeB()]);
-			newError2[e.getNodeA()] += e.getWeight() * error2[e.getNodeB()] * activation.derivative(nextResult[e.getNodeB()]);
+			// error wrt layer output derivative
+			double grad = error[e.getNodeB()] * activation.derivative(nextResult[e.getNodeB()]);
+			// error wrt weight derivative
+			e.addWeight(optimizer.optimizeWeight(prevResult[e.getNodeA()] * grad, l, e, size, max, nextSize) - regLambda * e.getWeight());
+			// new error should be affected by weights
+			newError[e.getNodeA()] += e.getWeight() * grad;
 		}
+		
 		for(int i = 0; i < nextSize(); i++){
-			deltaBias[i] += optimizer.optimizeBias(l, i, nextResult, error2, activation, size, max2);
+			// not multiplied by bias
+			double biasGrad = error[i] * activation.derivative(nextResult[i]);
+			deltaBias[i] += optimizer.optimizeBias(biasGrad, l, i, size, max2, nextSize);
+			
 		}
-		return new Update(newError, newError2);
+		
+		changeCount++;
+		
+		return newError;
 	}
 	
 	@Override
 	public void update(){
 		for(int i = 0; i < edges.length; i++){
-			edges[i].update();
+			edges[i].update(Math.max(changeCount, 1));
 		}
 		for(int i = 0; i < nextSize(); i++){
-			bias[i] += deltaBias[i];
+			bias[i] += deltaBias[i] / Math.max(changeCount, 1);
 			deltaBias[i] = 0.0;
 		}
+		changeCount = 0;
 	}
 	
 	@Override

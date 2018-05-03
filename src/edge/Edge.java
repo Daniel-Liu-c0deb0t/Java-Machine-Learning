@@ -33,8 +33,8 @@ public class Edge{
 		this.deltaWeight += w;
 	}
 	
-	public void update(){
-		this.weight += this.deltaWeight;
+	public void update(int count){
+		this.weight += this.deltaWeight / count;
 		this.deltaWeight = 0.0;
 	}
 	

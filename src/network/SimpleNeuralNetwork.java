@@ -108,13 +108,13 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 	}
 	
 	@Override
-	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double lambda, boolean verbose, boolean printNet){
+	public void fit(double[][] input, double[][] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double regLambda, boolean verbose, boolean printNet){
 		double weightSum = 0.0;
 		int max = 0;
 		int max2 = 0;
 		for(int i = 0; i < layers.size(); i++){
 			for(int j = 0; j < layers.get(i).edges().length; j++){
-				weightSum += layers.get(i).edges()[j].getWeight();
+				weightSum += regLambda * layers.get(i).edges()[j].getWeight();
 			}
 			max = Math.max(max, layers.get(i).edges().length);
 			max2 = Math.max(max2, layers.get(i).nextSize());
@@ -161,14 +161,20 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 					System.out.println();
 				}
 				
-				backPropagate(result, loss.derivative(result[result.length - 1], target[j]), lambda, weightSum, optimizer, max, max2);
+				// add regularization's derivative to the loss function's derivative
+				double[] lossDerivative = loss.derivative(result[result.length - 1], target[j]);
+				for(int k = 0; k < lossDerivative.length; k++){
+					lossDerivative[k] += weightSum;
+				}
+				
+				backPropagate(result, lossDerivative, regLambda, optimizer, max, max2);
 				
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
 					weightSum = 0.0;
 					for(int k = 0; k < layers.size(); k++){
 						layers.get(k).update();
 						for(int l = 0; l < layers.get(k).edges().length; l++){
-							weightSum += layers.get(k).edges()[l].getWeight();
+							weightSum += regLambda * layers.get(k).edges()[l].getWeight();
 						}
 					}
 				}
@@ -192,15 +198,9 @@ public class SimpleNeuralNetwork implements NeuralNetwork, SupervisedNeuralNetwo
 	}
 	
 	@Override
-	public void backPropagate(double[][] result, double[] error, double lambda, double weightSum, Optimizer optimizer, int max, int max2){
-		double[] error2 = new double[error.length];
-		for(int i = 0; i < error.length; i++){
-			error2[i] = error[i];
-		}
+	public void backPropagate(double[][] result, double[] error, double regLambda, Optimizer optimizer, int max, int max2){
 		for(int i = size() - 1; i >= 0; i--){
-			Update update = layers.get(i).backPropagate(i, result[i], result[i + 1], error, error2, lambda, weightSum, optimizer, layers.size(), max, max2);
-			error = update.getError();
-			error2 = update.getError2();
+			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regLambda, optimizer, i, layers.size(), max, max2);
 		}
 	}
 	

@@ -15,14 +15,12 @@ public class SGDOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public double optimizeWeight(int l, Edge e, double[] prevResult, double[] nextResult, double[] error, double lambda, double weightSum, Activation activation, int size, int max, int nextSize){
-		double g = (error[e.getNodeB()] + lambda * weightSum) * prevResult[e.getNodeA()] * activation.derivative(nextResult[e.getNodeB()]);
-		return -learnRate * (g + lambda * e.getWeight());
+	public double optimizeWeight(double grad, int l, Edge e, int size, int max, int nextSize){
+		return -learnRate * grad;
 	}
 	
 	@Override
-	public double optimizeBias(int l, int i, double[] nextResult, double[] error, Activation activation, int size, int max){
-		double g = error[i] * activation.derivative(nextResult[i]);
-		return -learnRate * g;
+	public double optimizeBias(double grad, int l, int i, int size, int max, int nextSize){
+		return -learnRate * grad;
 	}
 }

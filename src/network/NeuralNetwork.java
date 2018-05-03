@@ -13,7 +13,7 @@ public interface NeuralNetwork{
 	public double[][] predict(double[][] input);
 	public double[] predict(double[] input);
 	public double[][] predictFull(double[] input);
-	public void backPropagate(double[][] result, double[] error, double lambda, double weightSum, Optimizer optimizer, int max, int max2);
+	public void backPropagate(double[][] result, double[] error, double regLambda, Optimizer optimizer, int max, int max2);
 	public int getInputSize();
 	public int getOutputSize();
 	public void saveToFile(String path);
