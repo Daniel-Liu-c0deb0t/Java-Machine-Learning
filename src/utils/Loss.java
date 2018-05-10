@@ -3,40 +3,30 @@ package utils;
 public interface Loss{
 	public static final Loss squared = new Loss(){
 		@Override
-		public double loss(double[] x, double[] t){
-			double result = 0.0;
-			for(int i = 0; i < t.length; i++){
-				result += Math.pow(t[i] - x[i], 2.0);
-			}
-			return result;
+		public double loss(Tensor x, Tensor t){
+			return t.sub(x).reduce(0, (a, b) -> a + b * b);
 		}
 		
 		@Override
-		public double[] derivative(double[] x, double[] t){
-			double[] result = new double[t.length];
-			for(int i = 0; i < t.length; i++){
-				result[i] = x[i] - t[i];
-			}
-			return result;
+		public Tensor derivative(Tensor x, Tensor t){
+			return x.sub(t);
 		}
 	};
 	
 	public static final Loss crossEntropy = new Loss(){
 		@Override
-		public double loss(double[] x, double[] t){
-			return -Math.log(x[UtilMethods.argMax(t)]);
+		public double loss(Tensor x, Tensor t){
+			//because the target is a one hot vector
+			return -Math.log(x.flatGet(UtilMethods.argMax(t)));
 		}
 		
 		@Override
-		public double[] derivative(double[] x, double[] t){
-			double[] result = new double[t.length];
-			for(int i = 0; i < t.length; i++){
-				result[i] = x[i] - t[i];
-			}
-			return result;
+		public Tensor derivative(Tensor x, Tensor t){
+			//because the output layer should be softmax
+			return x.sub(t);
 		}
 	};
 	
-	public double loss(double[] x, double[] t);
-	public double[] derivative(double[] x, double[] t);
+	public double loss(Tensor x, Tensor t);
+	public Tensor derivative(Tensor x, Tensor t);
 }

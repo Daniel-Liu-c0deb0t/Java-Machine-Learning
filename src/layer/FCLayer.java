@@ -6,38 +6,35 @@ import edge.Edge;
 import optimizer.Optimizer;
 import optimizer.Update;
 import utils.Activation;
+import utils.Tensor;
 
 public class FCLayer implements Layer{
-	private Edge[] edges;
+	private Tensor weights;
+	private Tensor deltaWeights;
+	private Tensor bias;
+	private Tensor deltaBias;
+	
 	private Activation activation;
 	private int prevSize;
 	private int nextSize;
-	private double[] bias;
-	private double[] deltaBias;
 	private int changeCount;
 	private double dropout;
 	
 	public FCLayer(int nextSize){
 		this.nextSize = nextSize;
 		this.activation = Activation.linear;
-		this.bias = new double[nextSize];
-		this.deltaBias = new double[nextSize];
 		this.dropout = 0.0;
 	}
 	
 	public FCLayer(int nextSize, Activation activation){
 		this.nextSize = nextSize;
 		this.activation = activation;
-		this.bias = new double[nextSize];
-		this.deltaBias = new double[nextSize];
 		this.dropout = 0.0;
 	}
 	
 	public FCLayer(int nextSize, Activation activation, double dropout){
 		this.nextSize = nextSize;
 		this.activation = activation;
-		this.bias = new double[nextSize];
-		this.deltaBias = new double[nextSize];
 		this.dropout = dropout;
 	}
 	
@@ -54,86 +51,63 @@ public class FCLayer implements Layer{
 	@Override
 	public void init(int prevSize){
 		this.prevSize = prevSize;
-		edges = new Edge[prevSize * nextSize];
-		for(int i = 0; i < prevSize; i++){
-			for(int j = 0; j < nextSize; j++){
-				edges[i * nextSize + j] = new Edge(i, j, prevSize);
-			}
-		}
+		this.weights = new Tensor(new int[]{prevSize, nextSize}, true);
+		this.deltaWeights = new Tensor(new int[]{prevSize, nextSize}, false);
+		this.bias = new Tensor(new int[]{nextSize}, false);
+		this.deltaBias = new Tensor(new int[]{nextSize}, false);
 	}
 	
 	@Override
 	public void init(int prevSize, double[][] weights, double[] bias){
 		this.prevSize = prevSize;
-		edges = new Edge[prevSize * nextSize];
-		for(int i = 0; i < prevSize; i++){
-			for(int j = 0; j < nextSize; j++){
-				edges[i * nextSize + j] = new Edge(i, j, weights[i][j]);
-			}
-		}
-		this.bias = bias;
+		this.weights = new Tensor(weights);
+		this.deltaWeights = new Tensor(new int[]{prevSize, nextSize}, false);
+		this.bias = new Tensor(bias);
+		this.deltaBias = new Tensor(new int[]{nextSize}, false);
 	}
 	
 	@Override
-	public double[] getBias(){
+	public Tensor bias(){
 		return bias;
 	}
 	
 	@Override
-	public Edge[] edges(){
-		return edges;
+	public Tensor weights(){
+		return weights;
 	}
 	
 	@Override
-	public double[] forwardPropagate(double[] input){
-		double[] result = new double[nextSize];
-		for(int i = 0; i < edges.length; i++){
-			result[edges[i].getNodeB()] += input[edges[i].getNodeA()] * edges[i].getWeight();
-		}
-		for(int i = 0; i < result.length; i++){
-			result[i] += bias[i];
-		}
-		for(int i = 0; i < result.length; i++){
-			result[i] = activation.activate(result[i], result);
-		}
-		return result;
+	public Tensor forwardPropagate(Tensor input){
+		return activation.activate(weights.dot(input).add(bias));
 	}
 	
 	@Override
-	public double[] backPropagate(double[] prevResult, double[] nextResult, double[] error, double regLambda, Optimizer optimizer, int l, int size, int max, int max2){
-		double[] newError = new double[prevSize()];
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
+		// error wrt layer output derivative
+		Tensor grads = error.mul(activation.derivative(nextRes));
 		
-		for(int i = 0; i < edges.length; i++){
-			Edge e = edges[i];
-			// error wrt layer output derivative
-			double grad = error[e.getNodeB()] * activation.derivative(nextResult[e.getNodeB()]);
-			// error wrt weight derivative
-			e.addWeight(optimizer.optimizeWeight(prevResult[e.getNodeA()] * grad, l, e, size, max, nextSize) - regLambda * e.getWeight());
-			// new error should be affected by weights
-			newError[e.getNodeA()] += e.getWeight() * grad;
-		}
+		// new error should be affected by weights
+		Tensor nextError = weights.T().dot(grads);
 		
-		for(int i = 0; i < nextSize(); i++){
-			// not multiplied by bias
-			double biasGrad = error[i] * activation.derivative(nextResult[i]);
-			deltaBias[i] += optimizer.optimizeBias(biasGrad, l, i, size, max2, nextSize);
-			
-		}
+		// error wrt weight derivative
+		deltaWeights = deltaWeights.add(optimizer.optimizeWeight(prevRes.mulEach(grads), l).sub(weights.mul(regLambda)));
+		
+		// error wrt bias derivative
+		// not multiplied by prev outputs!
+		deltaBias = deltaBias.add(optimizer.optimizeBias(grads, l));
 		
 		changeCount++;
 		
-		return newError;
+		return nextError;
 	}
 	
 	@Override
 	public void update(){
-		for(int i = 0; i < edges.length; i++){
-			edges[i].update(Math.max(changeCount, 1));
-		}
-		for(int i = 0; i < nextSize(); i++){
-			bias[i] += deltaBias[i] / Math.max(changeCount, 1);
-			deltaBias[i] = 0.0;
-		}
+		// handles postponed updates, by average updating values
+		weights = weights.add(deltaWeights.div(Math.max(changeCount, 1)));
+		deltaWeights = new Tensor(deltaWeights.shape(), 0);
+		bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
+		deltaBias = new Tensor(deltaBias.shape(), 0);
 		changeCount = 0;
 	}
 	
@@ -143,25 +117,25 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public double getDropout(){
+	public double dropout(){
 		return dropout;
 	}
 	
 	@Override
 	public int byteSize(){
-		return 8 * edges.length + 8 * bias.length;
+		return 8 * weights.size() + 8 * bias.size();
 	}
 	
 	@Override
-	public ByteBuffer toBytes(){
+	public ByteBuffer bytes(){ //TODO: handle saving tensors
 		ByteBuffer bb = ByteBuffer.allocate(byteSize());
-		for(int i = 0; i < edges.length; i++){
-			bb.putDouble(edges[i].getWeight());
-		}
-		for(int i = 0; i < bias.length; i++){
-			bb.putDouble(bias[i]);
-		}
-		bb.flip();
+//		for(int i = 0; i < edges.length; i++){
+//			bb.putDouble(edges[i].getWeight());
+//		}
+//		for(int i = 0; i < bias.length; i++){
+//			bb.putDouble(bias[i]);
+//		}
+//		bb.flip();
 		return bb;
 	}
 }

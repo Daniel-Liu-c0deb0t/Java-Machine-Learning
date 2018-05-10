@@ -2,6 +2,7 @@ package optimizer;
 
 import edge.Edge;
 import utils.Activation;
+import utils.Tensor;
 
 public class AdamOptimizer implements Optimizer{
 	private static final double epsilon = 0.00000001;
@@ -9,12 +10,12 @@ public class AdamOptimizer implements Optimizer{
 	private double beta1;
 	private double beta2;
 	
-	private double[][] m = null;
-	private double[][] v = null;
-	private double[][] mb = null;
-	private double[][] vb = null;
-	private double beta3;
-	private double beta4;
+	private Tensor[] mWeight;
+	private Tensor[] vWeight;
+	private Tensor[] mBias;
+	private Tensor[] vBias;
+	private double currBeta1; // these biases are changed while optimizing
+	private double currBeta2;
 	
 	public AdamOptimizer(){
 		this.learnRate = 0.01;
@@ -35,34 +36,42 @@ public class AdamOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public double optimizeWeight(int l, Edge e, double[] prevResult, double[] nextResult, double[] error, double lambda, double weightSum, Activation activation, int size, int max, int nextSize){
-		if(m == null || v == null){
-			m = new double[size][max];
-			v = new double[size][max];
-			if(mb == null || vb == null){
-				beta3 = beta1;
-				beta4 = beta2;
-			}
+	public void init(int[][] weightShapes, int[][] biasShapes){
+		mWeight = new Tensor[weightShapes.length];
+		vWeight = new Tensor[weightShapes.length];
+		mBias = new Tensor[weightShapes.length];
+		vBias = new Tensor[weightShapes.length];
+		
+		for(int i = 0; i < weightShapes.length; i++){
+			mWeight[i] = new Tensor(weightShapes[i], false);
+			vWeight[i] = new Tensor(weightShapes[i], false);
+			mBias[i] = new Tensor(biasShapes[i], false);
+			vBias[i] = new Tensor(biasShapes[i], false);
 		}
-		double g = (error[e.getNodeB()] + lambda * weightSum) * prevResult[e.getNodeA()] * activation.derivative(nextResult[e.getNodeB()]);
-		m[l][e.getNodeA() * nextSize + e.getNodeB()] = (beta1 * m[l][e.getNodeA() * nextSize + e.getNodeB()] + (1 - beta1) * g);
-		v[l][e.getNodeA() * nextSize + e.getNodeB()] = (beta2 * v[l][e.getNodeA() * nextSize + e.getNodeB()] + (1 - beta2) * g * g);
-		return -learnRate * ((m[l][e.getNodeA() * nextSize + e.getNodeB()] / (1 - beta3)) / (Math.sqrt(v[l][e.getNodeA() * nextSize + e.getNodeB()] / (1 - beta4)) + epsilon) + lambda * e.getWeight());
+		
+		currBeta1 = beta1;
+		currBeta2 = beta2;
 	}
 	
 	@Override
-	public double optimizeBias(int l, int i, double[] nextResult, double[] error, Activation activation, int size, int max){
-		if(mb == null || vb == null){
-			mb = new double[size][max];
-			vb = new double[size][max];
-			if(m == null || v == null){
-				beta3 = beta1;
-				beta4 = beta2;
-			}
-		}
-		double g = error[i] * activation.derivative(nextResult[i]);
-		mb[l][i] = (beta1 * mb[l][i] + (1 - beta1) * g);
-		vb[l][i] = (beta2 * vb[l][i] + (1 - beta2) * g * g);
-		return -learnRate * (mb[l][i] / (1 - beta3)) / (Math.sqrt(vb[l][i] / (1 - beta4)) + epsilon);
+	public void update(){
+		currBeta1 *= currBeta1;
+		currBeta2 *= currBeta2;
+	}
+	
+	@Override
+	public Tensor optimizeWeight(Tensor grads, int l){
+		mWeight[l] = mWeight[l].mul(beta1).add(grads.mul(1.0 - beta1));
+		vWeight[l] = vWeight[l].mul(beta2).add(grads.mul(grads).mul(1.0 - beta2));
+		return mWeight[l].div(1.0 - currBeta1).div(
+				vWeight[l].div(1.0 - currBeta2).map(x -> Math.sqrt(x)).add(epsilon)).mul(-learnRate);
+	}
+	
+	@Override
+	public Tensor optimizeBias(Tensor grads, int l){
+		mBias[l] = mBias[l].mul(beta1).add(grads.mul(1.0 - beta1));
+		vBias[l] = vBias[l].mul(beta2).add(grads.mul(grads).mul(1.0 - beta2));
+		return mBias[l].div(1.0 - currBeta1).div(
+				vBias[l].div(1.0 - currBeta2).map(x -> Math.sqrt(x)).add(epsilon)).mul(-learnRate);
 	}
 }

@@ -12,7 +12,7 @@ public class Edge{
 	public Edge(int nodeA, int nodeB, int prevSize){
 		this.nodeA = nodeA;
 		this.nodeB = nodeB;
-		this.weight = rand.nextGaussian() / Math.sqrt(prevSize);
+		this.weight = rand.nextGaussian() * 2 / prevSize;
 	}
 	
 	public Edge(int nodeA, int nodeB, double weight){

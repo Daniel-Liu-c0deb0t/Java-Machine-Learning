@@ -2,8 +2,14 @@ package optimizer;
 
 import edge.Edge;
 import utils.Activation;
+import utils.Tensor;
 
 public interface Optimizer{
-	public double optimizeWeight(double grad, int l, Edge e, int size, int max, int nextSize);
-	public double optimizeBias(double grad, int l, int i, int size, int max, int nextSize);
+	// should be called before optimizer is used
+	public void init(int[][] weightShapes, int[][] biasShapes);
+	// called every training iteration, after optimizing weights/bias
+	public void update();
+	
+	public Tensor optimizeWeight(Tensor grads, int l);
+	public Tensor optimizeBias(Tensor grads, int l);
 }

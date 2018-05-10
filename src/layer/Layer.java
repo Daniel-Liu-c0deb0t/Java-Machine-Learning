@@ -6,19 +6,20 @@ import edge.Edge;
 import optimizer.Optimizer;
 import optimizer.Update;
 import utils.Activation;
+import utils.Tensor;
 
 public interface Layer{
 	public int nextSize();
 	public int prevSize();
 	public void init(int prevSize);
 	public void init(int prevSize, double[][] weights, double[] bias);
-	public double[] getBias();
-	public Edge[] edges();
-	public double[] forwardPropagate(double[] input);
-	public double[] backPropagate(double[] prevResult, double[] nextResult, double[] error, double lambda, Optimizer optimizer, int l, int size, int max, int max2);
+	public Tensor bias();
+	public Tensor weights();
+	public Tensor forwardPropagate(Tensor input);
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l);
 	public void update();
 	public Activation getActivation();
-	public double getDropout();
+	public double dropout();
 	public int byteSize();
-	public ByteBuffer toBytes();
+	public ByteBuffer bytes();
 }

@@ -2,6 +2,7 @@ package optimizer;
 
 import edge.Edge;
 import utils.Activation;
+import utils.Tensor;
 
 public class SGDOptimizer implements Optimizer{
 	private double learnRate;
@@ -15,12 +16,22 @@ public class SGDOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public double optimizeWeight(double grad, int l, Edge e, int size, int max, int nextSize){
-		return -learnRate * grad;
+	public void init(int[][] weightShapes, int[][] biasShapes){
+		// nothing to do
 	}
 	
 	@Override
-	public double optimizeBias(double grad, int l, int i, int size, int max, int nextSize){
-		return -learnRate * grad;
+	public void update(){
+		// nothing to do
+	}
+	
+	@Override
+	public Tensor optimizeWeight(Tensor grads, int l){
+		return grads.mul(-learnRate);
+	}
+	
+	@Override
+	public Tensor optimizeBias(Tensor grads, int l){
+		return grads.mul(-learnRate);
 	}
 }

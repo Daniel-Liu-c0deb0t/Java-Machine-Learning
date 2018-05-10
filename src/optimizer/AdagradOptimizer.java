@@ -2,13 +2,14 @@ package optimizer;
 
 import edge.Edge;
 import utils.Activation;
+import utils.Tensor;
 
 public class AdagradOptimizer implements Optimizer{
 	private static final double epsilon = 0.00000001;
 	private double learnRate;
 	
-	private double[][] h = null;
-	private double[][] hb = null;
+	private Tensor[] hWeight;
+	private Tensor[] hBias;
 	
 	public AdagradOptimizer(){
 		this.learnRate = 0.01;
@@ -19,22 +20,30 @@ public class AdagradOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public double optimizeWeight(int l, Edge e, double[] prevResult, double[] nextResult, double[] error, double lambda, double weightSum, Activation activation, int size, int max, int nextSize){
-		if(h == null){
-			h = new double[size][max];
+	public void init(int[][] weightShapes, int[][] biasShapes){
+		hWeight = new Tensor[weightShapes.length];
+		hBias = new Tensor[weightShapes.length];
+		
+		for(int i = 0; i < weightShapes.length; i++){
+			hWeight[i] = new Tensor(weightShapes[i], false);
+			hBias[i] = new Tensor(biasShapes[i], false);
 		}
-		double g = (error[e.getNodeB()] + lambda * weightSum) * prevResult[e.getNodeA()] * activation.derivative(nextResult[e.getNodeB()]);
-		h[l][e.getNodeA() * nextSize + e.getNodeB()] += g * g;
-		return -learnRate * (g / (Math.sqrt(h[l][e.getNodeA() * nextSize + e.getNodeB()]) + epsilon) + lambda * e.getWeight());
 	}
 	
 	@Override
-	public double optimizeBias(int l, int i, double[] nextResult, double[] error, Activation activation, int size, int max){
-		if(hb == null){
-			hb = new double[size][max];
-		}
-		double g = error[i] * activation.derivative(nextResult[i]);
-		hb[l][i] += g * g;
-		return -learnRate * (g / (Math.sqrt(hb[l][i]) + epsilon));
+	public void update(){
+		// nothing to do
+	}
+	
+	@Override
+	public Tensor optimizeWeight(Tensor grads, int l){
+		hWeight[l] = hWeight[l].add(grads.mul(grads));
+		return grads.mul(-learnRate).div(hWeight[l].map(x -> Math.sqrt(x)).add(epsilon));
+	}
+	
+	@Override
+	public Tensor optimizeBias(Tensor grads, int l){
+		hBias[l] = hBias[l].add(grads.mul(grads));
+		return grads.mul(-learnRate).div(hBias[l].map(x -> Math.sqrt(x)).add(epsilon));
 	}
 }

@@ -1,34 +1,37 @@
 package test;
 
 import layer.FCLayer;
-import network.SimpleNeuralNetwork;
+import network.SequentialNN;
 import optimizer.AdamOptimizer;
 import utils.Activation;
 import utils.Loss;
+import utils.Tensor;
 import utils.UtilMethods;
+
+import static utils.TensorUtils.*;
 
 public class Gates{
 	public static void main(String[] args){
-		SimpleNeuralNetwork net = new SimpleNeuralNetwork(2);
+		SequentialNN net = new SequentialNN(2);
 		net.add(new FCLayer(2, Activation.sigmoid));
 		net.add(new FCLayer(1, Activation.linear));
-		double[][] x = {
-				{0, 0},
-				{0, 1},
-				{1, 0},
-				{1, 1}
+		Tensor[] x = {
+				t(0, 0),
+				t(0, 1),
+				t(1, 0),
+				t(1, 1)
 		};
-		double[][] y = {
-				{0},
-				{1},
-				{1},
-				{0}
+		Tensor[] y = {
+				t(0),
+				t(1),
+				t(1),
+				t(0)
 		};
-		net.fit(x, y, 3000, 4, Loss.squared, new AdamOptimizer(0.1), 0.0, true, true);
+		net.fit(x, y, 5000, 4, Loss.squared, new AdamOptimizer(0.1), 0, true, true);
 		
-		UtilMethods.printArray(net.predict(new double[]{0, 0}));
-		UtilMethods.printArray(net.predict(new double[]{1, 0}));
-		UtilMethods.printArray(net.predict(new double[]{0, 1}));
-		UtilMethods.printArray(net.predict(new double[]{1, 1}));
+		System.out.println(net.predict(t(0, 0)));
+		System.out.println(net.predict(t(1, 0)));
+		System.out.println(net.predict(t(0, 1)));
+		System.out.println(net.predict(t(1, 1)));
 	}
 }
