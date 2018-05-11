@@ -54,7 +54,7 @@ public interface Activation{
 		public Tensor activate(Tensor t){
 			double max = t.reduce(Double.MIN_VALUE, (a, b) -> Math.max(a, b));
 			double sum = t.reduce(0, (a, b) -> a + Math.exp(b - max));
-			return t.map(x -> (x - max) / sum);
+			return t.map(x -> Math.exp(x - max) / sum);
 		}
 		
 		@Override

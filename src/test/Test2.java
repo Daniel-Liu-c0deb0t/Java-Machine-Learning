@@ -7,13 +7,15 @@ import javax.swing.JFrame;
 import graph.Graph;
 import graph.GraphPanel;
 import layer.FCLayer;
-import network.SimpleNeuralNetwork;
+import network.SequentialNN;
 import utils.Activation;
 import utils.UtilMethods;
 
+import static utils.TensorUtils.*;
+
 public class Test2{
 	public static void main(String[] args){
-		SimpleNeuralNetwork net = new SimpleNeuralNetwork(2);
+		SequentialNN net = new SequentialNN(2);
 		net.add(new FCLayer(3, Activation.sigmoid));
 		net.add(new FCLayer(4, Activation.softmax));
 		net.loadFromFile("model.nn");
@@ -33,7 +35,7 @@ public class Test2{
 		//Color[] intToColor2 = {new Color(0.5f, 0.5f, 1.0f), new Color(1.0f, 0.5f, 0.5f)};
 		
 		Graph graph = new Graph(1000, 1000, null, null, null, (x2, y2) -> {
-			return intToColor1[UtilMethods.argMax(net.predict(new double[]{x2, y2}))];
+			return intToColor1[UtilMethods.argMax(net.predict(t(x2, y2)))];
 		});
 		graph.useCustomScale(0, 1, 0, 1);
 		graph.draw();

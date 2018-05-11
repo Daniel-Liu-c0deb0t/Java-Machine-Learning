@@ -219,16 +219,16 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		
 		StringBuilder b = new StringBuilder();
 		for(int i = 0; i < layers.size(); i++){
-			b.append("Layer " + (i + 1) + ":\n\n");
-			b.append(UtilMethods.makeStr('-', 50) + "\n\n");
+			b.append("\nLayer " + (i + 1) + ":\n");
+			b.append(UtilMethods.makeStr('-', 10) + "\n");
 			b.append("Weights:\n");
 			String weights = layers.get(i).weights().toString();
-			b.append((weights.length() > limit ? (weights.substring(0, limit) + "...") : weights) + "\n\n");
-			b.append(UtilMethods.makeStr('-', 50) + "\n\n");
+			b.append((weights.length() > limit ? (weights.substring(0, limit) + "...") : weights) + "\n");
+			b.append(UtilMethods.makeStr('-', 10) + "\n");
 			b.append("Biases:\n");
 			String bias = layers.get(i).bias().toString();
-			b.append((bias.length() > limit ? (bias.substring(0, limit) + "...") : bias) + "\n\n");
-			b.append(UtilMethods.makeStr('=', 50) + "\n\n");
+			b.append((bias.length() > limit ? (bias.substring(0, limit) + "...") : bias) + "\n");
+			b.append(UtilMethods.makeStr('=', 10) + "\n");
 		}
 		
 		return b.toString();

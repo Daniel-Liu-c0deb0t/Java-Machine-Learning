@@ -20,8 +20,12 @@ public class Tensor{
 		if(rand){
 			Random r = new Random();
 			// for initializing weights
+			int sum = 0;
+			for(int i = 0; i < shape.length; i++){
+				sum += shape[i];
+			}
 			for(int i = 0; i < size; i++){
-				data[i] = r.nextGaussian() * 2 / (shape[0] + shape[1]);
+				data[i] = r.nextGaussian() * shape.length / Math.max(1, sum);
 			}
 		}else{
 			for(int i = 0; i < size; i++){
