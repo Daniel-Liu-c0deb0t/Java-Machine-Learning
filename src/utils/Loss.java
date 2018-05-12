@@ -4,7 +4,7 @@ public interface Loss{
 	public static final Loss squared = new Loss(){
 		@Override
 		public double loss(Tensor x, Tensor t){
-			return t.sub(x).reduce(0, (a, b) -> a + b * b);
+			return x.sub(t).reduce(0, (a, b) -> a + b * b);
 		}
 		
 		@Override

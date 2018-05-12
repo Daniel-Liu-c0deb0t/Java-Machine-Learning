@@ -1,20 +1,21 @@
 package utils;
 
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Random;
 
-import edge.Edge;
-import layer.Layer;
-import network.NeuralNetwork;
+import static utils.TensorUtils.*;
 
 public class UtilMethods{
 	public static String format(double num){
-		return String.format("%.7g", num);
+		return String.format("%.5g", num);
 	}
 	
 	public static String shorterFormat(double num){
-		return String.format("%.3g", num);
+		return String.format("%.2g", num);
+	}
+	
+	public static String formatElapsedTime(long ms){
+		return String.format("%02d:%02d:%02d.%03d", ms / (3600 * 1000), ms / (60 * 1000) % 60, ms / 1000 % 60, ms % 1000);
 	}
 	
 	public static void printArray(double[][] arr){
@@ -52,24 +53,12 @@ public class UtilMethods{
 		return new Tensor(res);
 	}
 	
-	public static int argMax(double[] arr){
+	public static int argMax(Tensor tensor){
 		double max = 0.0;
 		int maxIndex = -1;
-		for(int i = 0; i < arr.length; i++){
-			if(arr[i] > max){
-				max = arr[i];
-				maxIndex = i;
-			}
-		}
-		return maxIndex;
-	}
-	
-	public static int argMax(Tensor t){
-		double max = 0.0;
-		int maxIndex = -1;
-		for(int i = 0; i < t.size(); i++){
-			if(t.flatGet(i) > max){
-				max = t.flatGet(i);
+		for(int i = 0; i < tensor.size(); i++){
+			if(tensor.flatGet(i) > max){
+				max = tensor.flatGet(i);
 				maxIndex = i;
 			}
 		}
@@ -85,17 +74,21 @@ public class UtilMethods{
 		return result;
 	}
 	
-	public static void printImage(double[][] image){
-		int sideLength = (int)Math.sqrt(image[0].length);
-		char[][][] chars = new char[image.length][sideLength][sideLength];
+	public static void printImage(Tensor[] image){
+		char[][][] chars = new char[image.length][0][0];
 		for(int i = 0; i < image.length; i++){
-			for(int j = 0; j < image[i].length; j++){
-				if(image[i][j] < 0.3){
-					chars[i][j / sideLength][j % sideLength] = ' ';
-				}else if(image[i][j] > 0.6){
-					chars[i][j / sideLength][j % sideLength] = '#';
-				}else{
-					chars[i][j / sideLength][j % sideLength] = '.';
+			int s1 = image[i].shape()[0];
+			int s2 = image[i].shape()[1];
+			chars[i] = new char[s2][s1];
+			for(int j = 0; j < s1; j++){
+				for(int k = 0; k < s2; k++){
+					if(image[i].flatGet(j * s2 + k) < 0.3){
+						chars[i][k][j] = ' ';
+					}else if(image[i].flatGet(j * s2 + k) > 0.6){
+						chars[i][k][j] = '#';
+					}else{
+						chars[i][k][j] = '.';
+					}
 				}
 			}
 		}
@@ -144,17 +137,32 @@ public class UtilMethods{
 		return new int[]{(int)(sumX / total), (int)(sumY / total)};
 	}
 	
-	public static double[] flattenData(double[][] arr){
-		double[] result = new double[arr.length * arr[0].length];
-		for(int i = 0; i < arr[0].length; i++){
-			for(int j = 0; j < arr.length; j++){
-				result[i * arr.length + j] = arr[j][i];
+	public static double[] flatCombine(Tensor... tensors){
+		int sum = 0;
+		for(int i = 0; i < tensors.length; i++){
+			sum += tensors[i].size();
+		}
+		
+		double[] res = new double[sum];
+		int idx = 0;
+		for(int i = 0; i < tensors.length; i++){
+			for(int j = 0; j < tensors[i].size(); j++){
+				res[idx] = tensors[i].flatGet(j);
+				idx++;
 			}
 		}
-		return result;
+		return res;
 	}
 	
-	public static double[][] centerData(double[][] arr, int width, int height){
+	public static Tensor[] flattenAll(Tensor[] tensors){
+		Tensor[] res = new Tensor[tensors.length];
+		for(int i = 0; i < tensors.length; i++){
+			res[i] = tensors[i].T().flatten();
+		}
+		return res;
+	}
+	
+	public static Tensor centerData(double[][] arr, int width, int height){
 		double[][] centeredArr = new double[width][height];
 		int[] centerOfMass = UtilMethods.centerOfMass(arr);
 		for(int i = 0; i < arr.length; i++){
@@ -163,27 +171,44 @@ public class UtilMethods{
 					centeredArr[(width - arr.length) / 2 + i + arr.length / 2 - centerOfMass[0]][(height - arr[i].length) / 2 + j + arr[i].length / 2 - centerOfMass[1]] = arr[i][j];
 			}
 		}
-		return centeredArr;
+		return new Tensor(centeredArr);
 	}
 	
-	public static double[][] standardDist(double x, double y, double s, int n){
-		double[][] result = new double[n][2];
+	public static Tensor[] standardDist(double x, double y, double s, int n){
+		Tensor[] res = new Tensor[n];
 		Random r = new Random();
 		for(int i = 0; i < n; i++){
-			result[i][0] = x + r.nextGaussian() * s;
-			result[i][1] = y + r.nextGaussian() * s;
+			res[i] = t(x + r.nextGaussian() * s, y + r.nextGaussian() * s);
 		}
-		return result;
+		return res;
 	}
 	
-	public static double[][] concat(double[][] a, double[][] b){
-		double[][] result = new double[a.length + b.length][b[0].length];
-		for(int i = 0; i < a.length; i++){
-			result[i] = a[i];
+	public static Tensor[] concat(Tensor[]... tensors){
+		int sum = 0;
+		for(int i = 0; i < tensors.length; i++){
+			sum += tensors[i].length;
 		}
-		for(int i = 0; i < b.length; i++){
-			result[i + a.length] = b[i];
+		Tensor[] res = new Tensor[sum];
+		int idx = 0;
+		for(int i = 0; i < tensors.length; i++){
+			for(int j = 0; j < tensors[i].length; j++){
+				res[idx] = tensors[i][j];
+				idx++;
+			}
 		}
-		return result;
+		return res;
+	}
+	
+	public static void shuffle(Tensor[] x, Tensor[] y){
+		Random r = new Random();
+		for(int i = x.length - 1; i > 0; i--){
+			int j = r.nextInt(i + 1);
+			Tensor xTemp = x[i];
+			Tensor yTemp = y[i];
+			x[i] = x[j];
+			y[i] = y[j];
+			x[j] = xTemp;
+			y[j] = yTemp;
+		}
 	}
 }

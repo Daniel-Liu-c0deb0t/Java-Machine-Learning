@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 
 public class MNISTUtils{
-	public static double[][] loadDataSetImages(String path, int num){
+	public static Tensor[] loadDataSetImages(String path, int num){
 		byte[] bytes = null;
 		try{
 			bytes = Files.readAllBytes(Paths.get(path));
@@ -23,16 +23,18 @@ public class MNISTUtils{
 		int row = bb.getInt(8);
 		int col = bb.getInt(12);
 		bb.position(16);
-		double[][] result = new double[Math.min(count, num)][row * col];
+		Tensor[] res = new Tensor[Math.min(count, num)];
 		for(int i = 0; i < Math.min(count, num); i++){
+			double[] curr = new double[row * col];
 			for(int j = 0; j < row * col; j++){
-				result[i][j] = UtilMethods.unsignedByteToInt(bb.get()) / 255.0;
+				curr[j] = UtilMethods.unsignedByteToInt(bb.get()) / 255.0;
 			}
+			res[i] = new Tensor(curr).reshape(new int[]{row, col}).T();
 		}
-		return result;
+		return res;
 	}
 	
-	public static double[][] loadDataSetLabels(String path, int num){
+	public static Tensor[] loadDataSetLabels(String path, int num){
 		byte[] bytes = null;
 		try{
 			bytes = Files.readAllBytes(Paths.get(path));
@@ -43,14 +45,14 @@ public class MNISTUtils{
 		bb.order(ByteOrder.BIG_ENDIAN);
 		int count = bb.getInt(4);
 		bb.position(8);
-		double[][] result = new double[Math.min(count, num)][10];
+		Tensor[] res = new Tensor[Math.min(count, num)];
 		for(int i = 0; i < Math.min(count, num); i++){
-			result[i] = UtilMethods.oneHotEncode(UtilMethods.unsignedByteToInt(bb.get()), 10);
+			res[i] = UtilMethods.oneHotEncode(UtilMethods.unsignedByteToInt(bb.get()), 10);
 		}
-		return result;
+		return res;
 	}
 	
-	public static double[] loadImage(String path, int width, int height){
+	public static Tensor loadImage(String path, int width, int height){
 		BufferedImage image = null;
 		try{
 			image = ImageIO.read(new File(path));
@@ -60,7 +62,7 @@ public class MNISTUtils{
 		return loadImage(image, width, height);
 	}
 	
-	public static double[] loadImage(BufferedImage image, int width, int height){
+	public static Tensor loadImage(BufferedImage image, int width, int height){
 		double[][] arr = new double[image.getWidth()][image.getHeight()];
 		for(int i = 0; i < image.getWidth(); i++){
 			for(int j = 0; j < image.getHeight(); j++){
@@ -68,6 +70,6 @@ public class MNISTUtils{
 			}
 		}
 		
-		return UtilMethods.flattenData(UtilMethods.centerData(arr, width, height));
+		return UtilMethods.centerData(arr, width, height);
 	}
 }

@@ -7,22 +7,23 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-import draw.DrawablePanel;
+import draw.MNISTDrawablePanel;
 import layer.FCLayer;
-import network.SimpleNeuralNetwork;
+import network.SequentialNN;
 import utils.Activation;
+import utils.Tensor;
 import utils.UtilMethods;
 
-public class MNISTTest3{
+public class TestMNIST2{
 	public static void main(String[] args){
-		SimpleNeuralNetwork nn = new SimpleNeuralNetwork(784);
+		SequentialNN nn = new SequentialNN(784);
 		nn.add(new FCLayer(300, Activation.sigmoid));
 		nn.add(new FCLayer(10, Activation.softmax));
 		nn.loadFromFile("mnist_weights.nn");
 		
 		JFrame frame = new JFrame();
 		frame.setLayout(new FlowLayout());
-		DrawablePanel drawablePanel = new DrawablePanel(1000, 1000, 100, 100);
+		MNISTDrawablePanel drawablePanel = new MNISTDrawablePanel(1000, 1000, 100, 100);
 		frame.add(drawablePanel);
 		
 		JLabel label = new JLabel("Result: ");
@@ -33,8 +34,8 @@ public class MNISTTest3{
 		submitButton.setPreferredSize(new Dimension(200, 100));
 		submitButton.setFont(submitButton.getFont().deriveFont(30.0f));
 		submitButton.addActionListener((e) -> {
-			double[] data = drawablePanel.getData(20, 20, 28, 28);
-			double[] result = nn.predict(data);
+			Tensor data = drawablePanel.getData(20, 20, 28, 28);
+			Tensor result = nn.predict(data.T().flatten());
 			label.setText("Result: " + UtilMethods.argMax(result));
 		});
 		frame.add(submitButton);

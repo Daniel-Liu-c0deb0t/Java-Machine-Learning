@@ -1,7 +1,5 @@
 package optimizer;
 
-import edge.Edge;
-import utils.Activation;
 import utils.Tensor;
 
 public class AdamOptimizer implements Optimizer{

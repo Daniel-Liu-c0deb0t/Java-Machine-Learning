@@ -18,21 +18,12 @@ public class Test2{
 		SequentialNN net = new SequentialNN(2);
 		net.add(new FCLayer(3, Activation.sigmoid));
 		net.add(new FCLayer(4, Activation.softmax));
+		// load the weights from a file
 		net.loadFromFile("model.nn");
 		
-//		double[] xData = new double[x.length];
-//		double[] yData = new double[x.length];
-//		Color[] cData = new Color[x.length];
 		Color[] intToColor1 = {Color.blue, Color.red, Color.yellow, Color.green};
-//		for(int i = 0; i < x.length; i++){
-//			xData[i] = x[i][0];
-//			yData[i] = x[i][1];
-//			cData[i] = intToColor1[UtilMethods.argMax(y[i])];
-//		}
 		
 		JFrame frame = new JFrame();
-		
-		//Color[] intToColor2 = {new Color(0.5f, 0.5f, 1.0f), new Color(1.0f, 0.5f, 0.5f)};
 		
 		Graph graph = new Graph(1000, 1000, null, null, null, (x2, y2) -> {
 			return intToColor1[UtilMethods.argMax(net.predict(t(x2, y2)))];

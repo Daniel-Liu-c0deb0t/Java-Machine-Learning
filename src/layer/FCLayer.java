@@ -2,9 +2,7 @@ package layer;
 
 import java.nio.ByteBuffer;
 
-import edge.Edge;
 import optimizer.Optimizer;
-import optimizer.Update;
 import utils.Activation;
 import utils.Tensor;
 
@@ -82,7 +80,7 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, int weightCount, Optimizer optimizer, int l){
 		// error wrt layer output derivative
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
@@ -90,7 +88,7 @@ public class FCLayer implements Layer{
 		Tensor nextError = weights.T().dot(grads);
 		
 		// error wrt weight derivative
-		deltaWeights = deltaWeights.add(optimizer.optimizeWeight(prevRes.mulEach(grads), l).sub(weights.mul(regLambda)));
+		deltaWeights = deltaWeights.add(optimizer.optimizeWeight(prevRes.mulEach(grads), l).sub(weights.mul(regLambda / weightCount)));
 		
 		// error wrt bias derivative
 		// not multiplied by prev outputs!
@@ -123,19 +121,35 @@ public class FCLayer implements Layer{
 	
 	@Override
 	public int byteSize(){
-		return 8 * weights.size() + 8 * bias.size();
+		// 8 bytes for each double
+		return Double.BYTES * weights.size() + Double.BYTES * bias.size();
 	}
 	
 	@Override
-	public ByteBuffer bytes(){ //TODO: handle saving tensors
+	public ByteBuffer bytes(){
 		ByteBuffer bb = ByteBuffer.allocate(byteSize());
-//		for(int i = 0; i < edges.length; i++){
-//			bb.putDouble(edges[i].getWeight());
-//		}
-//		for(int i = 0; i < bias.length; i++){
-//			bb.putDouble(bias[i]);
-//		}
-//		bb.flip();
+		for(int i = 0; i < weights.size(); i++){
+			bb.putDouble(weights.flatGet(i));
+		}
+		for(int i = 0; i < bias.size(); i++){
+			bb.putDouble(bias.flatGet(i));
+		}
+		bb.flip();
 		return bb;
+	}
+	
+	@Override
+	public void readBytes(ByteBuffer bb){
+		double[] w = new double[weights.size()];
+		for(int i = 0; i < w.length; i++){
+			w[i] = bb.getDouble();
+		}
+		weights = new Tensor(weights.shape(), w);
+		
+		double[] b = new double[bias.size()];
+		for(int i = 0; i < b.length; i++){
+			b[i] = bb.getDouble();
+		}
+		bias = new Tensor(bias.shape(), b);
 	}
 }

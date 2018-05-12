@@ -11,10 +11,11 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
+import utils.Tensor;
 import utils.UtilMethods;
 
 @SuppressWarnings("serial")
-public class DrawablePanel extends JPanel{
+public class MNISTDrawablePanel extends JPanel{
 	private int width;
 	private int height;
 	private int xSize;
@@ -22,7 +23,7 @@ public class DrawablePanel extends JPanel{
 	private BufferedImage image;
 	private Graphics2D graphics;
 	
-	public DrawablePanel(int width, int height, int xSize, int ySize){
+	public MNISTDrawablePanel(int width, int height, int xSize, int ySize){
 		this.width = width;
 		this.height = height;
 		this.xSize = xSize;
@@ -47,7 +48,7 @@ public class DrawablePanel extends JPanel{
 		});
 	}
 	
-	public double[] getData(int outputX1, int outputY1, int outputX2, int outputY2){
+	public Tensor getData(int outputX1, int outputY1, int outputX2, int outputY2){
 		int minX = Integer.MAX_VALUE;
 		int maxX = 0;
 		int minY = Integer.MAX_VALUE;
@@ -92,7 +93,7 @@ public class DrawablePanel extends JPanel{
 				arr[i][j] = 1.0 - (result.getRGB(i, j) & 0xFF) / 255.0;
 			}
 		}
-		return UtilMethods.flattenData(UtilMethods.centerData(arr, outputX2, outputY2));
+		return UtilMethods.centerData(arr, outputX2, outputY2);
 	}
 	
 	public void clear(){

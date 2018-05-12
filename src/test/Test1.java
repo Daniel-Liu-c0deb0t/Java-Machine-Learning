@@ -44,13 +44,7 @@ public class Test1{
 				t(0, 0, 0, 1)
 		};
 		
-		//UtilMethods.printNN(net);
-		//int result = UtilMethods.maxDecode(net.predict(new double[]{0}));
-		//System.out.println(result);
-		//UtilMethods.printArray(result);
-		//System.out.println();
-		
-		net.fit(x, y, 1000, 4, Loss.crossEntropy, new SGDOptimizer(0.1), 0.001, true, true);
+		net.fit(x, y, 1000, 4, Loss.crossEntropy, new SGDOptimizer(0.1), 0.01, true, true, true);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];
@@ -63,8 +57,6 @@ public class Test1{
 		}
 		
 		JFrame frame = new JFrame();
-		
-		//Color[] intToColor2 = {new Color(0.5f, 0.5f, 1.0f), new Color(1.0f, 0.5f, 0.5f)};
 		
 		Graph graph = new Graph(1000, 1000, xData, yData, cData, (x2, y2) -> {
 			return intToColor1[UtilMethods.argMax(net.predict(t(x2, y2)))];
@@ -81,9 +73,5 @@ public class Test1{
 		graph.dispose();
 		
 		net.saveToFile("model.nn");
-		
-		//double[] result = net.predict(new double[]{1, 0});
-		//System.out.println(result);
-		//UtilMethods.printArray(result);
 	}
 }

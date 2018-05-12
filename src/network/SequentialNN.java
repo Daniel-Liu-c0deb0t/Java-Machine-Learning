@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import layer.Layer;
-import optimizer.Update;
 import optimizer.Optimizer;
 import optimizer.SGDOptimizer;
 import utils.Loss;
@@ -28,8 +27,8 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 
 	@Override
-	public ArrayList<Layer> layers(){
-		return layers;
+	public Layer layer(int idx){
+		return layers.get(idx);
 	}
 
 	@Override
@@ -86,27 +85,29 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	
 	@Override
 	public void fit(Tensor[] input, Tensor[] target, boolean verbose, boolean printNet){
-		fit(input, target, 1000, 1, verbose, printNet);
+		fit(input, target, 1000, 1, false, verbose, printNet);
 	}
 	
 	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, boolean verbose, boolean printNet){
-		fit(input, target, epochs, batchSize, Loss.squared, new SGDOptimizer(), verbose, printNet);
+	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, boolean shuffle, boolean verbose, boolean printNet){
+		fit(input, target, epochs, batchSize, Loss.squared, new SGDOptimizer(), shuffle, verbose, printNet);
 	}
 	
 	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean verbose, boolean printNet){
-		fit(input, target, epochs, batchSize, loss, optimizer, 0.0, verbose, printNet);
+	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean shuffle, boolean verbose, boolean printNet){
+		fit(input, target, epochs, batchSize, loss, optimizer, 0.0, shuffle, verbose, printNet);
 	}
 	
 	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double regLambda, boolean verbose, boolean printNet){
+	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double regLambda, boolean shuffle, boolean verbose, boolean printNet){
 		double weightSum = 0.0;
+		int weightCount = 0;
 		int[][] weightShapes = new int[layers.size()][0];
 		int[][] biasShapes = new int[layers.size()][0];
 		for(int i = 0; i < layers.size(); i++){
 			weightSum += layers.get(i).weights().reduce(0, (a, b) -> a + regLambda * b);
 			weightShapes[i] = layers.get(i).weights().shape();
+			weightCount += layers.get(i).weights().size();
 			biasShapes[i] = layers.get(i).bias().shape();
 		}
 		
@@ -125,6 +126,9 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				System.out.println(UtilMethods.makeStr('-', 18));
 				System.out.println();
 			}
+			
+			if(shuffle)
+				UtilMethods.shuffle(input, target);
 			
 			Random r = new Random();
 			
@@ -157,9 +161,9 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				
 				// add regularization's derivative to the loss function's derivative
 				Tensor lossDerivative = loss.derivative(res[res.length - 1], target[j]);
-				lossDerivative = lossDerivative.add(weightSum);
+				lossDerivative = lossDerivative.add(weightSum / weightCount);
 				
-				backPropagate(res, lossDerivative, regLambda, optimizer);
+				backPropagate(res, lossDerivative, regLambda, weightCount, optimizer);
 				
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
 					weightSum = 0.0;
@@ -179,7 +183,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				if(verbose){
 					System.out.println();
 				}
-				System.out.println("Loss: " + UtilMethods.format(totalLoss / input.length));
+				System.out.println("Total loss: " + UtilMethods.format(totalLoss / input.length));
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('=', 30));
@@ -188,29 +192,11 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
-	public void backPropagate(Tensor[] result, Tensor error, double regLambda, Optimizer optimizer){
+	public void backPropagate(Tensor[] result, Tensor error, double regLambda, int weightCount, Optimizer optimizer){
 		for(int i = size() - 1; i >= 0; i--){
-			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regLambda, optimizer, i);
+			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regLambda, weightCount, optimizer, i);
 		}
 		optimizer.update();
-	}
-	
-	@Override
-	public void saveToFile(String path){
-		int totalLayerSize = 0;
-		for(int i = 0; i < layers.size(); i++){
-			totalLayerSize += layers.get(i).byteSize();
-		}
-		ByteBuffer bb = ByteBuffer.allocate(totalLayerSize);
-		for(int i = 0; i < layers.size(); i++){
-			bb.put(layers.get(i).bytes());
-		}
-		bb.flip();
-		try{
-			Files.write(Paths.get(path), bb.array());
-		}catch(Exception e){
-			e.printStackTrace();
-		}
 	}
 	
 	@Override
@@ -235,6 +221,24 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
+	public void saveToFile(String path){
+		int totalLayerSize = 0;
+		for(int i = 0; i < layers.size(); i++){
+			totalLayerSize += layers.get(i).byteSize();
+		}
+		ByteBuffer bb = ByteBuffer.allocate(totalLayerSize);
+		for(int i = 0; i < layers.size(); i++){
+			bb.put(layers.get(i).bytes());
+		}
+		bb.flip();
+		try{
+			Files.write(Paths.get(path), bb.array());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
 	public void loadFromFile(String path){
 		byte[] bytes = null;
 		try{
@@ -243,13 +247,8 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			e.printStackTrace();
 		}
 		ByteBuffer bb = ByteBuffer.wrap(bytes);
-		for(int i = 0; i < layers.size(); i++){ //TODO: load from file
-			//for(int j = 0; j < layers.get(i).edges().length; j++){
-				//layers.get(i).edges()[j].setWeight(bb.getDouble());
-			//}
-			//for(int j = 0; j < layers.get(i).getBias().length; j++){
-				//layers.get(i).getBias()[j] = bb.getDouble();
-			//}
+		for(int i = 0; i < layers.size(); i++){
+			layers.get(i).readBytes(bb);
 		}
 	}
 }

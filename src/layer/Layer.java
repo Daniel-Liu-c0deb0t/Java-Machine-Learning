@@ -2,9 +2,7 @@ package layer;
 
 import java.nio.ByteBuffer;
 
-import edge.Edge;
 import optimizer.Optimizer;
-import optimizer.Update;
 import utils.Activation;
 import utils.Tensor;
 
@@ -16,10 +14,11 @@ public interface Layer{
 	public Tensor bias();
 	public Tensor weights();
 	public Tensor forwardPropagate(Tensor input);
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l);
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, int weightCount, Optimizer optimizer, int l);
 	public void update();
 	public Activation getActivation();
 	public double dropout();
 	public int byteSize();
 	public ByteBuffer bytes();
+	public void readBytes(ByteBuffer bb);
 }

@@ -1,7 +1,5 @@
 package utils;
 
-import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Random;
 
 public class Tensor{
@@ -45,6 +43,8 @@ public class Tensor{
 		}
 	}
 	
+	// note that the following initializers work in row major format!
+	// however, the data is internally represented as column major, so some swaps happen
 	public Tensor(double[] d){
 		shape = new int[]{d.length};
 		calcMult();
@@ -82,7 +82,7 @@ public class Tensor{
 		}
 	}
 	
-	private Tensor(int[] shape, double[] data){
+	public Tensor(int[] shape, double[] data){
 		this.shape = shape;
 		calcMult();
 		this.data = data;
