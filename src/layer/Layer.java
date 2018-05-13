@@ -7,10 +7,10 @@ import utils.Activation;
 import utils.Tensor;
 
 public interface Layer{
-	public int nextSize();
-	public int prevSize();
-	public void init(int prevSize);
-	public void init(int prevSize, double[][] weights, double[] bias);
+	public int[] nextSize();
+	public int[] prevSize();
+	public void init(int[] prevSize);
+	public void init(int[] prevSize, double[][] weights, double[] bias);
 	public Tensor bias();
 	public Tensor weights();
 	public Tensor forwardPropagate(Tensor input);

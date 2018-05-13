@@ -15,9 +15,9 @@ import utils.UtilMethods;
 
 public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	private ArrayList<Layer> layers = new ArrayList<Layer>();
-	private int inputSize;
+	private int[] inputSize;
 	
-	public SequentialNN(int inputSize){
+	public SequentialNN(int... inputSize){
 		this.inputSize = inputSize;
 	}
 	
@@ -74,12 +74,12 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
-	public int inputSize(){
+	public int[] inputSize(){
 		return inputSize;
 	}
 	
 	@Override
-	public int outputSize(){
+	public int[] outputSize(){
 		return layers.get(layers.size() - 1).nextSize();
 	}
 	
@@ -118,7 +118,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('=', 30));
-				System.out.println("Epoch " + UtilMethods.format(i) + ":");
+				System.out.println("Epoch " + i);
 				System.out.println();
 				System.out.println(UtilMethods.makeStr('-', 5) + " Before " + UtilMethods.makeStr('-', 5));
 				if(printNet)
@@ -182,8 +182,10 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			if(i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0){
 				if(verbose){
 					System.out.println();
+				}else{
+					System.out.print("Epoch " + i + "\n\t");
 				}
-				System.out.println("Total loss: " + UtilMethods.format(totalLoss / input.length));
+				System.out.println("Average loss: " + UtilMethods.format(totalLoss / input.length));
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
 				System.out.println(UtilMethods.makeStr('=', 30));
@@ -193,7 +195,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	
 	@Override
 	public void backPropagate(Tensor[] result, Tensor error, double regLambda, int weightCount, Optimizer optimizer){
-		for(int i = size() - 1; i >= 0; i--){
+		for(int i = layers.size() - 1; i >= 0; i--){
 			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regLambda, weightCount, optimizer, i);
 		}
 		optimizer.update();

@@ -37,29 +37,29 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public int nextSize(){
-		return nextSize;
+	public int[] nextSize(){
+		return new int[]{nextSize};
 	}
 	
 	@Override
-	public int prevSize(){
-		return prevSize;
+	public int[] prevSize(){
+		return new int[]{prevSize};
 	}
 
 	@Override
-	public void init(int prevSize){
-		this.prevSize = prevSize;
-		this.weights = new Tensor(new int[]{prevSize, nextSize}, true);
-		this.deltaWeights = new Tensor(new int[]{prevSize, nextSize}, false);
+	public void init(int[] prevSize){
+		this.prevSize = prevSize[0];
+		this.weights = new Tensor(new int[]{prevSize[0], nextSize}, true);
+		this.deltaWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
 		this.bias = new Tensor(new int[]{nextSize}, false);
 		this.deltaBias = new Tensor(new int[]{nextSize}, false);
 	}
 	
 	@Override
-	public void init(int prevSize, double[][] weights, double[] bias){
-		this.prevSize = prevSize;
+	public void init(int[] prevSize, double[][] weights, double[] bias){
+		this.prevSize = prevSize[0];
 		this.weights = new Tensor(weights);
-		this.deltaWeights = new Tensor(new int[]{prevSize, nextSize}, false);
+		this.deltaWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
 		this.bias = new Tensor(bias);
 		this.deltaBias = new Tensor(new int[]{nextSize}, false);
 	}

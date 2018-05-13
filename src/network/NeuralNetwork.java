@@ -13,8 +13,8 @@ public interface NeuralNetwork{
 	public Tensor predict(Tensor input);
 	public Tensor[] predictFull(Tensor input);
 	public void backPropagate(Tensor[] result, Tensor error, double regLambda, int weightCount, Optimizer optimizer);
-	public int inputSize();
-	public int outputSize();
+	public int[] inputSize();
+	public int[] outputSize();
 	public void saveToFile(String path);
 	public void loadFromFile(String path);
 }

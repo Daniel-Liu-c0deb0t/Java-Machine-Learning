@@ -7,11 +7,11 @@ import static utils.TensorUtils.*;
 
 public class UtilMethods{
 	public static String format(double num){
-		return String.format("%.5g", num);
+		return String.format("%,.7g", num);
 	}
 	
 	public static String shorterFormat(double num){
-		return String.format("%.2g", num);
+		return String.format("%,.2g", num);
 	}
 	
 	public static String formatElapsedTime(long ms){

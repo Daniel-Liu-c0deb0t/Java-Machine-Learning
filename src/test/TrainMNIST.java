@@ -15,12 +15,12 @@ public class TrainMNIST{
 		nn.add(new FCLayer(300, Activation.sigmoid));
 		nn.add(new FCLayer(10, Activation.softmax));
 		
-		long start = System.currentTimeMillis();
-		
 		Tensor[] x = MNISTUtils.loadDataSetImages("train-images-idx3-ubyte", Integer.MAX_VALUE);
 		Tensor[] y = MNISTUtils.loadDataSetLabels("train-labels-idx1-ubyte", Integer.MAX_VALUE);
 		
-		nn.fit(UtilMethods.flattenAll(x), y, 100, 50, Loss.crossEntropy, new AdamOptimizer(0.0001), 0.01, true, false, false);
+		long start = System.currentTimeMillis();
+		
+		nn.fit(UtilMethods.flattenAll(x), y, 100, 32, Loss.crossEntropy, new AdamOptimizer(0.01), 0.01, true, false, false);
 		
 		System.out.println("Training time: " + UtilMethods.formatElapsedTime(System.currentTimeMillis() - start));
 		
@@ -28,7 +28,7 @@ public class TrainMNIST{
 		
 		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);
 		Tensor[] testY = MNISTUtils.loadDataSetLabels("t10k-labels-idx1-ubyte", Integer.MAX_VALUE);
-		Tensor[] testResult = nn.predict(testX);
+		Tensor[] testResult = nn.predict(UtilMethods.flattenAll(testX));
 		
 		System.out.println("Classification accuracy: " + UtilMethods.format(UtilMethods.classificationAccuracy(testResult, testY)));
 		
