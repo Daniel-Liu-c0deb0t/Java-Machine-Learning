@@ -6,20 +6,21 @@ import optimizer.Optimizer;
 import utils.Activation;
 import utils.Tensor;
 
-public class AveragePoolLayer implements Layer{
+public class MaxPoolLayer implements Layer{
 	private int[] prevSize;
 	private int[] nextSize;
 	private int winWidth, winHeight;
 	private int strideX, strideY;
+	private int[][] maxIdx;
 	
-	public AveragePoolLayer(int winWidth, int winHeight, int strideX, int strideY){
+	public MaxPoolLayer(int winWidth, int winHeight, int strideX, int strideY){
 		this.winWidth = winWidth;
 		this.winHeight = winHeight;
 		this.strideX = strideX;
 		this.strideY = strideY;
 	}
 	
-	public AveragePoolLayer(int winSize, int stride){
+	public MaxPoolLayer(int winSize, int stride){
 		this.winWidth = winSize;
 		this.winHeight = winSize;
 		this.strideX = stride;
@@ -47,6 +48,7 @@ public class AveragePoolLayer implements Layer{
 		int h = temp / strideY + (temp % strideY == 0 ? 0 : 1);
 		
 		nextSize = new int[]{w, h, prevSize[2]};
+		maxIdx = new int[w * h * prevSize[2]][2];
 	}
 	
 	@Override
@@ -69,12 +71,12 @@ public class AveragePoolLayer implements Layer{
 		double[] res = new double[nextSize[0] * nextSize[1] * nextSize[2]];
 		int[] shape = input.shape();
 		int idx = 0;
-		// slide through and computes the average for each location
+		// slide through and computes the max for each location
 		// the output should have the same depth as the input
 		for(int i = 0; i < shape[0]; i += strideX){
 			for(int j = 0; j < shape[1]; j += strideY){
 				for(int k = 0; k < shape[2]; k++){ // for each depth slice
-					double sum = 0;
+					double max = Double.MIN_VALUE;
 					int w = Math.min(winWidth, shape[0] - i);
 					int h = Math.min(winHeight, shape[1] - j);
 					
@@ -83,13 +85,19 @@ public class AveragePoolLayer implements Layer{
 							// absolute positions
 							int x = i + rx;
 							int y = j + ry;
+							double val = input.flatGet(x * shape[1] * shape[2] + y * shape[2] + k);
 							
-							sum += input.flatGet(x * shape[1] * shape[2] + y * shape[2] + k);
+							if(val > max){
+								max = val;
+								
+								maxIdx[idx][0] = x;
+								maxIdx[idx][1] = y;
+							}
 						}
 					}
 					
-					// average of all values
-					res[idx] = sum / (w * h);
+					// max of all values
+					res[idx] = max;
 					idx++;
 				}
 			}
@@ -117,7 +125,9 @@ public class AveragePoolLayer implements Layer{
 							int y = j + ry;
 							int inIdx = x * prevSize[1] * prevSize[2] + y * prevSize[2] + k;
 							
-							res[inIdx] += error.flatGet(outIdx) / (w * h);
+							if(maxIdx[outIdx][0] == x && maxIdx[outIdx][1] == y){
+								res[inIdx] += error.flatGet(outIdx);
+							}
 						}
 					}
 					
