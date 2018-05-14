@@ -68,14 +68,14 @@ public class Tensor{
 	}
 	
 	public Tensor(double[][][] d){
-		shape = new int[]{d[0].length, d.length, d[0][0].length};
+		shape = new int[]{d[0][0].length, d[0].length, d.length};
 		calcMult();
 		data = new double[size];
 		int idx = 0;
-		for(int i = 0; i < d[0].length; i++){
-			for(int j = 0; j < d.length; j++){
-				for(int k = 0; k < d[0][0].length; k++){
-					data[idx] = d[j][i][k];
+		for(int i = 0; i < d[0][0].length; i++){
+			for(int j = 0; j < d[0].length; j++){
+				for(int k = 0; k < d.length; k++){
+					data[idx] = d[k][j][i];
 					idx++;
 				}
 			}

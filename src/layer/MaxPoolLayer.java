@@ -48,7 +48,7 @@ public class MaxPoolLayer implements Layer{
 		int h = temp / strideY + (temp % strideY == 0 ? 0 : 1);
 		
 		nextSize = new int[]{w, h, prevSize[2]};
-		maxIdx = new int[w * h * prevSize[2]][2];
+		maxIdx = new int[nextSize[0] * nextSize[1] * nextSize[2]][2];
 	}
 	
 	@Override
@@ -73,8 +73,8 @@ public class MaxPoolLayer implements Layer{
 		int idx = 0;
 		// slide through and computes the max for each location
 		// the output should have the same depth as the input
-		for(int i = 0; i < shape[0]; i += strideX){
-			for(int j = 0; j < shape[1]; j += strideY){
+		for(int i = 0; i < shape[0] - winWidth + 1; i += strideX){
+			for(int j = 0; j < shape[1] - winHeight + 1; j += strideY){
 				for(int k = 0; k < shape[2]; k++){ // for each depth slice
 					double max = Double.MIN_VALUE;
 					int w = Math.min(winWidth, shape[0] - i);
@@ -111,8 +111,8 @@ public class MaxPoolLayer implements Layer{
 		double[] res = new double[prevSize[0] * prevSize[1] * prevSize[2]];
 		int outIdx = 0;
 		
-		for(int i = 0; i < prevSize[0]; i += strideX){
-			for(int j = 0; j < prevSize[1]; j += strideY){
+		for(int i = 0; i < prevSize[0] - winWidth + 1; i += strideX){
+			for(int j = 0; j < prevSize[1] - winHeight + 1; j += strideY){
 				for(int k = 0; k < prevSize[2]; k++){ // for each depth slice
 					// number of elements
 					int w = Math.min(winWidth, prevSize[0] - i);
