@@ -68,14 +68,14 @@ public class Tensor{
 	}
 	
 	public Tensor(double[][][] d){
-		shape = new int[]{d[0][0].length, d[0].length, d.length};
+		shape = new int[]{d[0].length, d.length, d[0][0].length};
 		calcMult();
 		data = new double[size];
 		int idx = 0;
-		for(int i = 0; i < d[0][0].length; i++){
-			for(int j = 0; j < d[0].length; j++){
-				for(int k = 0; k < d.length; k++){
-					data[idx] = d[k][j][i];
+		for(int i = 0; i < d[0].length; i++){
+			for(int j = 0; j < d.length; j++){
+				for(int k = 0; k < d[0][0].length; k++){
+					data[idx] = d[j][i][k];
 					idx++;
 				}
 			}
@@ -213,7 +213,7 @@ public class Tensor{
 		return new Tensor(new int[]{size}, data);
 	}
 	
-	public Tensor reshape(int[] s){
+	public Tensor reshape(int... s){
 		return new Tensor(s, data);
 	}
 	
@@ -260,20 +260,18 @@ public class Tensor{
 		return new Tensor(shape, data);
 	}
 	
+	// toString returns a string that is in column major format!
 	@Override
 	public String toString(){
-		if(shape.length == 1)
-			return str(reshape(new int[]{size, 1}), 0, size, 0);
-		else
-			return str(T(), 0, size, 0);
+		return str(0, size, 0);
 	}
 	
-	private String str(Tensor t, int start, int end, int depth){
-		if(depth >= t.shape.length - 1){
+	private String str(int start, int end, int depth){
+		if(depth >= shape.length - 1){
 			StringBuilder b = new StringBuilder();
 			b.append('[');
-			for(int i = start; i < end; i += t.mult[depth]){
-				b.append(UtilMethods.format(t.data[i]) + ", ");
+			for(int i = start; i < end; i += mult[depth]){
+				b.append(UtilMethods.format(data[i]) + ", ");
 			}
 			if(b.length() > 1)
 				b.delete(b.length() - 2, b.length());
@@ -283,13 +281,13 @@ public class Tensor{
 		
 		StringBuilder b = new StringBuilder();
 		b.append('[');
-		for(int i = start; i < end; i += t.mult[depth]){
-			b.append(str(t, i, i + t.mult[depth], depth + 1) + ",\n");
-			if(depth < t.shape.length - 2)
+		for(int i = start; i < end; i += mult[depth]){
+			b.append(str(i, i + mult[depth], depth + 1) + ",\n");
+			if(depth < shape.length - 2)
 				b.append('\n');
 		}
 		if(b.length() > 1)
-			b.delete(b.length() - 2 - (depth < t.shape.length - 2 ? 1 : 0), b.length());
+			b.delete(b.length() - 2 - (depth < shape.length - 2 ? 1 : 0), b.length());
 		b.append(']');
 		return b.toString();
 	}

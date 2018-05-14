@@ -16,24 +16,15 @@ public class FCLayer implements Layer{
 	private int prevSize;
 	private int nextSize;
 	private int changeCount;
-	private double dropout;
 	
 	public FCLayer(int nextSize){
 		this.nextSize = nextSize;
 		this.activation = Activation.linear;
-		this.dropout = 0.0;
 	}
 	
 	public FCLayer(int nextSize, Activation activation){
 		this.nextSize = nextSize;
 		this.activation = activation;
-		this.dropout = 0.0;
-	}
-	
-	public FCLayer(int nextSize, Activation activation, double dropout){
-		this.nextSize = nextSize;
-		this.activation = activation;
-		this.dropout = dropout;
 	}
 	
 	@Override
@@ -75,7 +66,7 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor forwardPropagate(Tensor input){
+	public Tensor forwardPropagate(Tensor input, boolean training){
 		return activation.activate(weights.dot(input).add(bias));
 	}
 	
@@ -112,11 +103,6 @@ public class FCLayer implements Layer{
 	@Override
 	public Activation getActivation(){
 		return activation;
-	}
-	
-	@Override
-	public double dropout(){
-		return dropout;
 	}
 	
 	@Override

@@ -40,7 +40,7 @@ public class GraphTest3{
 			y4[i] = UtilMethods.oneHotEncode(0, 2);
 		}
 		Tensor[] y = UtilMethods.concat(y1, y2, y3, y4);
-		net.fit(x, y, 100, 10, Loss.crossEntropy, new AdamOptimizer(1), 0.01, true, true, false);
+		net.fit(x, y, 100, 10, Loss.softmaxCrossEntropy, new AdamOptimizer(1), 0.01, true, true, false);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

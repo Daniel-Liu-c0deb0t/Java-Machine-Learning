@@ -29,7 +29,7 @@ public class MNISTUtils{
 			for(int j = 0; j < row * col; j++){
 				curr[j] = UtilMethods.unsignedByteToInt(bb.get()) / 255.0;
 			}
-			res[i] = new Tensor(curr).reshape(new int[]{row, col}).T();
+			res[i] = new Tensor(curr).reshape(row, col).T();
 		}
 		return res;
 	}

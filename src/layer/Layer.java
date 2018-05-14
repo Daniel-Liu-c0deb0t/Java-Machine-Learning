@@ -13,11 +13,10 @@ public interface Layer{
 	public void init(int[] prevSize, double[][] weights, double[] bias);
 	public Tensor bias();
 	public Tensor weights();
-	public Tensor forwardPropagate(Tensor input);
+	public Tensor forwardPropagate(Tensor input, boolean training);
 	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, int weightCount, Optimizer optimizer, int l);
 	public void update();
 	public Activation getActivation();
-	public double dropout();
 	public int byteSize();
 	public ByteBuffer bytes();
 	public void readBytes(ByteBuffer bb);

@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Random;
 
 import layer.Layer;
 import optimizer.Optimizer;
@@ -57,17 +56,18 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	@Override
 	public Tensor predict(Tensor input){
 		for(int i = 0; i < layers.size(); i++){
-			input = layers.get(i).forwardPropagate(input);
+			input = layers.get(i).forwardPropagate(input, false);
 		}
 		return input;
 	}
 	
+	// predictFull should only be used for training!
 	@Override
 	public Tensor[] predictFull(Tensor input){
 		Tensor[] res = new Tensor[layers.size() + 1];
 		res[0] = input;
 		for(int i = 1; i < layers.size() + 1; i++){
-			input = layers.get(i - 1).forwardPropagate(input);
+			input = layers.get(i - 1).forwardPropagate(input, true);
 			res[i] = input;
 		}
 		return res;
@@ -105,10 +105,14 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		int[][] weightShapes = new int[layers.size()][0];
 		int[][] biasShapes = new int[layers.size()][0];
 		for(int i = 0; i < layers.size(); i++){
-			weightSum += layers.get(i).weights().reduce(0, (a, b) -> a + regLambda * b);
-			weightShapes[i] = layers.get(i).weights().shape();
-			weightCount += layers.get(i).weights().size();
-			biasShapes[i] = layers.get(i).bias().shape();
+			if(layers.get(i).weights() != null){
+				weightSum += layers.get(i).weights().reduce(0, (a, b) -> a + regLambda * b);
+				weightShapes[i] = layers.get(i).weights().shape();
+				weightCount += layers.get(i).weights().size();
+			}
+			if(layers.get(i).bias() != null){
+				biasShapes[i] = layers.get(i).bias().shape();
+			}
 		}
 		
 		optimizer.init(weightShapes, biasShapes);
@@ -130,22 +134,8 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			if(shuffle)
 				UtilMethods.shuffle(input, target);
 			
-			Random r = new Random();
-			
 			for(int j = 0; j < input.length; j++){
 				Tensor[] res = predictFull(input[j]);
-				
-				// handle dropout and scaling weights
-				for(int k = 0; k < layers.size(); k++){
-					Layer l = layers.get(k);
-					res[k] = res[k].map(w -> {
-						if(r.nextDouble() < l.dropout()){
-							return 0.0;
-						}else{
-							return w / (1.0 - l.dropout());
-						}
-					});
-				}
 				
 				totalLoss += loss.loss(res[res.length - 1], target[j]);
 				
@@ -169,7 +159,9 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 					weightSum = 0.0;
 					for(int k = 0; k < layers.size(); k++){
 						layers.get(k).update();
-						weightSum += layers.get(k).weights().reduce(0, (a, b) -> a + regLambda * b);
+						if(layers.get(k).weights() != null){
+							weightSum += layers.get(k).weights().reduce(0, (a, b) -> a + regLambda * b);
+						}
 					}
 				}
 			}
@@ -207,15 +199,19 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		
 		StringBuilder b = new StringBuilder();
 		for(int i = 0; i < layers.size(); i++){
-			b.append("\nLayer " + (i + 1) + ":\n");
-			b.append(UtilMethods.makeStr('-', 10) + "\n");
-			b.append("Weights:\n");
-			String weights = layers.get(i).weights().toString();
-			b.append((weights.length() > limit ? (weights.substring(0, limit) + "...") : weights) + "\n");
-			b.append(UtilMethods.makeStr('-', 10) + "\n");
-			b.append("Biases:\n");
-			String bias = layers.get(i).bias().toString();
-			b.append((bias.length() > limit ? (bias.substring(0, limit) + "...") : bias) + "\n");
+			b.append("\nLayer " + (i + 1) + " (" + layers.get(i).getClass().getSimpleName() + "):\n");
+			if(layers.get(i).weights() != null){
+				b.append(UtilMethods.makeStr('-', 10) + "\n");
+				b.append("Weights:\n");
+				String weights = layers.get(i).weights().toString();
+				b.append((weights.length() > limit ? (weights.substring(0, limit) + "...") : weights) + "\n");
+			}
+			if(layers.get(i).bias() != null){
+				b.append(UtilMethods.makeStr('-', 10) + "\n");
+				b.append("Biases:\n");
+				String bias = layers.get(i).bias().toString();
+				b.append((bias.length() > limit ? (bias.substring(0, limit) + "...") : bias) + "\n");
+			}
 			b.append(UtilMethods.makeStr('=', 10) + "\n");
 		}
 		
@@ -230,7 +226,9 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		}
 		ByteBuffer bb = ByteBuffer.allocate(totalLayerSize);
 		for(int i = 0; i < layers.size(); i++){
-			bb.put(layers.get(i).bytes());
+			ByteBuffer temp = layers.get(i).bytes();
+			if(temp != null)
+				bb.put(temp);
 		}
 		bb.flip();
 		try{

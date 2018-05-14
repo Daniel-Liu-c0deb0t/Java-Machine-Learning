@@ -13,7 +13,7 @@ public interface Loss{
 		}
 	};
 	
-	public static final Loss crossEntropy = new Loss(){
+	public static final Loss softmaxCrossEntropy = new Loss(){
 		@Override
 		public double loss(Tensor x, Tensor t){
 			//because the target is a one hot vector
