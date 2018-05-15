@@ -62,7 +62,7 @@ public class AdamOptimizer implements Optimizer{
 		mWeight[l] = mWeight[l].mul(beta1).add(grads.mul(1.0 - beta1));
 		vWeight[l] = vWeight[l].mul(beta2).add(grads.mul(grads).mul(1.0 - beta2));
 		return mWeight[l].div(1.0 - currBeta1).div(
-				vWeight[l].div(1.0 - currBeta2).map(x -> Math.sqrt(x)).add(epsilon)).mul(-learnRate);
+				vWeight[l].div(1.0 - currBeta2).map(x -> Math.sqrt(x)).add(epsilon)).mul(learnRate);
 	}
 	
 	@Override
@@ -70,6 +70,6 @@ public class AdamOptimizer implements Optimizer{
 		mBias[l] = mBias[l].mul(beta1).add(grads.mul(1.0 - beta1));
 		vBias[l] = vBias[l].mul(beta2).add(grads.mul(grads).mul(1.0 - beta2));
 		return mBias[l].div(1.0 - currBeta1).div(
-				vBias[l].div(1.0 - currBeta2).map(x -> Math.sqrt(x)).add(epsilon)).mul(-learnRate);
+				vBias[l].div(1.0 - currBeta2).map(x -> Math.sqrt(x)).add(epsilon)).mul(learnRate);
 	}
 }

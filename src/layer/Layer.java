@@ -10,11 +10,10 @@ public interface Layer{
 	public int[] nextSize();
 	public int[] prevSize();
 	public void init(int[] prevSize);
-	public void init(int[] prevSize, double[][] weights, double[] bias);
 	public Tensor bias();
 	public Tensor weights();
 	public Tensor forwardPropagate(Tensor input, boolean training);
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, int weightCount, Optimizer optimizer, int l);
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l);
 	public void update();
 	public Activation getActivation();
 	public int byteSize();

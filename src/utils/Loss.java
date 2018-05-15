@@ -16,13 +16,13 @@ public interface Loss{
 	public static final Loss softmaxCrossEntropy = new Loss(){
 		@Override
 		public double loss(Tensor x, Tensor t){
-			//because the target is a one hot vector
+			// because the target is a one hot vector
 			return -Math.log(x.flatGet(UtilMethods.argMax(t)));
 		}
 		
 		@Override
 		public Tensor derivative(Tensor x, Tensor t){
-			//because the output layer should be softmax
+			// because the output layer should be softmax
 			return x.sub(t);
 		}
 	};

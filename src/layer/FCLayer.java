@@ -16,6 +16,7 @@ public class FCLayer implements Layer{
 	private int prevSize;
 	private int nextSize;
 	private int changeCount;
+	private boolean alreadyInit = false;
 	
 	public FCLayer(int nextSize){
 		this.nextSize = nextSize;
@@ -40,19 +41,19 @@ public class FCLayer implements Layer{
 	@Override
 	public void init(int[] prevSize){
 		this.prevSize = prevSize[0];
-		this.weights = new Tensor(new int[]{prevSize[0], nextSize}, true);
+		if(!alreadyInit){
+			this.weights = new Tensor(new int[]{prevSize[0], nextSize}, true);
+			this.bias = new Tensor(new int[]{nextSize}, false);
+		}
 		this.deltaWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
-		this.bias = new Tensor(new int[]{nextSize}, false);
 		this.deltaBias = new Tensor(new int[]{nextSize}, false);
 	}
 	
-	@Override
-	public void init(int[] prevSize, double[][] weights, double[] bias){
-		this.prevSize = prevSize[0];
-		this.weights = new Tensor(weights);
-		this.deltaWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
-		this.bias = new Tensor(bias);
-		this.deltaBias = new Tensor(new int[]{nextSize}, false);
+	public FCLayer withParams(Tensor w, Tensor b){
+		weights = w;
+		bias = b;
+		alreadyInit = true;
+		return this;
 	}
 	
 	@Override
@@ -71,19 +72,20 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, int weightCount, Optimizer optimizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
 		// error wrt layer output derivative
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
-		// new error should be affected by weights
-		Tensor nextError = weights.T().dot(grads);
-		
-		// error wrt weight derivative
-		deltaWeights = deltaWeights.add(optimizer.optimizeWeight(prevRes.mulEach(grads), l).sub(weights.mul(regLambda / weightCount)));
+		// error wrt weight derivative (including l2 regularization)
+		deltaWeights = deltaWeights.sub(
+				optimizer.optimizeWeight(prevRes.mulEach(grads), l).add(weights.mul(regLambda)));
 		
 		// error wrt bias derivative
 		// not multiplied by prev outputs!
-		deltaBias = deltaBias.add(optimizer.optimizeBias(grads, l));
+		deltaBias = deltaBias.sub(optimizer.optimizeBias(grads, l));
+		
+		// new error should be affected by weights
+		Tensor nextError = weights.T().dot(grads);
 		
 		changeCount++;
 		
@@ -94,9 +96,9 @@ public class FCLayer implements Layer{
 	public void update(){
 		// handles postponed updates, by average updating values
 		weights = weights.add(deltaWeights.div(Math.max(changeCount, 1)));
-		deltaWeights = new Tensor(deltaWeights.shape(), 0);
+		deltaWeights = new Tensor(deltaWeights.shape(), false);
 		bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
-		deltaBias = new Tensor(deltaBias.shape(), 0);
+		deltaBias = new Tensor(deltaBias.shape(), false);
 		changeCount = 0;
 	}
 	

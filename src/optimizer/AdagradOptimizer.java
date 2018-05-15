@@ -36,12 +36,12 @@ public class AdagradOptimizer implements Optimizer{
 	@Override
 	public Tensor optimizeWeight(Tensor grads, int l){
 		hWeight[l] = hWeight[l].add(grads.mul(grads));
-		return grads.mul(-learnRate).div(hWeight[l].map(x -> Math.sqrt(x)).add(epsilon));
+		return grads.mul(learnRate).div(hWeight[l].map(x -> Math.sqrt(x)).add(epsilon));
 	}
 	
 	@Override
 	public Tensor optimizeBias(Tensor grads, int l){
 		hBias[l] = hBias[l].add(grads.mul(grads));
-		return grads.mul(-learnRate).div(hBias[l].map(x -> Math.sqrt(x)).add(epsilon));
+		return grads.mul(learnRate).div(hBias[l].map(x -> Math.sqrt(x)).add(epsilon));
 	}
 }

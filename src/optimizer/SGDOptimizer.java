@@ -25,11 +25,11 @@ public class SGDOptimizer implements Optimizer{
 	
 	@Override
 	public Tensor optimizeWeight(Tensor grads, int l){
-		return grads.mul(-learnRate);
+		return grads.mul(learnRate);
 	}
 	
 	@Override
 	public Tensor optimizeBias(Tensor grads, int l){
-		return grads.mul(-learnRate);
+		return grads.mul(learnRate);
 	}
 }

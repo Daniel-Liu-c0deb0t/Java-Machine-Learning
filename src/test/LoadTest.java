@@ -13,7 +13,7 @@ import utils.UtilMethods;
 
 import static utils.TensorUtils.*;
 
-public class Test2{
+public class LoadTest{
 	public static void main(String[] args){
 		SequentialNN net = new SequentialNN(2);
 		net.add(new FCLayer(3, Activation.sigmoid));

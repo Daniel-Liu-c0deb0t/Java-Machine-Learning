@@ -34,11 +34,6 @@ public class FlattenLayer implements Layer{
 	}
 	
 	@Override
-	public void init(int[] prevSize, double[][] weights, double[] bias){
-		// should not be used!
-	}
-	
-	@Override
 	public Tensor bias(){
 		return null;
 	}
@@ -54,7 +49,7 @@ public class FlattenLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, int weightCount, Optimizer optimizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
 		return error.reshape(prevSize);
 	}
 	

@@ -35,12 +35,6 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		l.init(layers.isEmpty() ? inputSize : layers.get(layers.size() - 1).nextSize());
 		layers.add(l);
 	}
-	
-	@Override
-	public void add(Layer l, double[][] weights, double[] bias){
-		l.init(layers.isEmpty() ? inputSize : layers.get(layers.size() - 1).nextSize(), weights, bias);
-		layers.add(l);
-	}
 
 	@Override
 	public Tensor[] predict(Tensor[] input){
@@ -100,15 +94,11 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	
 	@Override
 	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double regLambda, boolean shuffle, boolean verbose, boolean printNet){
-		double weightSum = 0.0;
-		int weightCount = 0;
 		int[][] weightShapes = new int[layers.size()][0];
 		int[][] biasShapes = new int[layers.size()][0];
 		for(int i = 0; i < layers.size(); i++){
 			if(layers.get(i).weights() != null){
-				weightSum += layers.get(i).weights().reduce(0, (a, b) -> a + regLambda * b);
 				weightShapes[i] = layers.get(i).weights().shape();
-				weightCount += layers.get(i).weights().size();
 			}
 			if(layers.get(i).bias() != null){
 				biasShapes[i] = layers.get(i).bias().shape();
@@ -151,17 +141,11 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				
 				// add regularization's derivative to the loss function's derivative
 				Tensor lossDerivative = loss.derivative(res[res.length - 1], target[j]);
-				lossDerivative = lossDerivative.add(weightSum / weightCount);
-				
-				backPropagate(res, lossDerivative, regLambda, weightCount, optimizer);
+				backPropagate(res, lossDerivative, regLambda, optimizer);
 				
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
-					weightSum = 0.0;
 					for(int k = 0; k < layers.size(); k++){
 						layers.get(k).update();
-						if(layers.get(k).weights() != null){
-							weightSum += layers.get(k).weights().reduce(0, (a, b) -> a + regLambda * b);
-						}
 					}
 				}
 			}
@@ -186,9 +170,9 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
-	public void backPropagate(Tensor[] result, Tensor error, double regLambda, int weightCount, Optimizer optimizer){
+	public void backPropagate(Tensor[] result, Tensor error, double regLambda, Optimizer optimizer){
 		for(int i = layers.size() - 1; i >= 0; i--){
-			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regLambda, weightCount, optimizer, i);
+			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regLambda, optimizer, i);
 		}
 		optimizer.update();
 	}

@@ -197,6 +197,45 @@ public class Tensor{
 		return new Tensor(new int[]{size, o.size}, res);
 	}
 	
+	public Tensor convolve(Tensor weights, Tensor bias, int[] outShape,
+			int winWidth, int winHeight, int strideX, int strideY, int paddingX, int paddingY){
+		double[] res = new double[outShape[0] * outShape[1] * outShape[2]];
+		int idx = 0;
+		
+		for(int i = 0; i < outShape[0] * strideX; i += strideX){
+			for(int j = 0; j < outShape[1] * strideY; j += strideY){
+				for(int filter = 0; filter < outShape[2]; filter++){
+					// relative to each filter
+					for(int rx = 0; rx < winWidth; rx++){
+						for(int ry = 0; ry < winHeight; ry++){
+							for(int depth = 0; depth < shape[2]; depth++){
+								// absolute positions
+								int x = i - paddingX + rx;
+								int y = j - paddingY + ry;
+								
+								// handle zero padding
+								if(x < 0 || x >= shape[0] || y < 0 || y >= shape[1])
+									continue;
+								
+								// multiply by weight and accumulate by addition
+								res[idx] += data[x * mult[0] + y * mult[1] + depth] *
+										weights.data[rx * weights.mult[0] + ry * weights.mult[1] + depth * weights.mult[2] + filter];
+							}
+						}
+					}
+					
+					// add bias
+					if(bias != null)
+						res[idx] += bias.data[filter];
+					
+					idx++;
+				}
+			}
+		}
+		
+		return new Tensor(outShape, res);
+	}
+	
 	public Tensor T(){ // transposes 2D matrix
 		double[] res = new double[size];
 		int idx = 0;

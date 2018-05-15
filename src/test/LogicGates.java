@@ -26,7 +26,7 @@ public class LogicGates{
 				t(1),
 				t(0)
 		};
-		net.fit(x, y, 1000, 4, Loss.squared, new AdamOptimizer(0.1), 0.0, true, true, true);
+		net.fit(x, y, 1000, 4, Loss.squared, new AdamOptimizer(0.1), 0, true, true, true);
 		
 		System.out.println(net.predict(t(0, 0)));
 		System.out.println(net.predict(t(1, 0)));
