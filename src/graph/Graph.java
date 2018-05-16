@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-import utils.UtilMethods;
+import utils.Utils;
 
 public class Graph{
 	private BufferedImage graph;
@@ -150,11 +150,11 @@ public class Graph{
 		int yTickSpacing = (height - padding * 3) / (yTicks - 1);
 		for(int i = 0; i < xTicks; i++){
 			graphics.drawLine(padding * 2 + xTickSpacing * i, height - padding * 2, padding * 2 + xTickSpacing * i, height - padding * 2 + 10);
-			graphics.drawString(UtilMethods.shorterFormat(xMin + (xMax - xMin) / (xTicks - 1) * i), padding * 2 + xTickSpacing * i - 7, height - padding * 2 + 40);
+			graphics.drawString(Utils.shorterFormat(xMin + (xMax - xMin) / (xTicks - 1) * i), padding * 2 + xTickSpacing * i - 7, height - padding * 2 + 40);
 		}
 		for(int i = 0; i < yTicks; i++){
 			graphics.drawLine(padding * 2, height - padding * 2 - yTickSpacing * i, padding * 2 - 10, height - padding * 2 - yTickSpacing * i);
-			graphics.drawString(UtilMethods.shorterFormat(yMin + (yMax - yMin) / (yTicks - 1) * i), padding * 2 - 70, height - padding * 2 - yTickSpacing * i + 10);
+			graphics.drawString(Utils.shorterFormat(yMin + (yMax - yMin) / (yTicks - 1) * i), padding * 2 - 70, height - padding * 2 - yTickSpacing * i + 10);
 		}
 		
 		//draw points

@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 import utils.Tensor;
-import utils.UtilMethods;
+import utils.Utils;
 
 @SuppressWarnings("serial")
 public class MNISTDrawablePanel extends JPanel{
@@ -93,7 +93,7 @@ public class MNISTDrawablePanel extends JPanel{
 				arr[i][j] = 1.0 - (result.getRGB(i, j) & 0xFF) / 255.0;
 			}
 		}
-		return UtilMethods.centerData(arr, outputX2, outputY2);
+		return Utils.centerData(arr, outputX2, outputY2);
 	}
 	
 	public void clear(){

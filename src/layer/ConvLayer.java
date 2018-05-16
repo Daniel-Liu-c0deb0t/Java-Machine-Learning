@@ -3,6 +3,7 @@ package layer;
 import java.nio.ByteBuffer;
 
 import optimizer.Optimizer;
+import regularize.Regularizer;
 import utils.Activation;
 import utils.Tensor;
 
@@ -102,19 +103,132 @@ public class ConvLayer implements Layer{
 	
 	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
-		return activation.activate(
-				input.convolve(weights, bias, nextSize, winWidth, winHeight, strideX, strideY, paddingX, paddingY));
+		double[] res = new double[nextSize[0] * nextSize[1] * filterCount];
+		int[] inMult = input.mult(); // the mult for prevSize because input shape equals prevSize
+		int[] wMult = weights.mult();
+		int idx = 0;
+		
+		for(int i = 0; i < nextSize[0] * strideX; i += strideX){
+			for(int j = 0; j < nextSize[1] * strideY; j += strideY){
+				for(int filter = 0; filter < filterCount; filter++){
+					// relative to each filter
+					for(int rx = 0; rx < winWidth; rx++){
+						for(int ry = 0; ry < winHeight; ry++){
+							for(int depth = 0; depth < prevSize[2]; depth++){
+								// absolute positions
+								int x = i - paddingX + rx;
+								int y = j - paddingY + ry;
+								
+								// handle zero padding
+								if(x < 0 || x >= prevSize[0] || y < 0 || y >= prevSize[1])
+									continue;
+								
+								// multiply by weight and accumulate by addition
+								res[idx] += input.flatGet(x * inMult[0] + y * inMult[1] + depth) *
+										weights.flatGet(rx * wMult[0] + ry * wMult[1] + depth * wMult[2] + filter);
+							}
+						}
+					}
+					
+					// add bias
+					res[idx] += bias.flatGet(filter);
+					
+					idx++;
+				}
+			}
+		}
+		
+		return activation.activate(new Tensor(nextSize, res));
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
 		Tensor grads = error.mul(activation.derivative(nextRes));
-		deltaWeights = deltaWeights.sub(
-				optimizer.optimizeWeight(
-						prevRes.convolve(grads.reshape(nextSize[0], nextSize[1], 1, nextSize[2]), null,
-								weights.shape(), nextSize[0], nextSize[1], strideX, strideY, paddingX, paddingY), l)
-				.add(weights.mul(regLambda)));
 		
+		// calculating delta weights and delta biases
+		double[] deltaW = new double[weights.size()];
+		double[] deltaB = new double[bias.size()];
+		int[] inMult = prevRes.mult();
+		int[] wMult = weights.mult();
+		int gradIdx = 0;
+		
+		for(int i = 0; i < nextSize[0] * strideX; i += strideX){
+			for(int j = 0; j < nextSize[1] * strideY; j += strideY){
+				for(int filter = 0; filter < filterCount; filter++){
+					// relative to each filter
+					for(int rx = 0; rx < winWidth; rx++){
+						for(int ry = 0; ry < winHeight; ry++){
+							for(int depth = 0; depth < prevSize[2]; depth++){
+								// absolute positions
+								int x = i - paddingX + rx;
+								int y = j - paddingY + ry;
+								
+								// handle zero padding
+								if(x < 0 || x >= prevSize[0] || y < 0 || y >= prevSize[1])
+									continue;
+								
+								int wIdx = rx * wMult[0] + ry * wMult[1] + depth * wMult[2] + filter;
+								
+								// multiply gradients by previous layer's output
+								// accumulate gradients for each weight
+								deltaW[wIdx] += grads.flatGet(gradIdx) *
+										prevRes.flatGet(x * inMult[0] + y * inMult[1] + depth);
+							}
+						}
+					}
+					
+					// accumulate gradients for the biases
+					// one bias per filter!
+					deltaB[filter] += grads.flatGet(gradIdx);
+					
+					gradIdx++;
+				}
+			}
+		}
+		
+		deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(new Tensor(weights.shape(), deltaW), l));
+		if(regularizer != null)
+			deltaWeights = deltaWeights.sub(regularizer.derivative(weights));
+		
+		deltaBias = deltaBias.sub(optimizer.optimizeBias(new Tensor(bias.shape(), deltaB), l));
+		
+		// calculate the next error gradients
+		double[] nextError = new double[prevRes.size()];
+		gradIdx = 0;
+		
+		for(int i = 0; i < nextSize[0] * strideX; i += strideX){
+			for(int j = 0; j < nextSize[1] * strideY; j += strideY){
+				for(int filter = 0; filter < filterCount; filter++){
+					// relative to each filter
+					for(int rx = 0; rx < winWidth; rx++){
+						for(int ry = 0; ry < winHeight; ry++){
+							for(int depth = 0; depth < prevSize[2]; depth++){
+								// absolute positions
+								int x = i - paddingX + rx;
+								int y = j - paddingY + ry;
+								
+								// handle zero padding
+								if(x < 0 || x >= prevSize[0] || y < 0 || y >= prevSize[1])
+									continue;
+								
+								int inIdx = x * inMult[0] + y * inMult[1] + depth;
+								
+								// multiply gradients by each weight
+								// accumulate gradients for each input
+								nextError[inIdx] += grads.flatGet(gradIdx) *
+										weights.flatGet(rx * wMult[0] + ry * wMult[1] + depth * wMult[2] + filter);
+							}
+						}
+					}
+					
+					gradIdx++;
+				}
+			}
+		}
+		
+		changeCount++;
+		
+		return new Tensor(prevSize, nextError);
 	}
 	
 	@Override

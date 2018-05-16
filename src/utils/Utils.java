@@ -5,7 +5,7 @@ import java.util.Random;
 
 import static utils.TensorUtils.*;
 
-public class UtilMethods{
+public class Utils{
 	public static String format(double num){
 		return String.format("%,.7g", num);
 	}
@@ -164,7 +164,7 @@ public class UtilMethods{
 	
 	public static Tensor centerData(double[][] arr, int width, int height){
 		double[][] centeredArr = new double[width][height];
-		int[] centerOfMass = UtilMethods.centerOfMass(arr);
+		int[] centerOfMass = Utils.centerOfMass(arr);
 		for(int i = 0; i < arr.length; i++){
 			for(int j = 0; j < arr[i].length; j++){
 				if(arr[i][j] > 0.0)

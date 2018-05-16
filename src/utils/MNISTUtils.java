@@ -27,7 +27,7 @@ public class MNISTUtils{
 		for(int i = 0; i < Math.min(count, num); i++){
 			double[] curr = new double[row * col];
 			for(int j = 0; j < row * col; j++){
-				curr[j] = UtilMethods.unsignedByteToInt(bb.get()) / 255.0;
+				curr[j] = Utils.unsignedByteToInt(bb.get()) / 255.0;
 			}
 			res[i] = new Tensor(curr).reshape(row, col).T();
 		}
@@ -47,7 +47,7 @@ public class MNISTUtils{
 		bb.position(8);
 		Tensor[] res = new Tensor[Math.min(count, num)];
 		for(int i = 0; i < Math.min(count, num); i++){
-			res[i] = UtilMethods.oneHotEncode(UtilMethods.unsignedByteToInt(bb.get()), 10);
+			res[i] = Utils.oneHotEncode(Utils.unsignedByteToInt(bb.get()), 10);
 		}
 		return res;
 	}
@@ -70,6 +70,6 @@ public class MNISTUtils{
 			}
 		}
 		
-		return UtilMethods.centerData(arr, width, height);
+		return Utils.centerData(arr, width, height);
 	}
 }

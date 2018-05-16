@@ -3,6 +3,7 @@ package layer;
 import java.nio.ByteBuffer;
 
 import optimizer.Optimizer;
+import regularize.Regularizer;
 import utils.Activation;
 import utils.Tensor;
 
@@ -96,7 +97,7 @@ public class AvgPoolLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
 		double[] res = new double[prevSize[0] * prevSize[1] * prevSize[2]];
 		int outIdx = 0;
 		

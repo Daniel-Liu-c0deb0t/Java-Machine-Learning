@@ -9,7 +9,7 @@ import network.SequentialNN;
 import optimizer.SGDOptimizer;
 import utils.Loss;
 import utils.Tensor;
-import utils.UtilMethods;
+import utils.Utils;
 
 import static utils.TensorUtils.*;
 
@@ -35,13 +35,13 @@ public class GraphTest2{
 				t(3 + 20 + 1)
 		};
 		
-		nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), 0, false, true, true);
+		nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
 		
 		System.out.println(nn.predict(t(5)));
 		
 		JFrame frame = new JFrame();
 		
-		Graph graph = new Graph(1000, 1000, UtilMethods.flatCombine(x), UtilMethods.flatCombine(y), null, null);
+		Graph graph = new Graph(1000, 1000, Utils.flatCombine(x), Utils.flatCombine(y), null, null);
 		graph.useCustomScale(0, 5, 0, 30);
 		graph.addLine(nn.layer(0).weights().flatGet(0), nn.layer(0).bias().flatGet(0));
 		graph.draw();

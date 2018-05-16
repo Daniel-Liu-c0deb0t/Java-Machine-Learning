@@ -3,6 +3,7 @@ package layer;
 import java.nio.ByteBuffer;
 
 import optimizer.Optimizer;
+import regularize.Regularizer;
 import utils.Activation;
 import utils.Tensor;
 
@@ -72,13 +73,14 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
 		// error wrt layer output derivative
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
-		// error wrt weight derivative (including l2 regularization)
-		deltaWeights = deltaWeights.sub(
-				optimizer.optimizeWeight(prevRes.mulEach(grads), l).add(weights.mul(regLambda)));
+		// error wrt weight derivative
+		deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(prevRes.mulEach(grads), l));
+		if(regularizer != null) // also subtract the regularization derivative if necessary
+			deltaWeights = deltaWeights.sub(regularizer.derivative(weights));
 		
 		// error wrt bias derivative
 		// not multiplied by prev outputs!

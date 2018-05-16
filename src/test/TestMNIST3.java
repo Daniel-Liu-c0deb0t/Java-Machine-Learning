@@ -12,7 +12,7 @@ import layer.FCLayer;
 import network.SequentialNN;
 import utils.Activation;
 import utils.Tensor;
-import utils.UtilMethods;
+import utils.Utils;
 
 public class TestMNIST3{
 	public static void main(String[] args){
@@ -36,7 +36,7 @@ public class TestMNIST3{
 		submitButton.addActionListener((e) -> {
 			Tensor data = drawablePanel.getData(28, 28);
 			Tensor result = nn.predict(data.T().flatten());
-			label.setText("Result: " + UtilMethods.argMax(result));
+			label.setText("Result: " + Utils.argMax(result));
 		});
 		frame.add(submitButton);
 		

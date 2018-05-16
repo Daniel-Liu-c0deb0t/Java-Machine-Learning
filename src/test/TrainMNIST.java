@@ -7,7 +7,7 @@ import utils.Activation;
 import utils.Loss;
 import utils.MNISTUtils;
 import utils.Tensor;
-import utils.UtilMethods;
+import utils.Utils;
 
 public class TrainMNIST{
 	public static void main(String[] args){
@@ -20,17 +20,17 @@ public class TrainMNIST{
 		
 		long start = System.currentTimeMillis();
 		
-		nn.fit(UtilMethods.flattenAll(x), y, 100, 32, Loss.softmaxCrossEntropy, new AdamOptimizer(0.1), 0, true, false, false);
+		nn.fit(Utils.flattenAll(x), y, 100, 32, Loss.softmaxCrossEntropy, new AdamOptimizer(0.1), null, true, false, false);
 		
-		System.out.println("Training time: " + UtilMethods.formatElapsedTime(System.currentTimeMillis() - start));
+		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		
 		nn.saveToFile("mnist_weights.nn");
 		
 		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);
 		Tensor[] testY = MNISTUtils.loadDataSetLabels("t10k-labels-idx1-ubyte", Integer.MAX_VALUE);
-		Tensor[] testResult = nn.predict(UtilMethods.flattenAll(testX));
+		Tensor[] testResult = nn.predict(Utils.flattenAll(testX));
 		
-		System.out.println("Classification accuracy: " + UtilMethods.format(UtilMethods.classificationAccuracy(testResult, testY)));
+		System.out.println("Classification accuracy: " + Utils.format(Utils.classificationAccuracy(testResult, testY)));
 		
 		TestMNIST1.main(args);
 	}

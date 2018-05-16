@@ -9,10 +9,11 @@ import graph.GraphPanel;
 import layer.FCLayer;
 import network.SequentialNN;
 import optimizer.*;
+import regularize.L2Regularizer;
 import utils.Activation;
 import utils.Loss;
 import utils.Tensor;
-import utils.UtilMethods;
+import utils.Utils;
 
 import static utils.TensorUtils.*;
 
@@ -44,7 +45,7 @@ public class SaveTest{
 				t(0, 0, 0, 1)
 		};
 		
-		net.fit(x, y, 1000, 4, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), 0.001, true, true, true);
+		net.fit(x, y, 1000, 4, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), new L2Regularizer(0.001), true, true, true);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];
@@ -53,13 +54,13 @@ public class SaveTest{
 		for(int i = 0; i < x.length; i++){
 			xData[i] = x[i].flatGet(0);
 			yData[i] = x[i].flatGet(1);
-			cData[i] = intToColor1[UtilMethods.argMax(y[i])];
+			cData[i] = intToColor1[Utils.argMax(y[i])];
 		}
 		
 		JFrame frame = new JFrame();
 		
 		Graph graph = new Graph(1000, 1000, xData, yData, cData, (x2, y2) -> {
-			return intToColor1[UtilMethods.argMax(net.predict(t(x2, y2)))];
+			return intToColor1[Utils.argMax(net.predict(t(x2, y2)))];
 		});
 		graph.draw();
 		frame.add(new GraphPanel(graph));

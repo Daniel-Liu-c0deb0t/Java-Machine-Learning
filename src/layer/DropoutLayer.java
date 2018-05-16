@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 import optimizer.Optimizer;
+import regularize.Regularizer;
 import utils.Activation;
 import utils.Tensor;
 
@@ -69,7 +70,7 @@ public class DropoutLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, double regLambda, Optimizer optimizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
 		// scale the gradients during backprop
 		return error.mul(mask);
 	}

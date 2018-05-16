@@ -2,6 +2,7 @@ package network;
 
 import layer.Layer;
 import optimizer.Optimizer;
+import regularize.Regularizer;
 import utils.Tensor;
 
 public interface NeuralNetwork{
@@ -11,7 +12,7 @@ public interface NeuralNetwork{
 	public Tensor[] predict(Tensor[] input);
 	public Tensor predict(Tensor input);
 	public Tensor[] predictFull(Tensor input);
-	public void backPropagate(Tensor[] result, Tensor error, double regLambda, Optimizer optimizer);
+	public void backPropagate(Tensor[] result, Tensor error, Optimizer optimizer, Regularizer regularizer);
 	public int[] inputSize();
 	public int[] outputSize();
 	public void saveToFile(String path);

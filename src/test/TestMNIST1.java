@@ -5,7 +5,7 @@ import network.SequentialNN;
 import utils.Activation;
 import utils.MNISTUtils;
 import utils.Tensor;
-import utils.UtilMethods;
+import utils.Utils;
 
 public class TestMNIST1{
 	public static void main(String[] args){
@@ -16,8 +16,8 @@ public class TestMNIST1{
 		
 		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);
 		Tensor[] testY = MNISTUtils.loadDataSetLabels("t10k-labels-idx1-ubyte", Integer.MAX_VALUE);
-		Tensor[] testResult = nn.predict(UtilMethods.flattenAll(testX));
+		Tensor[] testResult = nn.predict(Utils.flattenAll(testX));
 		
-		System.out.println("Classification accuracy: " + UtilMethods.format(UtilMethods.classificationAccuracy(testResult, testY)));
+		System.out.println("Classification accuracy: " + Utils.format(Utils.classificationAccuracy(testResult, testY)));
 	}
 }

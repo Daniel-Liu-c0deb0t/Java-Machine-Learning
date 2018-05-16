@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import layer.Layer;
 import optimizer.Optimizer;
 import optimizer.SGDOptimizer;
+import regularize.Regularizer;
 import utils.Loss;
 import utils.Tensor;
-import utils.UtilMethods;
+import utils.Utils;
 
 public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	private ArrayList<Layer> layers = new ArrayList<Layer>();
@@ -89,11 +90,11 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	
 	@Override
 	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean shuffle, boolean verbose, boolean printNet){
-		fit(input, target, epochs, batchSize, loss, optimizer, 0.0, shuffle, verbose, printNet);
+		fit(input, target, epochs, batchSize, loss, optimizer, null, shuffle, verbose, printNet);
 	}
 	
 	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, double regLambda, boolean shuffle, boolean verbose, boolean printNet){
+	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, boolean printNet){
 		int[][] weightShapes = new int[layers.size()][0];
 		int[][] biasShapes = new int[layers.size()][0];
 		for(int i = 0; i < layers.size(); i++){
@@ -111,18 +112,18 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			double totalLoss = 0.0;
 			
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
-				System.out.println(UtilMethods.makeStr('=', 30));
+				System.out.println(Utils.makeStr('=', 30));
 				System.out.println("Epoch " + i);
 				System.out.println();
-				System.out.println(UtilMethods.makeStr('-', 5) + " Before " + UtilMethods.makeStr('-', 5));
+				System.out.println(Utils.makeStr('-', 5) + " Before " + Utils.makeStr('-', 5));
 				if(printNet)
 					System.out.println(toString());
-				System.out.println(UtilMethods.makeStr('-', 18));
+				System.out.println(Utils.makeStr('-', 18));
 				System.out.println();
 			}
 			
 			if(shuffle)
-				UtilMethods.shuffle(input, target);
+				Utils.shuffle(input, target);
 			
 			for(int j = 0; j < input.length; j++){
 				Tensor[] res = predictFull(input[j]);
@@ -139,10 +140,11 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 					System.out.println();
 				}
 				
-				// add regularization's derivative to the loss function's derivative
+				// calculate derivative of the loss function and backpropagate
 				Tensor lossDerivative = loss.derivative(res[res.length - 1], target[j]);
-				backPropagate(res, lossDerivative, regLambda, optimizer);
+				backPropagate(res, lossDerivative, optimizer, regularizer);
 				
+				// update weights and biases if batch size is reached
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
 					for(int k = 0; k < layers.size(); k++){
 						layers.get(k).update();
@@ -150,10 +152,10 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				}
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
-				System.out.println(UtilMethods.makeStr('-', 5) + " After " + UtilMethods.makeStr('-', 6));
+				System.out.println(Utils.makeStr('-', 5) + " After " + Utils.makeStr('-', 6));
 				if(printNet)
 					System.out.println(toString());
-				System.out.println(UtilMethods.makeStr('-', 18));
+				System.out.println(Utils.makeStr('-', 18));
 			}
 			if(i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0){
 				if(verbose){
@@ -161,18 +163,18 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				}else{
 					System.out.print("Epoch " + i + "\n\t");
 				}
-				System.out.println("Average loss: " + UtilMethods.format(totalLoss / input.length));
+				System.out.println("Average loss: " + Utils.format(totalLoss / input.length));
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
-				System.out.println(UtilMethods.makeStr('=', 30));
+				System.out.println(Utils.makeStr('=', 30));
 			}
 		}
 	}
 	
 	@Override
-	public void backPropagate(Tensor[] result, Tensor error, double regLambda, Optimizer optimizer){
+	public void backPropagate(Tensor[] result, Tensor error, Optimizer optimizer, Regularizer regularizer){
 		for(int i = layers.size() - 1; i >= 0; i--){
-			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regLambda, optimizer, i);
+			error = layers.get(i).backPropagate(result[i], result[i + 1], error, optimizer, regularizer, i);
 		}
 		optimizer.update();
 	}
@@ -185,18 +187,18 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		for(int i = 0; i < layers.size(); i++){
 			b.append("\nLayer " + (i + 1) + " (" + layers.get(i).getClass().getSimpleName() + "):\n");
 			if(layers.get(i).weights() != null){
-				b.append(UtilMethods.makeStr('-', 10) + "\n");
+				b.append(Utils.makeStr('-', 10) + "\n");
 				b.append("Weights:\n");
 				String weights = layers.get(i).weights().toString();
 				b.append((weights.length() > limit ? (weights.substring(0, limit) + "...") : weights) + "\n");
 			}
 			if(layers.get(i).bias() != null){
-				b.append(UtilMethods.makeStr('-', 10) + "\n");
+				b.append(Utils.makeStr('-', 10) + "\n");
 				b.append("Biases:\n");
 				String bias = layers.get(i).bias().toString();
 				b.append((bias.length() > limit ? (bias.substring(0, limit) + "...") : bias) + "\n");
 			}
-			b.append(UtilMethods.makeStr('=', 10) + "\n");
+			b.append(Utils.makeStr('=', 10) + "\n");
 		}
 		
 		return b.toString();
