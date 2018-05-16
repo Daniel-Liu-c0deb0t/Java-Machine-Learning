@@ -13,8 +13,8 @@ public class ConvLayer implements Layer{
 	private Tensor bias;
 	private Tensor deltaBias;
 	
-	private int[] prevSize;
-	private int[] nextSize;
+	private int[] prevShape;
+	private int[] nextShape;
 	private Activation activation;
 	private int winWidth, winHeight;
 	private int strideX, strideY;
@@ -51,36 +51,36 @@ public class ConvLayer implements Layer{
 	}
 	
 	@Override
-	public int[] nextSize(){
-		return nextSize;
+	public int[] nextShape(){
+		return nextShape;
 	}
 	
 	@Override
-	public int[] prevSize(){
-		return prevSize;
+	public int[] prevShape(){
+		return prevShape;
 	}
 	
 	@Override
-	public void init(int[] prevSize){
-		this.prevSize = prevSize;
+	public void init(int[] prevShape){
+		this.prevShape = prevShape;
 		
-		int temp = prevSize[0] - winWidth + paddingX * 2;
+		int temp = prevShape[0] - winWidth + paddingX * 2;
 		if(temp % strideX != 0)
 			throw new IllegalArgumentException("Bad sizes for convolution!");
 		int w = temp / strideX + 1;
 		
-		temp = prevSize[1] - winHeight + paddingY * 2;
+		temp = prevShape[1] - winHeight + paddingY * 2;
 		if(temp % strideY != 0)
 			throw new IllegalArgumentException("Bad sizes for convolution!");
 		int h = temp / strideY + 1;
 		
-		nextSize = new int[]{w, h, filterCount};
+		nextShape = new int[]{w, h, filterCount};
 		
 		if(!alreadyInit){
-			weights = new Tensor(new int[]{winWidth, winHeight, prevSize[2], filterCount}, true);
+			weights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, true);
 			bias = new Tensor(new int[]{1, 1, filterCount}, false);
 		}
-		deltaWeights = new Tensor(new int[]{winWidth, winHeight, prevSize[2], filterCount}, false);
+		deltaWeights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, false);
 		deltaBias = new Tensor(new int[]{1, 1, filterCount}, false);
 	}
 	
@@ -103,24 +103,24 @@ public class ConvLayer implements Layer{
 	
 	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
-		double[] res = new double[nextSize[0] * nextSize[1] * filterCount];
-		int[] inMult = input.mult(); // the mult for prevSize because input shape equals prevSize
+		double[] res = new double[nextShape[0] * nextShape[1] * filterCount];
+		int[] inMult = input.mult(); // the mult for prevShape because input shape equals prevShape
 		int[] wMult = weights.mult();
 		int idx = 0;
 		
-		for(int i = 0; i < nextSize[0] * strideX; i += strideX){
-			for(int j = 0; j < nextSize[1] * strideY; j += strideY){
+		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
+			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
 				for(int filter = 0; filter < filterCount; filter++){
 					// relative to each filter
 					for(int rx = 0; rx < winWidth; rx++){
 						for(int ry = 0; ry < winHeight; ry++){
-							for(int depth = 0; depth < prevSize[2]; depth++){
+							for(int depth = 0; depth < prevShape[2]; depth++){
 								// absolute positions
 								int x = i - paddingX + rx;
 								int y = j - paddingY + ry;
 								
 								// handle zero padding
-								if(x < 0 || x >= prevSize[0] || y < 0 || y >= prevSize[1])
+								if(x < 0 || x >= prevShape[0] || y < 0 || y >= prevShape[1])
 									continue;
 								
 								// multiply by weight and accumulate by addition
@@ -138,7 +138,7 @@ public class ConvLayer implements Layer{
 			}
 		}
 		
-		return activation.activate(new Tensor(nextSize, res));
+		return activation.activate(new Tensor(nextShape, res));
 	}
 	
 	@Override
@@ -152,19 +152,19 @@ public class ConvLayer implements Layer{
 		int[] wMult = weights.mult();
 		int gradIdx = 0;
 		
-		for(int i = 0; i < nextSize[0] * strideX; i += strideX){
-			for(int j = 0; j < nextSize[1] * strideY; j += strideY){
+		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
+			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
 				for(int filter = 0; filter < filterCount; filter++){
 					// relative to each filter
 					for(int rx = 0; rx < winWidth; rx++){
 						for(int ry = 0; ry < winHeight; ry++){
-							for(int depth = 0; depth < prevSize[2]; depth++){
+							for(int depth = 0; depth < prevShape[2]; depth++){
 								// absolute positions
 								int x = i - paddingX + rx;
 								int y = j - paddingY + ry;
 								
 								// handle zero padding
-								if(x < 0 || x >= prevSize[0] || y < 0 || y >= prevSize[1])
+								if(x < 0 || x >= prevShape[0] || y < 0 || y >= prevShape[1])
 									continue;
 								
 								int wIdx = rx * wMult[0] + ry * wMult[1] + depth * wMult[2] + filter;
@@ -196,19 +196,19 @@ public class ConvLayer implements Layer{
 		double[] nextError = new double[prevRes.size()];
 		gradIdx = 0;
 		
-		for(int i = 0; i < nextSize[0] * strideX; i += strideX){
-			for(int j = 0; j < nextSize[1] * strideY; j += strideY){
+		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
+			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
 				for(int filter = 0; filter < filterCount; filter++){
 					// relative to each filter
 					for(int rx = 0; rx < winWidth; rx++){
 						for(int ry = 0; ry < winHeight; ry++){
-							for(int depth = 0; depth < prevSize[2]; depth++){
+							for(int depth = 0; depth < prevShape[2]; depth++){
 								// absolute positions
 								int x = i - paddingX + rx;
 								int y = j - paddingY + ry;
 								
 								// handle zero padding
-								if(x < 0 || x >= prevSize[0] || y < 0 || y >= prevSize[1])
+								if(x < 0 || x >= prevShape[0] || y < 0 || y >= prevShape[1])
 									continue;
 								
 								int inIdx = x * inMult[0] + y * inMult[1] + depth;
@@ -228,7 +228,7 @@ public class ConvLayer implements Layer{
 		
 		changeCount++;
 		
-		return new Tensor(prevSize, nextError);
+		return new Tensor(prevShape, nextError);
 	}
 	
 	@Override

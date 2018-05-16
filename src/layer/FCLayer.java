@@ -30,12 +30,12 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
-	public int[] nextSize(){
+	public int[] nextShape(){
 		return new int[]{nextSize};
 	}
 	
 	@Override
-	public int[] prevSize(){
+	public int[] prevShape(){
 		return new int[]{prevSize};
 	}
 

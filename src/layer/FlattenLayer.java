@@ -8,7 +8,7 @@ import utils.Activation;
 import utils.Tensor;
 
 public class FlattenLayer implements Layer{
-	private int[] prevSize;
+	private int[] prevShape;
 	private int nextSize;
 	
 	public FlattenLayer(){
@@ -16,21 +16,21 @@ public class FlattenLayer implements Layer{
 	}
 	
 	@Override
-	public int[] nextSize(){
+	public int[] nextShape(){
 		return new int[]{nextSize};
 	}
 	
 	@Override
-	public int[] prevSize(){
-		return prevSize;
+	public int[] prevShape(){
+		return prevShape;
 	}
 	
 	@Override
-	public void init(int[] prevSize){
-		this.prevSize = prevSize;
+	public void init(int[] prevShape){
+		this.prevShape = prevShape;
 		nextSize = 1;
-		for(int i = 0; i < prevSize.length; i++){
-			nextSize *= prevSize[i];
+		for(int i = 0; i < prevShape.length; i++){
+			nextSize *= prevShape[i];
 		}
 	}
 	
@@ -51,7 +51,7 @@ public class FlattenLayer implements Layer{
 	
 	@Override
 	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
-		return error.reshape(prevSize);
+		return error.reshape(prevShape);
 	}
 	
 	@Override

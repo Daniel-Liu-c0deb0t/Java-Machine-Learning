@@ -23,12 +23,12 @@ public class DropoutLayer implements Layer{
 	}
 	
 	@Override
-	public int[] nextSize(){
+	public int[] nextShape(){
 		return shape;
 	}
 	
 	@Override
-	public int[] prevSize(){
+	public int[] prevShape(){
 		return shape;
 	}
 	

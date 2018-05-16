@@ -8,8 +8,8 @@ import utils.Activation;
 import utils.Tensor;
 
 public interface Layer{
-	public int[] nextSize();
-	public int[] prevSize();
+	public int[] nextShape();
+	public int[] prevShape();
 	public void init(int[] prevSize);
 	public Tensor bias();
 	public Tensor weights();

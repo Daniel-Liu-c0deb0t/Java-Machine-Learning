@@ -15,10 +15,10 @@ import utils.Utils;
 
 public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	private ArrayList<Layer> layers = new ArrayList<Layer>();
-	private int[] inputSize;
+	private int[] inputShape;
 	
-	public SequentialNN(int... inputSize){
-		this.inputSize = inputSize;
+	public SequentialNN(int... inputShape){
+		this.inputShape = inputShape;
 	}
 	
 	@Override
@@ -33,7 +33,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 
 	@Override
 	public void add(Layer l){
-		l.init(layers.isEmpty() ? inputSize : layers.get(layers.size() - 1).nextSize());
+		l.init(layers.isEmpty() ? inputShape : layers.get(layers.size() - 1).nextShape());
 		layers.add(l);
 	}
 
@@ -69,13 +69,13 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
-	public int[] inputSize(){
-		return inputSize;
+	public int[] inputShape(){
+		return inputShape;
 	}
 	
 	@Override
-	public int[] outputSize(){
-		return layers.get(layers.size() - 1).nextSize();
+	public int[] outputShape(){
+		return layers.get(layers.size() - 1).nextShape();
 	}
 	
 	@Override
