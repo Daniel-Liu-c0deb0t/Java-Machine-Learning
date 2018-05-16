@@ -23,7 +23,8 @@ public class Tensor{
 				sum += shape[i];
 			}
 			for(int i = 0; i < size; i++){
-				data[i] = r.nextGaussian() * shape.length / Math.max(1, sum);
+				// xavier normal initialization (not truncated)
+				data[i] = r.nextGaussian() * Math.sqrt(2.0 / sum);
 			}
 		}else{
 			for(int i = 0; i < size; i++){
