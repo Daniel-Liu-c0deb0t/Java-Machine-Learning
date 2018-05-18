@@ -33,44 +33,44 @@ Using the `add` method in `SequentialNN`, you can add layers to the sequential m
 
 Here is a piece of code that does linear regression and graphs the resulting line.
 ```java
-    SequentialNN nn = new SequentialNN(1);
-		nn.add(new FCLayer(1, Activation.linear));
-		
-		// y = 5x + 3
-		Tensor[] x = {
-				t(0),
-				t(1),
-				t(2),
-				t(3),
-				t(4)
-		};
-		
-		Tensor[] y = {
-				t(3 + 0 + 1),
-				t(3 + 5 - 1),
-				t(3 + 10 + 1),
-				t(3 + 15 - 1),
-				t(3 + 20 + 1)
-		};
-		
-		nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
-		
-		System.out.println(nn.predict(t(5)));
-		
-		JFrame frame = new JFrame();
-		
-		Graph graph = new Graph(1000, 1000, Utils.flatCombine(x), Utils.flatCombine(y), null, null);
-		graph.useCustomScale(0, 5, 0, 30);
-		graph.addLine(((FCLayer)nn.layer(0)).weights().flatGet(0), ((FCLayer)nn.layer(0)).bias().flatGet(0));
-		graph.draw();
-		frame.add(new GraphPanel(graph));
-		
-		frame.setSize(1200, 1200);
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
-		
-		graph.saveToFile("nn_linear_regression.png", "png");
+SequentialNN nn = new SequentialNN(1);
+nn.add(new FCLayer(1, Activation.linear));
+
+// y = 5x + 3
+Tensor[] x = {
+	t(0),
+	t(1),
+	t(2),
+	t(3),
+	t(4)
+};
+
+Tensor[] y = {
+	t(3 + 0 + 1),
+	t(3 + 5 - 1),
+	t(3 + 10 + 1),
+	t(3 + 15 - 1),
+	t(3 + 20 + 1)
+};
+
+nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
+
+System.out.println(nn.predict(t(5)));
+
+JFrame frame = new JFrame();
+
+Graph graph = new Graph(1000, 1000, Utils.flatCombine(x), Utils.flatCombine(y), null, null);
+graph.useCustomScale(0, 5, 0, 30);
+graph.addLine(((FCLayer)nn.layer(0)).weights().flatGet(0), ((FCLayer)nn.layer(0)).bias().flatGet(0));
+graph.draw();
+frame.add(new GraphPanel(graph));
+
+frame.setSize(1200, 1200);
+frame.setLocationRelativeTo(null);
+frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+frame.setVisible(true);
+
+graph.saveToFile("nn_linear_regression.png", "png");
 ```
 You can find the full source file [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/blob/master/src/tests/LinearGraph.java). Note that the `t` method is just a convenience method to create 1D tensors. This code will produce a window with the points and the line formed by the weight/bias graphed:
 ![linear regression graph](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/blob/master/nn_linear_regression.png)
