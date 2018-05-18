@@ -15,8 +15,8 @@ This library recently got an overhaul that fixed many bugs and uses vectorized o
   - Average weight adjustments through a batch
 - Sigmoid, tanh, relu, and softmax activation functions
 - L1, L2, and elastic net regularization
-- Squared error, binary cross entropy, and multi-class cross entropy
-  - Squared error for regression
+- Squared loss, binary cross entropy, and multi-class cross entropy
+  - Squared loss for regression
   - Binary cross entropy + sigmoid activation for binary classification
   - Multi-class cross entropy + softmax activation for general classification
 - Internally uses "tensors", which are multidimensional arrays/matrices
@@ -75,8 +75,9 @@ graph.saveToFile("nn_linear_regression.png", "png");
 You can find the full source file [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/blob/master/src/tests/LinearGraph.java). Note that the `t` method is just a convenience method to create 1D tensors. This code will produce a window with the points and the line formed by the weight/bias graphed:
 ![linear regression graph](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/blob/master/nn_linear_regression.png)
 
-On a slightly different set of data (y = 5x instead of y = 5x + 3, no noise, and no bias), the error with respect to the weight can be graphed:
+On a slightly different set of data (y = 5x instead of y = 5x + 3, no noise, and no bias), the loss/error with respect to the weight can be graphed:
 ![error wrt weight graph](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/blob/master/error_graph_squared.png)
+The green dots represent weights that the training algorithm "visited" throughout training. The quadratic shape of the graph is due to the squared loss function. Note that it converges to the minimum, where the loss is the lowest, and that minimum is centered on x = 5, which is the slope of the linear function that we want to learn.
 
 The training code for MNIST with 3 fully connected layers can be found [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/blob/master/src/tests/TrainMNISTFullyConnected.java).
 
