@@ -86,3 +86,5 @@ The training code that uses conv, dropout, and fully connected layers can be fou
 However, the conv code is very slow, so a simpler test to see if the model can directly memorize some digits was conducted. The code is available [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/blob/master/src/tests/TrainMNISTConvMemorize.java). The architecture is very similar to the previous conv network.
 
 These and many other examples can be found in the [tests folder](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/tree/master/src/tests).
+
+I have an article that is an introduction to simple neural networks and it features this library! You can check it out [here](https://issuu.com/journys7/docs/issue-9.2-journys/24). It is for [Journys](https://www.journys.org/), a scientific writing club.
