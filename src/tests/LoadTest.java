@@ -19,7 +19,7 @@ public class LoadTest{
 		net.add(new FCLayer(3, Activation.relu));
 		net.add(new FCLayer(4, Activation.softmax));
 		// load the weights from a file
-		net.loadFromFile("model.nn");
+		net.loadFromFile("saved_model_test.nn");
 		
 		Color[] intToColor1 = {Color.blue, Color.red, Color.yellow, Color.green};
 		

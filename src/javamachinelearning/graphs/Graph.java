@@ -112,6 +112,15 @@ public class Graph{
 				yMax = Math.max(yMax, points.get(i).getY());
 				yMin = Math.min(yMin, points.get(i).getY());
 			}
+			for(int i = 0; i < lineGraphs.size(); i++){
+				ArrayList<Point> arr = lineGraphs.get(i).getPoints();
+				for(int j = 0; j < arr.size(); j++){
+					xMax = Math.max(xMax, arr.get(j).getX());
+					xMin = Math.min(xMin, arr.get(j).getX());
+					yMax = Math.max(yMax, arr.get(j).getY());
+					yMin = Math.min(yMin, arr.get(j).getY());
+				}
+			}
 			if(xMax == Double.MIN_VALUE)
 				xMax = 10;
 			if(xMin == Double.MAX_VALUE)

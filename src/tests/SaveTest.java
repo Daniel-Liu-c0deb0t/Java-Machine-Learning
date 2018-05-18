@@ -73,6 +73,6 @@ public class SaveTest{
 		graph.saveToFile("classification_example.png", "png");
 		graph.dispose();
 		
-		net.saveToFile("model.nn");
+		net.saveToFile("saved_model_test.nn");
 	}
 }

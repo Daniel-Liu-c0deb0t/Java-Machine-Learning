@@ -16,6 +16,8 @@ import javamachinelearning.utils.Utils;
 
 public class TrainMNISTConv{
 	public static void main(String[] args) throws Exception{
+		// very slow!
+		
 		SequentialNN nn = new SequentialNN(28, 28, 1);
 		nn.add(new ConvLayer(5, 32, PaddingType.SAME, Activation.relu));
 		nn.add(new MaxPoolingLayer(2, 2));
@@ -35,7 +37,7 @@ public class TrainMNISTConv{
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		
-		nn.saveToFile("mnist_weights.nn");
+		nn.saveToFile("mnist_weights_conv.nn");
 		
 		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);
 		Tensor[] testY = MNISTUtils.loadDataSetLabels("t10k-labels-idx1-ubyte", Integer.MAX_VALUE);

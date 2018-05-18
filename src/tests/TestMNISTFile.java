@@ -12,7 +12,7 @@ public class TestMNISTFile{
 		SequentialNN nn = new SequentialNN(784);
 		nn.add(new FCLayer(300, Activation.relu));
 		nn.add(new FCLayer(10, Activation.softmax));
-		nn.loadFromFile("mnist_weights.nn");
+		nn.loadFromFile("mnist_weights_fc.nn");
 		
 		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);
 		Tensor[] testY = MNISTUtils.loadDataSetLabels("t10k-labels-idx1-ubyte", Integer.MAX_VALUE);

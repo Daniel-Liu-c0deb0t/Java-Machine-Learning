@@ -2,7 +2,8 @@ package tests;
 
 import javamachinelearning.layers.FCLayer;
 import javamachinelearning.networks.SequentialNN;
-import javamachinelearning.optimizers.AdamOptimizer;
+import javamachinelearning.optimizers.SGDOptimizer;
+import javamachinelearning.regularizers.L2Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.MNISTUtils;
@@ -20,11 +21,11 @@ public class TrainMNISTFullyConnected{
 		
 		long start = System.currentTimeMillis();
 		
-		nn.fit(Utils.flattenAll(x), y, 100, 32, Loss.softmaxCrossEntropy, new AdamOptimizer(0.01), null, true, false, false);
+		nn.fit(Utils.flattenAll(x), y, 20, 100, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), new L2Regularizer(0.0001), true, false, false);
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		
-		nn.saveToFile("mnist_weights.nn");
+		nn.saveToFile("mnist_weights_fc.nn");
 		
 		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);
 		Tensor[] testY = MNISTUtils.loadDataSetLabels("t10k-labels-idx1-ubyte", Integer.MAX_VALUE);

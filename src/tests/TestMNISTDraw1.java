@@ -19,7 +19,7 @@ public class TestMNISTDraw1{
 		SequentialNN nn = new SequentialNN(784);
 		nn.add(new FCLayer(300, Activation.relu));
 		nn.add(new FCLayer(10, Activation.softmax));
-		nn.loadFromFile("mnist_weights.nn");
+		nn.loadFromFile("mnist_weights_fc.nn");
 		
 		JFrame frame = new JFrame();
 		frame.setLayout(new FlowLayout());
