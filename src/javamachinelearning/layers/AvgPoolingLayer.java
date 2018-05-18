@@ -1,10 +1,7 @@
 package javamachinelearning.layers;
 
-import java.nio.ByteBuffer;
-
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
 public class AvgPoolingLayer implements Layer{
@@ -25,6 +22,13 @@ public class AvgPoolingLayer implements Layer{
 		this.winHeight = winSize;
 		this.strideX = stride;
 		this.strideY = stride;
+	}
+	
+	public AvgPoolingLayer(int winSize){
+		this.winWidth = winSize;
+		this.winHeight = winSize;
+		this.strideX = 1;
+		this.strideY = 1;
 	}
 	
 	@Override
@@ -52,16 +56,6 @@ public class AvgPoolingLayer implements Layer{
 		int h = temp / strideY + 1;
 		
 		nextShape = new int[]{w, h, prevShape[2]};
-	}
-	
-	@Override
-	public Tensor bias(){
-		return null;
-	}
-	
-	@Override
-	public Tensor weights(){
-		return null;
 	}
 	
 	@Override
@@ -121,30 +115,5 @@ public class AvgPoolingLayer implements Layer{
 		}
 		
 		return new Tensor(prevShape, res);
-	}
-	
-	@Override
-	public void update(){
-		// nothing to do
-	}
-	
-	@Override
-	public Activation getActivation(){
-		return null;
-	}
-	
-	@Override
-	public int byteSize(){
-		return 0;
-	}
-	
-	@Override
-	public ByteBuffer bytes(){
-		return null;
-	}
-	
-	@Override
-	public void readBytes(ByteBuffer bb){
-		// nothing to do
 	}
 }

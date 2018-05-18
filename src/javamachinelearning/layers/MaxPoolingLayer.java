@@ -1,10 +1,7 @@
 package javamachinelearning.layers;
 
-import java.nio.ByteBuffer;
-
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
 public class MaxPoolingLayer implements Layer{
@@ -26,6 +23,13 @@ public class MaxPoolingLayer implements Layer{
 		this.winHeight = winSize;
 		this.strideX = stride;
 		this.strideY = stride;
+	}
+	
+	public MaxPoolingLayer(int winSize){
+		this.winWidth = winSize;
+		this.winHeight = winSize;
+		this.strideX = 1;
+		this.strideY = 1;
 	}
 	
 	@Override
@@ -54,16 +58,6 @@ public class MaxPoolingLayer implements Layer{
 		
 		nextShape = new int[]{w, h, prevShape[2]};
 		maxIdx = new int[nextShape[0] * nextShape[1] * nextShape[2]][2];
-	}
-	
-	@Override
-	public Tensor bias(){
-		return null;
-	}
-	
-	@Override
-	public Tensor weights(){
-		return null;
 	}
 	
 	@Override
@@ -131,30 +125,5 @@ public class MaxPoolingLayer implements Layer{
 		}
 		
 		return new Tensor(prevShape, res);
-	}
-	
-	@Override
-	public void update(){
-		// nothing to do
-	}
-	
-	@Override
-	public Activation getActivation(){
-		return null;
-	}
-	
-	@Override
-	public int byteSize(){
-		return 0;
-	}
-	
-	@Override
-	public ByteBuffer bytes(){
-		return null;
-	}
-	
-	@Override
-	public void readBytes(ByteBuffer bb){
-		// nothing to do
 	}
 }

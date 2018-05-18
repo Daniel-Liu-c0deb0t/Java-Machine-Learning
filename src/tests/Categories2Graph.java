@@ -11,13 +11,12 @@ import javamachinelearning.graphs.GraphPanel;
 import javamachinelearning.layers.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.AdamOptimizer;
-import javamachinelearning.regularizers.L2Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.Tensor;
 import javamachinelearning.utils.Utils;
 
-public class GraphTest3{
+public class Categories2Graph{
 	public static void main(String[] args){
 		SequentialNN net = new SequentialNN(2);
 		net.add(new FCLayer(4, Activation.sigmoid));
@@ -44,7 +43,7 @@ public class GraphTest3{
 		}
 		Tensor[] y = Utils.concat(y1, y2, y3, y4);
 		
-		net.fit(x, y, 100, 10, Loss.binaryCrossEntropy, new AdamOptimizer(1), new L2Regularizer(0.01), true, true, false);
+		net.fit(x, y, 100, 10, Loss.binaryCrossEntropy, new AdamOptimizer(1), null, true, true, false);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

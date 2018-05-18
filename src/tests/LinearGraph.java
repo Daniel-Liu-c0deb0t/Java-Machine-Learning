@@ -9,14 +9,15 @@ import javamachinelearning.graphs.GraphPanel;
 import javamachinelearning.layers.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
+import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.Tensor;
 import javamachinelearning.utils.Utils;
 
-public class GraphTest2{
+public class LinearGraph{
 	public static void main(String[] args){
 		SequentialNN nn = new SequentialNN(1);
-		nn.add(new FCLayer(1));
+		nn.add(new FCLayer(1, Activation.linear));
 		
 		// y = 5x + 3
 		Tensor[] x = {
@@ -43,7 +44,7 @@ public class GraphTest2{
 		
 		Graph graph = new Graph(1000, 1000, Utils.flatCombine(x), Utils.flatCombine(y), null, null);
 		graph.useCustomScale(0, 5, 0, 30);
-		graph.addLine(nn.layer(0).weights().flatGet(0), nn.layer(0).bias().flatGet(0));
+		graph.addLine(((FCLayer)nn.layer(0)).weights().flatGet(0), ((FCLayer)nn.layer(0)).bias().flatGet(0));
 		graph.draw();
 		frame.add(new GraphPanel(graph));
 		

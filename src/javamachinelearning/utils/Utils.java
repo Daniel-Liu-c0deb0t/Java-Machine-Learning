@@ -54,7 +54,7 @@ public class Utils{
 	}
 	
 	public static int argMax(Tensor tensor){
-		double max = 0.0;
+		double max = Double.MIN_VALUE;
 		int maxIndex = -1;
 		for(int i = 0; i < tensor.size(); i++){
 			if(tensor.flatGet(i) > max){

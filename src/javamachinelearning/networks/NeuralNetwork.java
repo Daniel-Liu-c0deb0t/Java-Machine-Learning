@@ -11,7 +11,7 @@ public interface NeuralNetwork{
 	public void add(Layer l);
 	public Tensor[] predict(Tensor[] input);
 	public Tensor predict(Tensor input);
-	public Tensor[] predictFull(Tensor input);
+	public Tensor[] predictTrain(Tensor input);
 	public void backPropagate(Tensor[] result, Tensor error, Optimizer optimizer, Regularizer regularizer);
 	public int[] inputShape();
 	public int[] outputShape();

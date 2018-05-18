@@ -7,7 +7,7 @@ import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
-public class FCLayer implements Layer{
+public class FCLayer implements ParamsLayer{
 	private Tensor weights;
 	private Tensor deltaWeights;
 	private Tensor bias;
@@ -18,11 +18,7 @@ public class FCLayer implements Layer{
 	private int nextSize;
 	private int changeCount;
 	private boolean alreadyInit = false;
-	
-	public FCLayer(int nextSize){
-		this.nextSize = nextSize;
-		this.activation = Activation.linear;
-	}
+	private boolean useBias = true;
 	
 	public FCLayer(int nextSize, Activation activation){
 		this.nextSize = nextSize;
@@ -44,16 +40,26 @@ public class FCLayer implements Layer{
 		this.prevSize = prevSize[0];
 		if(!alreadyInit){
 			this.weights = new Tensor(new int[]{prevSize[0], nextSize}, true);
-			this.bias = new Tensor(new int[]{nextSize}, false);
+			if(useBias)
+				this.bias = new Tensor(new int[]{nextSize}, false);
 		}
 		this.deltaWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
-		this.deltaBias = new Tensor(new int[]{nextSize}, false);
+		if(useBias)
+			this.deltaBias = new Tensor(new int[]{nextSize}, false);
 	}
 	
-	public FCLayer withParams(Tensor w, Tensor b){
+	@Override
+	public ParamsLayer withParams(Tensor w, Tensor b){
 		weights = w;
-		bias = b;
+		if(useBias)
+			bias = b;
 		alreadyInit = true;
+		return this;
+	}
+	
+	@Override
+	public ParamsLayer noBias(){
+		useBias = false;
 		return this;
 	}
 	
@@ -68,8 +74,22 @@ public class FCLayer implements Layer{
 	}
 	
 	@Override
+	public void setBias(Tensor b){
+		if(useBias)
+			bias = b;
+	}
+	
+	@Override
+	public void setWeights(Tensor w){
+		weights = w;
+	}
+	
+	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
-		return activation.activate(weights.dot(input).add(bias));
+		Tensor x = weights.dot(input);
+		if(useBias)
+			x = x.add(bias);
+		return activation.activate(x);
 	}
 	
 	@Override
@@ -78,13 +98,17 @@ public class FCLayer implements Layer{
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
 		// error wrt weight derivative
-		deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(prevRes.mulEach(grads), l));
-		if(regularizer != null) // also subtract the regularization derivative if necessary
-			deltaWeights = deltaWeights.sub(regularizer.derivative(weights));
+		if(regularizer == null){
+			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(prevRes.mulEach(grads), l));
+		}else{ // also add the regularization derivative if necessary
+			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(
+					prevRes.mulEach(grads).add(regularizer.derivative(weights)), l));
+		}
 		
 		// error wrt bias derivative
 		// not multiplied by prev outputs!
-		deltaBias = deltaBias.sub(optimizer.optimizeBias(grads, l));
+		if(useBias)
+			deltaBias = deltaBias.sub(optimizer.optimizeBias(grads, l));
 		
 		// new error should be affected by weights
 		Tensor nextError = weights.T().dot(grads);
@@ -99,8 +123,10 @@ public class FCLayer implements Layer{
 		// handles postponed updates, by average updating values
 		weights = weights.add(deltaWeights.div(Math.max(changeCount, 1)));
 		deltaWeights = new Tensor(deltaWeights.shape(), false);
-		bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
-		deltaBias = new Tensor(deltaBias.shape(), false);
+		if(useBias){
+			bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
+			deltaBias = new Tensor(deltaBias.shape(), false);
+		}
 		changeCount = 0;
 	}
 	
@@ -112,7 +138,7 @@ public class FCLayer implements Layer{
 	@Override
 	public int byteSize(){
 		// 8 bytes for each double
-		return Double.BYTES * weights.size() + Double.BYTES * bias.size();
+		return Double.BYTES * weights.size() + (useBias ? Double.BYTES * bias.size() : 0);
 	}
 	
 	@Override
@@ -121,8 +147,10 @@ public class FCLayer implements Layer{
 		for(int i = 0; i < weights.size(); i++){
 			bb.putDouble(weights.flatGet(i));
 		}
-		for(int i = 0; i < bias.size(); i++){
-			bb.putDouble(bias.flatGet(i));
+		if(useBias){
+			for(int i = 0; i < bias.size(); i++){
+				bb.putDouble(bias.flatGet(i));
+			}
 		}
 		bb.flip();
 		return bb;
@@ -136,10 +164,12 @@ public class FCLayer implements Layer{
 		}
 		weights = new Tensor(weights.shape(), w);
 		
-		double[] b = new double[bias.size()];
-		for(int i = 0; i < b.length; i++){
-			b[i] = bb.getDouble();
+		if(useBias){
+			double[] b = new double[bias.size()];
+			for(int i = 0; i < b.length; i++){
+				b[i] = bb.getDouble();
+			}
+			bias = new Tensor(bias.shape(), b);
 		}
-		bias = new Tensor(bias.shape(), b);
 	}
 }

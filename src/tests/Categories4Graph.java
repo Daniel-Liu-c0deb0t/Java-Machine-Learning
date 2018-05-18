@@ -17,7 +17,7 @@ import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.Tensor;
 import javamachinelearning.utils.Utils;
 
-public class GraphTest1{
+public class Categories4Graph{
 	public static void main(String[] args){
 		SequentialNN net = new SequentialNN(2);
 		net.add(new FCLayer(3, Activation.sigmoid));

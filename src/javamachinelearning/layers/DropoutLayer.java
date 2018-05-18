@@ -1,11 +1,9 @@
 package javamachinelearning.layers;
 
-import java.nio.ByteBuffer;
 import java.util.Random;
 
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
 public class DropoutLayer implements Layer{
@@ -42,16 +40,6 @@ public class DropoutLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor bias(){
-		return null;
-	}
-	
-	@Override
-	public Tensor weights(){
-		return null;
-	}
-	
-	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
 		if(training){
 			double[] arr = new double[size];
@@ -71,32 +59,7 @@ public class DropoutLayer implements Layer{
 	
 	@Override
 	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
-		// scale the gradients during backprop
+		// scale the gradients during backpropagation
 		return error.mul(mask);
-	}
-	
-	@Override
-	public void update(){
-		// do nothing
-	}
-	
-	@Override
-	public Activation getActivation(){
-		return null;
-	}
-	
-	@Override
-	public int byteSize(){
-		return 0;
-	}
-	
-	@Override
-	public ByteBuffer bytes(){
-		return null;
-	}
-	
-	@Override
-	public void readBytes(ByteBuffer bb){
-		// do nothing
 	}
 }

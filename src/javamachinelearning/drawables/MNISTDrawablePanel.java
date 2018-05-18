@@ -37,7 +37,9 @@ public class MNISTDrawablePanel extends JPanel{
 		addMouseMotionListener(new MouseMotionListener(){
 			@Override
 			public void mouseDragged(MouseEvent e){
-				graphics.fillRect((int)((double)e.getX() / ((double)width / (double)xSize)), (int)((double)e.getY() / ((double)height / (double)ySize)), 2, 2);
+				graphics.fillRect(
+						(int)((double)e.getX() / ((double)width / (double)xSize)),
+						(int)((double)e.getY() / ((double)height / (double)ySize)), 2, 2);
 				repaint();
 			}
 			

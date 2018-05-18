@@ -7,7 +7,7 @@ import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
-public class ConvLayer implements Layer{
+public class ConvLayer implements ParamsLayer{
 	private Tensor weights;
 	private Tensor deltaWeights;
 	private Tensor bias;
@@ -22,6 +22,7 @@ public class ConvLayer implements Layer{
 	private int filterCount;
 	private int changeCount;
 	private boolean alreadyInit = false;
+	private boolean useBias = true;
 	
 	public ConvLayer(int winWidth, int winHeight, int strideX, int strideY, int filterCount, int paddingX, int paddingY, Activation activation){
 		this.winWidth = winWidth;
@@ -29,25 +30,55 @@ public class ConvLayer implements Layer{
 		this.strideX = strideX;
 		this.strideY = strideY;
 		this.filterCount = filterCount;
+		this.paddingX = paddingX;
+		this.paddingY = paddingY;
 		this.activation = activation;
 	}
 	
 	public ConvLayer(int winSize, int stride, int filterCount, int padding, Activation activation){
-		this.winWidth = winSize;
-		this.winHeight = winSize;
-		this.strideX = stride;
-		this.strideY = stride;
-		this.filterCount = filterCount;
-		this.activation = activation;
+		this(winSize, winSize, stride, stride, filterCount, padding, padding, activation);
 	}
 	
-	public ConvLayer(int winSize, int stride, int filterCount, int padding){
-		this.winWidth = winSize;
-		this.winHeight = winSize;
-		this.strideX = stride;
-		this.strideY = stride;
-		this.filterCount = filterCount;
-		this.activation = Activation.linear;
+	public ConvLayer(int winSize, int filterCount, int padding, Activation activation){
+		this(winSize, 1, filterCount, padding, activation);
+	}
+	
+	public ConvLayer(int winWidth, int winHeight, int strideX, int strideY, int filterCount, PaddingType type, Activation activation){
+		if(type == PaddingType.VALID){
+			this.winWidth = winWidth;
+			this.winHeight = winHeight;
+			this.strideX = strideX;
+			this.strideY = strideY;
+			this.filterCount = filterCount;
+			this.paddingX = 0;
+			this.paddingY = 0;
+			this.activation = activation;
+		}else{
+			this.winWidth = winWidth;
+			this.winHeight = winHeight;
+			this.strideX = strideX;
+			this.strideY = strideY;
+			this.filterCount = filterCount;
+			if((winWidth - 1) % 2 != 0)
+				throw new IllegalArgumentException("Bad sizes for convolution!");
+			this.paddingX = (winWidth - 1) / 2;
+			if((winHeight - 1) % 2 != 0)
+				throw new IllegalArgumentException("Bad sizes for convolution!");
+			this.paddingY = (winHeight - 1) / 2;
+			this.activation = activation;
+		}
+	}
+	
+	public ConvLayer(int winSize, int stride, int filterCount, PaddingType type, Activation activation){
+		this(winSize, winSize, stride, stride, filterCount, type, activation);
+	}
+	
+	public ConvLayer(int winSize, int filterCount, PaddingType type, Activation activation){
+		this(winSize, 1, filterCount, type, activation);
+	}
+	
+	public ConvLayer(int winSize, int filterCount, Activation activation){
+		this(winSize, filterCount, PaddingType.VALID, activation);
 	}
 	
 	@Override
@@ -78,16 +109,26 @@ public class ConvLayer implements Layer{
 		
 		if(!alreadyInit){
 			weights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, true);
-			bias = new Tensor(new int[]{1, 1, filterCount}, false);
+			if(useBias)
+				bias = new Tensor(new int[]{1, 1, filterCount}, false);
 		}
 		deltaWeights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, false);
-		deltaBias = new Tensor(new int[]{1, 1, filterCount}, false);
+		if(useBias)
+			deltaBias = new Tensor(new int[]{1, 1, filterCount}, false);
 	}
 	
-	public ConvLayer withParams(Tensor w, Tensor b){
+	@Override
+	public ParamsLayer withParams(Tensor w, Tensor b){
 		weights = w;
-		bias = b;
+		if(useBias)
+			bias = b;
 		alreadyInit = true;
+		return this;
+	}
+	
+	@Override
+	public ParamsLayer noBias(){
+		useBias = false;
 		return this;
 	}
 	
@@ -99,6 +140,17 @@ public class ConvLayer implements Layer{
 	@Override
 	public Tensor weights(){
 		return weights;
+	}
+	
+	@Override
+	public void setBias(Tensor b){
+		if(useBias)
+			bias = b;
+	}
+	
+	@Override
+	public void setWeights(Tensor w){
+		weights = w;
 	}
 	
 	@Override
@@ -131,7 +183,8 @@ public class ConvLayer implements Layer{
 					}
 					
 					// add bias
-					res[idx] += bias.flatGet(filter);
+					if(useBias)
+						res[idx] += bias.flatGet(filter);
 					
 					idx++;
 				}
@@ -179,18 +232,23 @@ public class ConvLayer implements Layer{
 					
 					// accumulate gradients for the biases
 					// one bias per filter!
-					deltaB[filter] += grads.flatGet(gradIdx);
+					if(useBias)
+						deltaB[filter] += grads.flatGet(gradIdx);
 					
 					gradIdx++;
 				}
 			}
 		}
 		
-		deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(new Tensor(weights.shape(), deltaW), l));
-		if(regularizer != null)
-			deltaWeights = deltaWeights.sub(regularizer.derivative(weights));
+		if(regularizer == null){
+			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(new Tensor(weights.shape(), deltaW), l));
+		}else{ // also add the regularization derivative if necessary
+			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(
+					new Tensor(weights.shape(), deltaW).add(regularizer.derivative(weights)), l));
+		}
 		
-		deltaBias = deltaBias.sub(optimizer.optimizeBias(new Tensor(bias.shape(), deltaB), l));
+		if(useBias)
+			deltaBias = deltaBias.sub(optimizer.optimizeBias(new Tensor(bias.shape(), deltaB), l));
 		
 		// calculate the next error gradients
 		double[] nextError = new double[prevRes.size()];
@@ -235,8 +293,10 @@ public class ConvLayer implements Layer{
 	public void update(){
 		weights = weights.add(deltaWeights.div(Math.max(changeCount, 1)));
 		deltaWeights = new Tensor(deltaWeights.shape(), false);
-		bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
-		deltaBias = new Tensor(deltaBias.shape(), false);
+		if(useBias){
+			bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
+			deltaBias = new Tensor(deltaBias.shape(), false);
+		}
 		changeCount = 0;
 	}
 	
@@ -247,7 +307,7 @@ public class ConvLayer implements Layer{
 	
 	@Override
 	public int byteSize(){
-		return Double.BYTES * weights.size() + Double.BYTES * bias.size();
+		return Double.BYTES * weights.size() + (useBias ? Double.BYTES * bias.size() : 0);
 	}
 	
 	@Override
@@ -256,8 +316,10 @@ public class ConvLayer implements Layer{
 		for(int i = 0; i < weights.size(); i++){
 			bb.putDouble(weights.flatGet(i));
 		}
-		for(int i = 0; i < bias.size(); i++){
-			bb.putDouble(bias.flatGet(i));
+		if(useBias){
+			for(int i = 0; i < bias.size(); i++){
+				bb.putDouble(bias.flatGet(i));
+			}
 		}
 		bb.flip();
 		return bb;
@@ -271,10 +333,16 @@ public class ConvLayer implements Layer{
 		}
 		weights = new Tensor(weights.shape(), w);
 		
-		double[] b = new double[bias.size()];
-		for(int i = 0; i < b.length; i++){
-			b[i] = bb.getDouble();
+		if(useBias){
+			double[] b = new double[bias.size()];
+			for(int i = 0; i < b.length; i++){
+				b[i] = bb.getDouble();
+			}
+			bias = new Tensor(bias.shape(), b);
 		}
-		bias = new Tensor(bias.shape(), b);
+	}
+	
+	public enum PaddingType{
+		VALID, SAME;
 	}
 }

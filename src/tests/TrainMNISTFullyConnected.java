@@ -20,7 +20,7 @@ public class TrainMNISTFullyConnected{
 		
 		long start = System.currentTimeMillis();
 		
-		nn.fit(Utils.flattenAll(x), y, 100, 32, Loss.softmaxCrossEntropy, new AdamOptimizer(0.1), null, true, false, false);
+		nn.fit(Utils.flattenAll(x), y, 100, 32, Loss.softmaxCrossEntropy, new AdamOptimizer(0.01), null, true, false, false);
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		

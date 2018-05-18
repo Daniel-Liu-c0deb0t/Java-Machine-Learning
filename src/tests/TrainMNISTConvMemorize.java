@@ -14,8 +14,11 @@ import javamachinelearning.utils.MNISTUtils;
 import javamachinelearning.utils.Tensor;
 import javamachinelearning.utils.Utils;
 
-public class TrainMNISTConv{
+public class TrainMNISTConvMemorize{
 	public static void main(String[] args) throws Exception{
+		// training on the full MNIST data set is way too slow
+		// to verify that the convolutional layers work, it is tested to memorize MNIST images
+		
 		SequentialNN nn = new SequentialNN(28, 28, 1);
 		nn.add(new ConvLayer(5, 32, PaddingType.SAME, Activation.relu));
 		nn.add(new MaxPoolingLayer(2, 2));
@@ -26,21 +29,17 @@ public class TrainMNISTConv{
 		nn.add(new DropoutLayer(0.3));
 		nn.add(new FCLayer(10, Activation.softmax));
 		
-		Tensor[] x = MNISTUtils.loadDataSetImages("train-images-idx3-ubyte", Integer.MAX_VALUE);
-		Tensor[] y = MNISTUtils.loadDataSetLabels("train-labels-idx1-ubyte", Integer.MAX_VALUE);
+		Tensor[] x = MNISTUtils.loadDataSetImages("train-images-idx3-ubyte", 100);
+		Tensor[] y = MNISTUtils.loadDataSetLabels("train-labels-idx1-ubyte", 100);
 		
 		long start = System.currentTimeMillis();
 		
-		nn.fit(Utils.reshapeAll(x, 28, 28, 1), y, 100, 100, Loss.softmaxCrossEntropy, new AdamOptimizer(0.001), null, true, false, false);
+		nn.fit(Utils.reshapeAll(x, 28, 28, 1), y, 100, 10, Loss.softmaxCrossEntropy, new AdamOptimizer(0.001), null, true, false, false);
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		
-		nn.saveToFile("mnist_weights.nn");
+		Tensor[] testResult = nn.predict(Utils.reshapeAll(x, 28, 28, 1));
 		
-		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);
-		Tensor[] testY = MNISTUtils.loadDataSetLabels("t10k-labels-idx1-ubyte", Integer.MAX_VALUE);
-		Tensor[] testResult = nn.predict(Utils.reshapeAll(testX, 28, 28, 1));
-		
-		System.out.println("Classification accuracy: " + Utils.format(Utils.classificationAccuracy(testResult, testY)));
+		System.out.println("Memorization accuracy: " + Utils.format(Utils.classificationAccuracy(testResult, y)));
 	}
 }
