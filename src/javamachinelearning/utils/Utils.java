@@ -134,7 +134,7 @@ public class Utils{
 				}
 			}
 		}
-		return new int[]{(int)(sumX / total), (int)(sumY / total)};
+		return new int[]{(int)(sumY / total), (int)(sumX / total)};
 	}
 	
 	public static double[] flatCombine(Tensor... tensors){
@@ -171,12 +171,16 @@ public class Utils{
 	}
 	
 	public static Tensor centerData(double[][] arr, int width, int height){
-		double[][] centeredArr = new double[width][height];
+		double[][] centeredArr = new double[height][width];
 		int[] centerOfMass = centerOfMass(arr);
 		for(int i = 0; i < arr.length; i++){
 			for(int j = 0; j < arr[i].length; j++){
-				if(arr[i][j] > 0.0)
-					centeredArr[(width - arr.length) / 2 + i + arr.length / 2 - centerOfMass[0]][(height - arr[i].length) / 2 + j + arr[i].length / 2 - centerOfMass[1]] = arr[i][j];
+				if(arr[i][j] > 0.0){
+					int y = (height - arr.length) / 2 + i + arr.length / 2 - centerOfMass[0];
+					int x = (width - arr[i].length) / 2 + j + arr[i].length / 2 - centerOfMass[1];
+					if(y >= 0 && y < height && x >= 0 && x < width)
+						centeredArr[y][x] = arr[i][j];
+				}
 			}
 		}
 		return new Tensor(centeredArr);

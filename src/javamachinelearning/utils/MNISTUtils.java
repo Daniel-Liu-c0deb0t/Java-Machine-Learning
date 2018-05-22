@@ -63,10 +63,10 @@ public class MNISTUtils{
 	}
 	
 	public static Tensor loadImage(BufferedImage image, int width, int height){
-		double[][] arr = new double[image.getWidth()][image.getHeight()];
-		for(int i = 0; i < image.getWidth(); i++){
-			for(int j = 0; j < image.getHeight(); j++){
-				arr[i][j] = 1.0 - ((image.getRGB(i, j) & 0xFF) / 255.0);
+		double[][] arr = new double[image.getHeight()][image.getWidth()];
+		for(int i = 0; i < image.getHeight(); i++){
+			for(int j = 0; j < image.getWidth(); j++){
+				arr[i][j] = 1.0 - ((image.getRGB(j, i) & 0xFF) / 255.0);
 			}
 		}
 		

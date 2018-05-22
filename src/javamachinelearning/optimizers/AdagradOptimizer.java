@@ -10,7 +10,7 @@ public class AdagradOptimizer implements Optimizer{
 	private Tensor[] hBias;
 	
 	public AdagradOptimizer(){
-		this.learnRate = 0.01;
+		this.learnRate = 0.1;
 	}
 	
 	public AdagradOptimizer(double learnRate){

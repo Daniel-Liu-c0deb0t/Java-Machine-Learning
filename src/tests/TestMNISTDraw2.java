@@ -16,6 +16,8 @@ import javamachinelearning.utils.Utils;
 
 public class TestMNISTDraw2{
 	public static void main(String[] args){
+		// make sure the drawings are big enough!
+		
 		SequentialNN nn = new SequentialNN(784);
 		nn.add(new FCLayer(300, Activation.relu));
 		nn.add(new FCLayer(10, Activation.softmax));

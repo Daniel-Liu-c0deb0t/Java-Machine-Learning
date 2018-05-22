@@ -50,10 +50,10 @@ public class MNISTDrawablePanel2 extends JPanel{
 	}
 	
 	public Tensor getData(int outputX2, int outputY2){
-		double[][] arr = new double[xSize][ySize];
-		for(int i = 0; i < xSize; i++){
-			for(int j = 0; j < ySize; j++){
-				arr[i][j] = 1.0 - (image.getRGB(i, j) & 0xFF) / 255.0;
+		double[][] arr = new double[ySize][xSize];
+		for(int i = 0; i < ySize; i++){
+			for(int j = 0; j < xSize; j++){
+				arr[i][j] = 1.0 - (image.getRGB(j, i) & 0xFF) / 255.0;
 			}
 		}
 		return Utils.centerData(arr, outputX2, outputY2);

@@ -2,7 +2,6 @@ package javamachinelearning.layers;
 
 import java.util.Random;
 
-import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
@@ -58,7 +57,7 @@ public class DropoutLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
 		// scale the gradients during backpropagation
 		return error.mul(mask);
 	}

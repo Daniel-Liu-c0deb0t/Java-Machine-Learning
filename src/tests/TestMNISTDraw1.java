@@ -16,6 +16,8 @@ import javamachinelearning.utils.Utils;
 
 public class TestMNISTDraw1{
 	public static void main(String[] args){
+		// this class performs not as well as the second MNIST drawing class!
+		
 		SequentialNN nn = new SequentialNN(784);
 		nn.add(new FCLayer(300, Activation.relu));
 		nn.add(new FCLayer(10, Activation.softmax));

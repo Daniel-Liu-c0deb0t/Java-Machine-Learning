@@ -163,7 +163,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
 					for(int k = 0; k < layers.size(); k++){
 						if(layers.get(k) instanceof ParamsLayer)
-							((ParamsLayer)layers.get(k)).update();
+							((ParamsLayer)layers.get(k)).update(optimizer, k);
 					}
 				}
 			}
@@ -193,7 +193,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	@Override
 	public void backPropagate(Tensor[] result, Tensor error, Optimizer optimizer, Regularizer regularizer){
 		for(int i = layers.size() - 1; i >= 0; i--){
-			error = layers.get(i).backPropagate(result[i], result[i + 1], error, optimizer, regularizer, i);
+			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regularizer);
 		}
 		optimizer.update();
 	}

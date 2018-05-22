@@ -89,10 +89,10 @@ public class MNISTDrawablePanel extends JPanel{
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		g.drawImage(temp, 0, 0, outputX1, outputY1, 0, 0, temp.getWidth(), temp.getHeight(), null);
 		g.dispose();
-		double[][] arr = new double[outputX1][outputY1];
-		for(int i = 0; i < outputX1; i++){
-			for(int j = 0; j < outputY1; j++){
-				arr[i][j] = 1.0 - (result.getRGB(i, j) & 0xFF) / 255.0;
+		double[][] arr = new double[outputY1][outputX1];
+		for(int i = 0; i < outputY1; i++){
+			for(int j = 0; j < outputX1; j++){
+				arr[i][j] = 1.0 - (result.getRGB(j, i) & 0xFF) / 255.0;
 			}
 		}
 		return Utils.centerData(arr, outputX2, outputY2);

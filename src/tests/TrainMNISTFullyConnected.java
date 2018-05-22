@@ -2,7 +2,7 @@ package tests;
 
 import javamachinelearning.layers.FCLayer;
 import javamachinelearning.networks.SequentialNN;
-import javamachinelearning.optimizers.SGDOptimizer;
+import javamachinelearning.optimizers.MomentumOptimizer;
 import javamachinelearning.regularizers.L2Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Loss;
@@ -21,7 +21,7 @@ public class TrainMNISTFullyConnected{
 		
 		long start = System.currentTimeMillis();
 		
-		nn.fit(Utils.flattenAll(x), y, 20, 100, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), new L2Regularizer(0.0001), true, false, false);
+		nn.fit(Utils.flattenAll(x), y, 100, 100, Loss.softmaxCrossEntropy, new MomentumOptimizer(0.5, true), new L2Regularizer(0.0001), true, false, false);
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		

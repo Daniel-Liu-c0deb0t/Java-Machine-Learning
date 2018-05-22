@@ -2,6 +2,7 @@ package javamachinelearning.layers;
 
 import java.nio.ByteBuffer;
 
+import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
@@ -15,7 +16,7 @@ public interface ParamsLayer extends Layer{
 	public Tensor weights();
 	public void setBias(Tensor b);
 	public void setWeights(Tensor w);
-	public void update();
+	public void update(Optimizer optimizer, int l);
 	public Activation getActivation();
 	public int byteSize();
 	public ByteBuffer bytes();

@@ -1,6 +1,5 @@
 package javamachinelearning.layers;
 
-import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
@@ -37,7 +36,7 @@ public class FlattenLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
 		return error.reshape(prevShape);
 	}
 }

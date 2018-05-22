@@ -9,9 +9,9 @@ import javamachinelearning.utils.Tensor;
 
 public class ConvLayer implements ParamsLayer{
 	private Tensor weights;
-	private Tensor deltaWeights;
+	private Tensor deltaWeightGrads;
 	private Tensor bias;
-	private Tensor deltaBias;
+	private Tensor deltaBiasGrads;
 	
 	private int[] prevShape;
 	private int[] nextShape;
@@ -112,9 +112,9 @@ public class ConvLayer implements ParamsLayer{
 			if(useBias)
 				bias = new Tensor(new int[]{1, 1, filterCount}, false);
 		}
-		deltaWeights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, false);
+		deltaWeightGrads = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, false);
 		if(useBias)
-			deltaBias = new Tensor(new int[]{1, 1, filterCount}, false);
+			deltaBiasGrads = new Tensor(new int[]{1, 1, filterCount}, false);
 	}
 	
 	@Override
@@ -195,7 +195,7 @@ public class ConvLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
 		// calculating delta weights and delta biases
@@ -241,14 +241,14 @@ public class ConvLayer implements ParamsLayer{
 		}
 		
 		if(regularizer == null){
-			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(new Tensor(weights.shape(), deltaW), l));
+			deltaWeightGrads = deltaWeightGrads.add(new Tensor(weights.shape(), deltaW));
 		}else{ // also add the regularization derivative if necessary
-			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(
-					new Tensor(weights.shape(), deltaW).add(regularizer.derivative(weights)), l));
+			deltaWeightGrads = deltaWeightGrads.add(
+					new Tensor(weights.shape(), deltaW).add(regularizer.derivative(weights)));
 		}
 		
 		if(useBias)
-			deltaBias = deltaBias.sub(optimizer.optimizeBias(new Tensor(bias.shape(), deltaB), l));
+			deltaBiasGrads = deltaBiasGrads.add(new Tensor(bias.shape(), deltaB));
 		
 		// calculate the next error gradients
 		double[] nextError = new double[prevRes.size()];
@@ -290,12 +290,14 @@ public class ConvLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public void update(){
-		weights = weights.add(deltaWeights.div(Math.max(changeCount, 1)));
-		deltaWeights = new Tensor(deltaWeights.shape(), false);
+	public void update(Optimizer optimizer, int l){
+		weights = weights.sub(
+				optimizer.optimizeWeight(deltaWeightGrads.div(Math.max(changeCount, 1)), l));
+		deltaWeightGrads = new Tensor(deltaWeightGrads.shape(), false);
 		if(useBias){
-			bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
-			deltaBias = new Tensor(deltaBias.shape(), false);
+			bias = bias.sub(
+					optimizer.optimizeBias(deltaBiasGrads.div(Math.max(changeCount, 1)), l));
+			deltaBiasGrads = new Tensor(deltaBiasGrads.shape(), false);
 		}
 		changeCount = 0;
 	}

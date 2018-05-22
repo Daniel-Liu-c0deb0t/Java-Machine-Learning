@@ -33,7 +33,7 @@ public class TrainMNISTConv{
 		
 		long start = System.currentTimeMillis();
 		
-		nn.fit(Utils.reshapeAll(x, 28, 28, 1), y, 100, 100, Loss.softmaxCrossEntropy, new AdamOptimizer(0.001), null, true, false, false);
+		nn.fit(Utils.reshapeAll(x, 28, 28, 1), y, 100, 100, Loss.softmaxCrossEntropy, new AdamOptimizer(0.01), null, true, false, false);
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		

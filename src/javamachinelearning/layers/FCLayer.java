@@ -9,9 +9,9 @@ import javamachinelearning.utils.Tensor;
 
 public class FCLayer implements ParamsLayer{
 	private Tensor weights;
-	private Tensor deltaWeights;
+	private Tensor deltaWeightGrads;
 	private Tensor bias;
-	private Tensor deltaBias;
+	private Tensor deltaBiasGrads;
 	
 	private Activation activation;
 	private int prevSize;
@@ -43,9 +43,9 @@ public class FCLayer implements ParamsLayer{
 			if(useBias)
 				this.bias = new Tensor(new int[]{nextSize}, false);
 		}
-		this.deltaWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
+		this.deltaWeightGrads = new Tensor(new int[]{prevSize[0], nextSize}, false);
 		if(useBias)
-			this.deltaBias = new Tensor(new int[]{nextSize}, false);
+			this.deltaBiasGrads = new Tensor(new int[]{nextSize}, false);
 	}
 	
 	@Override
@@ -93,22 +93,22 @@ public class FCLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
 		// error wrt layer output derivative
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
 		// error wrt weight derivative
 		if(regularizer == null){
-			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(prevRes.mulEach(grads), l));
+			deltaWeightGrads = deltaWeightGrads.add(prevRes.mulEach(grads));
 		}else{ // also add the regularization derivative if necessary
-			deltaWeights = deltaWeights.sub(optimizer.optimizeWeight(
-					prevRes.mulEach(grads).add(regularizer.derivative(weights)), l));
+			deltaWeightGrads = deltaWeightGrads.add(
+					prevRes.mulEach(grads).add(regularizer.derivative(weights)));
 		}
 		
 		// error wrt bias derivative
 		// not multiplied by prev outputs!
 		if(useBias)
-			deltaBias = deltaBias.sub(optimizer.optimizeBias(grads, l));
+			deltaBiasGrads = deltaBiasGrads.add(grads);
 		
 		// new error should be affected by weights
 		Tensor nextError = weights.T().dot(grads);
@@ -119,13 +119,15 @@ public class FCLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public void update(){
+	public void update(Optimizer optimizer, int l){
 		// handles postponed updates, by average updating values
-		weights = weights.add(deltaWeights.div(Math.max(changeCount, 1)));
-		deltaWeights = new Tensor(deltaWeights.shape(), false);
+		weights = weights.sub(
+				optimizer.optimizeWeight(deltaWeightGrads.div(Math.max(changeCount, 1)), l));
+		deltaWeightGrads = new Tensor(deltaWeightGrads.shape(), false);
 		if(useBias){
-			bias = bias.add(deltaBias.div(Math.max(changeCount, 1)));
-			deltaBias = new Tensor(deltaBias.shape(), false);
+			bias = bias.sub(
+					optimizer.optimizeBias(deltaBiasGrads.div(Math.max(changeCount, 1)), l));
+			deltaBiasGrads = new Tensor(deltaBiasGrads.shape(), false);
 		}
 		changeCount = 0;
 	}

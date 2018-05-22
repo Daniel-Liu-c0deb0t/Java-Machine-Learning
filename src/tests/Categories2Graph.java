@@ -43,7 +43,7 @@ public class Categories2Graph{
 		}
 		Tensor[] y = Utils.concat(y1, y2, y3, y4);
 		
-		net.fit(x, y, 100, 10, Loss.binaryCrossEntropy, new AdamOptimizer(1), null, true, true, false);
+		net.fit(x, y, 1000, 10, Loss.binaryCrossEntropy, new AdamOptimizer(0.01), null, true, true, false);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

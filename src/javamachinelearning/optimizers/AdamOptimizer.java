@@ -16,7 +16,7 @@ public class AdamOptimizer implements Optimizer{
 	private double currBeta2;
 	
 	public AdamOptimizer(){
-		this.learnRate = 0.01;
+		this.learnRate = 0.001;
 		this.beta1 = 0.9;
 		this.beta2 = 0.999;
 	}
@@ -57,8 +57,8 @@ public class AdamOptimizer implements Optimizer{
 	
 	@Override
 	public void update(){
-		currBeta1 *= currBeta1;
-		currBeta2 *= currBeta2;
+		currBeta1 *= beta1;
+		currBeta2 *= beta2;
 	}
 	
 	@Override

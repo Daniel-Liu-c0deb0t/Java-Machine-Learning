@@ -1,6 +1,5 @@
 package javamachinelearning.layers;
 
-import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
@@ -91,7 +90,7 @@ public class AvgPoolingLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Optimizer optimizer, Regularizer regularizer, int l){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
 		double[] res = new double[prevShape[0] * prevShape[1] * prevShape[2]];
 		int outIdx = 0;
 		
