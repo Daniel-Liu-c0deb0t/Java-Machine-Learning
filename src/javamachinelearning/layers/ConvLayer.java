@@ -198,7 +198,7 @@ public class ConvLayer implements ParamsLayer{
 	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
-		// calculating delta weights and delta biases
+		// calculate weight gradients and bias gradients
 		double[] deltaW = new double[weights.size()];
 		double[] deltaB = new double[bias.size()];
 		int[] inMult = prevRes.mult();

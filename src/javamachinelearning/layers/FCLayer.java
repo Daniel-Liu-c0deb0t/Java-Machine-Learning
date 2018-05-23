@@ -106,7 +106,7 @@ public class FCLayer implements ParamsLayer{
 		}
 		
 		// error wrt bias derivative
-		// not multiplied by prev outputs!
+		// not multiplied by previous outputs!
 		if(useBias)
 			deltaBiasGrads = deltaBiasGrads.add(grads);
 		
@@ -120,7 +120,7 @@ public class FCLayer implements ParamsLayer{
 	
 	@Override
 	public void update(Optimizer optimizer, int l){
-		// handles postponed updates, by average updating values
+		// handles postponed updates, by averaging accumulated gradients
 		weights = weights.sub(
 				optimizer.optimizeWeight(deltaWeightGrads.div(Math.max(changeCount, 1)), l));
 		deltaWeightGrads = new Tensor(deltaWeightGrads.shape(), false);
