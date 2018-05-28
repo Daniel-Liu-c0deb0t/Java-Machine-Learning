@@ -134,9 +134,15 @@ public class GRUCell implements RecurrentCell{
 			gradMemoryB = gradMemoryB.add(gradMemory);
 		}
 		
-		Tensor gradInput = 
+		Tensor gradInput = resetW.T().dot(gradReset).add(
+				updateW.T().dot(gradUpdate)).add(memoryW.T().dot(gradMemory));
+		
+		Tensor gradPrevState = resetU.T().dot(gradReset).add(
+				updateU.T().dot(gradUpdate)).add(memoryU.T().dot(gradMemory).mul(reset)).add(error.mul(update));
 		
 		changeCount++;
+		
+		return new Tensor[]{gradInput, gradPrevState};
 	}
 	
 	@Override

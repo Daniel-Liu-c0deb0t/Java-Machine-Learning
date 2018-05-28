@@ -43,6 +43,14 @@ public class GRULayer implements RecurrentParamsLayer{
 		this.gateActivation = Activation.tanh;
 	}
 	
+	public GRULayer(int numTotalCells, int size){
+		this.numTotalCells = numTotalCells;
+		this.numOutputCells = numTotalCells;
+		this.size = size;
+		this.activation = Activation.linear;
+		this.gateActivation = Activation.tanh;
+	}
+	
 	@Override
 	public int[] nextShape(){
 		return new int[]{numOutputCells, size};
@@ -83,8 +91,10 @@ public class GRULayer implements RecurrentParamsLayer{
 		for(int i = 0; i < cells.length; i++){
 			Tensor inTensor = i < input.shape()[0] ?
 					input.get(i) : new Tensor(new int[]{size}, false);
+			
 			Tensor prevState = i == 0 ?
 					new Tensor(new int[]{size}, false) : states[i - 1];
+			
 			states[i] = cells[i].forwardPropagate(inTensor, prevState, training);
 			
 			// only output the last few cells
@@ -93,12 +103,38 @@ public class GRULayer implements RecurrentParamsLayer{
 				idx++;
 			}
 		}
+		
 		return TensorUtils.stack(outputs);
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
-		// TODO: backprop output cells activation
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor nextLayerError){
+		Tensor[] prevLayerError = new Tensor[numTotalCells];
+		Tensor nextCellError = new Tensor(new int[]{size}, false);
+		
+		for(int i = cells.length - 1; i >= 0; i--){
+			Tensor inTensor = i < prevRes.shape()[0] ?
+					prevRes.get(i) : new Tensor(new int[]{size}, false);
+			
+			Tensor prevState = i == 0 ?
+					new Tensor(new int[]{size}, false) : states[i - 1];
+			
+			// accumulate the error gradient from the next layer and the next cell
+			// the next layer error has to be multiplied by the activation function's derivative
+			int idx = i - (cells.length - numOutputCells);
+			Tensor totalError = (i >= cells.length - numOutputCells) ?
+					nextCellError.add(nextLayerError.get(idx).mul(
+							activation.derivative(nextRes.get(idx)))) : nextCellError;
+			
+			Tensor[] arr = cells[i].backPropagate(inTensor, prevState, totalError);
+			
+			prevLayerError[i] = i < prevRes.shape()[0] ?
+					arr[0] : new Tensor(new int[]{size}, false);
+			
+			nextCellError = arr[1];
+		}
+		
+		return TensorUtils.stack(prevLayerError);
 	}
 	
 	@Override
