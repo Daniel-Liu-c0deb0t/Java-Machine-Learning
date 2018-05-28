@@ -47,7 +47,7 @@ public class MNISTUtils{
 		bb.position(8);
 		Tensor[] res = new Tensor[Math.min(count, num)];
 		for(int i = 0; i < Math.min(count, num); i++){
-			res[i] = Utils.oneHotEncode(Utils.unsignedByteToInt(bb.get()), 10);
+			res[i] = TensorUtils.oneHotEncode(Utils.unsignedByteToInt(bb.get()), 10);
 		}
 		return res;
 	}

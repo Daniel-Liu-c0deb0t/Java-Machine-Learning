@@ -1,6 +1,6 @@
 package tests;
 
-import static javamachinelearning.utils.TensorUtils.t;
+import static javamachinelearning.utils.TensorUtils.*;
 
 import java.awt.Color;
 
@@ -26,19 +26,19 @@ public class Categories4Graph{
 		Tensor[] x = Utils.concat(Utils.standardDist(0, 0, 0.1, 100), Utils.standardDist(0, 1, 0.1, 100), Utils.standardDist(1, 0, 0.1, 100), Utils.standardDist(1, 1, 0.1, 100));
 		Tensor[] y1 = new Tensor[100];
 		for(int i = 0; i < y1.length; i++){
-			y1[i] = Utils.oneHotEncode(0, 4);
+			y1[i] = oneHotEncode(0, 4);
 		}
 		Tensor[] y2 = new Tensor[100];
 		for(int i = 0; i < y2.length; i++){
-			y2[i] = Utils.oneHotEncode(1, 4);
+			y2[i] = oneHotEncode(1, 4);
 		}
 		Tensor[] y3 = new Tensor[100];
 		for(int i = 0; i < y3.length; i++){
-			y3[i] = Utils.oneHotEncode(2, 4);
+			y3[i] = oneHotEncode(2, 4);
 		}
 		Tensor[] y4 = new Tensor[100];
 		for(int i = 0; i < y4.length; i++){
-			y4[i] = Utils.oneHotEncode(3, 4);
+			y4[i] = oneHotEncode(3, 4);
 		}
 		Tensor[] y = Utils.concat(y1, y2, y3, y4);
 		net.fit(x, y, 100, 10, Loss.softmaxCrossEntropy, new SGDOptimizer(1), new L2Regularizer(0.01), true, true, false);
@@ -50,13 +50,13 @@ public class Categories4Graph{
 		for(int i = 0; i < x.length; i++){
 			xData[i] = x[i].flatGet(0);
 			yData[i] = x[i].flatGet(1);
-			cData[i] = intToColor1[Utils.argMax(y[i])];
+			cData[i] = intToColor1[argMax(y[i])];
 		}
 		
 		JFrame frame = new JFrame();
 		
 		Graph graph = new Graph(1000, 1000, xData, yData, cData, (x5, y5) -> {
-			return intToColor1[Utils.argMax(net.predict(t(x5, y5)))];
+			return intToColor1[argMax(net.predict(t(x5, y5)))];
 		});
 		graph.draw();
 		frame.add(new GraphPanel(graph));

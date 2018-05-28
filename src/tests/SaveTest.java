@@ -1,6 +1,6 @@
 package tests;
 
-import static javamachinelearning.utils.TensorUtils.t;
+import static javamachinelearning.utils.TensorUtils.*;
 
 import java.awt.Color;
 
@@ -15,7 +15,6 @@ import javamachinelearning.regularizers.L2Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.Tensor;
-import javamachinelearning.utils.Utils;
 
 public class SaveTest{
 	public static void main(String[] args){
@@ -54,13 +53,13 @@ public class SaveTest{
 		for(int i = 0; i < x.length; i++){
 			xData[i] = x[i].flatGet(0);
 			yData[i] = x[i].flatGet(1);
-			cData[i] = intToColor1[Utils.argMax(y[i])];
+			cData[i] = intToColor1[argMax(y[i])];
 		}
 		
 		JFrame frame = new JFrame();
 		
 		Graph graph = new Graph(1000, 1000, xData, yData, cData, (x2, y2) -> {
-			return intToColor1[Utils.argMax(net.predict(t(x2, y2)))];
+			return intToColor1[argMax(net.predict(t(x2, y2)))];
 		});
 		graph.draw();
 		frame.add(new GraphPanel(graph));

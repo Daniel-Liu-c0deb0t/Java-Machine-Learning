@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import javamachinelearning.layers.Layer;
 import javamachinelearning.layers.ParamsLayer;
 import javamachinelearning.optimizers.Optimizer;
-import javamachinelearning.optimizers.SGDOptimizer;
 import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.Tensor;
@@ -81,18 +80,8 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
-	public void fit(Tensor[] input, Tensor[] target, boolean verbose, boolean printNet){
-		fit(input, target, 1000, 1, false, verbose, printNet);
-	}
-	
-	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, boolean shuffle, boolean verbose, boolean printNet){
-		fit(input, target, epochs, batchSize, Loss.squared, new SGDOptimizer(), shuffle, verbose, printNet);
-	}
-	
-	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, boolean shuffle, boolean verbose, boolean printNet){
-		fit(input, target, epochs, batchSize, loss, optimizer, null, shuffle, verbose, printNet);
+	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle){
+		fit(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, false, false, null);
 	}
 	
 	@Override
@@ -105,23 +94,6 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		// make sure shuffling does not affect the input data
 		Tensor[] input = inputParam.clone();
 		Tensor[] target = targetParam.clone();
-		
-		int[][] weightShapes = new int[layers.size()][0];
-		int[][] biasShapes = new int[layers.size()][0];
-		for(int i = 0; i < layers.size(); i++){
-			if(layers.get(i) instanceof ParamsLayer){
-				weightShapes[i] = ((ParamsLayer)layers.get(i)).weights().shape();
-				if(((ParamsLayer)layers.get(i)).bias() != null)
-					biasShapes[i] = ((ParamsLayer)layers.get(i)).bias().shape();
-				else
-					biasShapes[i] = null;
-			}else{
-				weightShapes[i] = null;
-				biasShapes[i] = null;
-			}
-		}
-		
-		optimizer.init(weightShapes, biasShapes);
 		
 		for(int i = 0; i < epochs; i++){
 			double totalLoss = 0.0;
@@ -157,13 +129,14 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				
 				// calculate derivative of the loss function and backpropagate
 				Tensor lossDerivative = loss.derivative(res[res.length - 1], target[j]);
-				backPropagate(res, lossDerivative, optimizer, regularizer);
+				backPropagate(res, lossDerivative);
+				optimizer.update();
 				
 				// update weights and biases if batch size is reached
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
 					for(int k = 0; k < layers.size(); k++){
 						if(layers.get(k) instanceof ParamsLayer)
-							((ParamsLayer)layers.get(k)).update(optimizer, k);
+							((ParamsLayer)layers.get(k)).update(optimizer, regularizer);
 					}
 				}
 			}
@@ -191,36 +164,19 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
-	public void backPropagate(Tensor[] result, Tensor error, Optimizer optimizer, Regularizer regularizer){
+	public void backPropagate(Tensor[] result, Tensor error){
 		for(int i = layers.size() - 1; i >= 0; i--){
-			error = layers.get(i).backPropagate(result[i], result[i + 1], error, regularizer);
+			error = layers.get(i).backPropagate(result[i], result[i + 1], error);
 		}
-		optimizer.update();
 	}
 	
 	@Override
 	public String toString(){
-		final int limit = 1000;
-		
 		StringBuilder b = new StringBuilder();
 		for(int i = 0; i < layers.size(); i++){
-			b.append("\nLayer " + (i + 1) + " (" + layers.get(i).getClass().getSimpleName() + "):\n");
-			if(layers.get(i) instanceof ParamsLayer){
-				b.append(Utils.makeStr('-', 10) + "\n");
-				b.append("Weights:\n");
-				String weights = ((ParamsLayer)layers.get(i)).weights().toString();
-				b.append((weights.length() > limit ? (weights.substring(0, limit) + "...") : weights) + "\n");
-				
-				if(((ParamsLayer)layers.get(i)).bias() != null){
-					b.append(Utils.makeStr('-', 10) + "\n");
-					b.append("Biases:\n");
-					String bias = ((ParamsLayer)layers.get(i)).bias().toString();
-					b.append((bias.length() > limit ? (bias.substring(0, limit) + "...") : bias) + "\n");
-				}
-			}
-			b.append(Utils.makeStr('=', 10) + "\n");
+			b.append(layers.get(i).toString());
+			b.append("\n" + Utils.makeStr('=', 50) + "\n");
 		}
-		
 		return b.toString();
 	}
 	

@@ -1,6 +1,6 @@
 package javamachinelearning.utils;
 
-import static javamachinelearning.utils.TensorUtils.t;
+import static javamachinelearning.utils.TensorUtils.*;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -45,24 +45,6 @@ public class Utils{
 		char[] result = new char[n];
 		Arrays.fill(result, c);
 		return new String(result);
-	}
-	
-	public static Tensor oneHotEncode(int idx, int size){
-		double[] res = new double[size];
-		res[idx] = 1.0;
-		return new Tensor(res);
-	}
-	
-	public static int argMax(Tensor tensor){
-		double max = Double.MIN_VALUE;
-		int maxIndex = -1;
-		for(int i = 0; i < tensor.size(); i++){
-			if(tensor.flatGet(i) > max){
-				max = tensor.flatGet(i);
-				maxIndex = i;
-			}
-		}
-		return maxIndex;
 	}
 	
 	public static int unsignedByteToInt(byte b){

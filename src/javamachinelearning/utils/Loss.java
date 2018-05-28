@@ -18,7 +18,7 @@ public interface Loss{
 		@Override
 		public double loss(Tensor x, Tensor t){
 			// because the target is a one hot vector
-			return -Math.log(x.flatGet(Utils.argMax(t)));
+			return -Math.log(x.flatGet(TensorUtils.argMax(t)));
 		}
 		
 		@Override

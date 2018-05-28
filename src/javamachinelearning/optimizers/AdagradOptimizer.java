@@ -6,9 +6,6 @@ public class AdagradOptimizer implements Optimizer{
 	private static final double epsilon = 0.00000001;
 	private double learnRate;
 	
-	private Tensor[] hWeight;
-	private Tensor[] hBias;
-	
 	public AdagradOptimizer(){
 		this.learnRate = 0.1;
 	}
@@ -18,16 +15,8 @@ public class AdagradOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public void init(int[][] weightShapes, int[][] biasShapes){
-		hWeight = new Tensor[weightShapes.length];
-		hBias = new Tensor[weightShapes.length];
-		
-		for(int i = 0; i < weightShapes.length; i++){
-			if(weightShapes[i] != null)
-				hWeight[i] = new Tensor(weightShapes[i], false);
-			if(biasShapes[i] != null)
-				hBias[i] = new Tensor(biasShapes[i], false);
-		}
+	public int extraParams(){
+		return 1;
 	}
 	
 	@Override
@@ -36,14 +25,9 @@ public class AdagradOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public Tensor optimizeWeight(Tensor grads, int l){
-		hWeight[l] = hWeight[l].add(grads.mul(grads));
-		return grads.mul(learnRate).div(hWeight[l].map(x -> Math.sqrt(x)).add(epsilon));
-	}
-	
-	@Override
-	public Tensor optimizeBias(Tensor grads, int l){
-		hBias[l] = hBias[l].add(grads.mul(grads));
-		return grads.mul(learnRate).div(hBias[l].map(x -> Math.sqrt(x)).add(epsilon));
+	public Tensor optimize(Tensor grads, Tensor[] params){
+		// parameter: sum of squared gradients
+		params[0] = params[0].add(grads.mul(grads));
+		return grads.mul(learnRate).div(params[0].map(x -> Math.sqrt(x)).add(epsilon));
 	}
 }

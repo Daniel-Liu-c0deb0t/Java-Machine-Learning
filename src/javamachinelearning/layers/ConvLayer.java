@@ -7,11 +7,14 @@ import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
-public class ConvLayer implements ParamsLayer{
+public class ConvLayer implements FeedForwardParamsLayer{
 	private Tensor weights;
-	private Tensor deltaWeightGrads;
+	private Tensor gradWeights;
+	private Tensor[] weightExtraParams;
+	
 	private Tensor bias;
-	private Tensor deltaBiasGrads;
+	private Tensor gradBias;
+	private Tensor[] biasExtraParams;
 	
 	private int[] prevShape;
 	private int[] nextShape;
@@ -112,13 +115,13 @@ public class ConvLayer implements ParamsLayer{
 			if(useBias)
 				bias = new Tensor(new int[]{1, 1, filterCount}, false);
 		}
-		deltaWeightGrads = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, false);
+		gradWeights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, false);
 		if(useBias)
-			deltaBiasGrads = new Tensor(new int[]{1, 1, filterCount}, false);
+			gradBias = new Tensor(new int[]{1, 1, filterCount}, false);
 	}
 	
 	@Override
-	public ParamsLayer withParams(Tensor w, Tensor b){
+	public FeedForwardParamsLayer withParams(Tensor w, Tensor b){
 		weights = w;
 		if(useBias)
 			bias = b;
@@ -127,7 +130,7 @@ public class ConvLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public ParamsLayer noBias(){
+	public FeedForwardParamsLayer noBias(){
 		useBias = false;
 		return this;
 	}
@@ -195,7 +198,7 @@ public class ConvLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
 		// calculate weight gradients and bias gradients
@@ -240,18 +243,13 @@ public class ConvLayer implements ParamsLayer{
 			}
 		}
 		
-		if(regularizer == null){
-			deltaWeightGrads = deltaWeightGrads.add(new Tensor(weights.shape(), deltaW));
-		}else{ // also add the regularization derivative if necessary
-			deltaWeightGrads = deltaWeightGrads.add(
-					new Tensor(weights.shape(), deltaW).add(regularizer.derivative(weights)));
-		}
+		gradWeights = gradWeights.add(new Tensor(weights.shape(), deltaW));
 		
 		if(useBias)
-			deltaBiasGrads = deltaBiasGrads.add(new Tensor(bias.shape(), deltaB));
+			gradBias = gradBias.add(new Tensor(bias.shape(), deltaB));
 		
-		// calculate the next error gradients
-		double[] nextError = new double[prevRes.size()];
+		// calculate the gradients wrt input
+		double[] gradInputs = new double[prevRes.size()];
 		gradIdx = 0;
 		
 		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
@@ -273,7 +271,7 @@ public class ConvLayer implements ParamsLayer{
 								
 								// multiply gradients by each weight
 								// accumulate gradients for each input
-								nextError[inIdx] += grads.flatGet(gradIdx) *
+								gradInputs[inIdx] += grads.flatGet(gradIdx) *
 										weights.flatGet(rx * wMult[0] + ry * wMult[1] + depth * wMult[2] + filter);
 							}
 						}
@@ -286,25 +284,44 @@ public class ConvLayer implements ParamsLayer{
 		
 		changeCount++;
 		
-		return new Tensor(prevShape, nextError);
+		return new Tensor(prevShape, gradInputs);
 	}
 	
 	@Override
-	public void update(Optimizer optimizer, int l){
-		weights = weights.sub(
-				optimizer.optimizeWeight(deltaWeightGrads.div(Math.max(changeCount, 1)), l));
-		deltaWeightGrads = new Tensor(deltaWeightGrads.shape(), false);
+	public void update(Optimizer optimizer, Regularizer regularizer){
+		if(weightExtraParams == null){
+			weightExtraParams = new Tensor[optimizer.extraParams()];
+			for(int i = 0; i < weightExtraParams.length; i++){
+				weightExtraParams[i] = new Tensor(weights.shape(), false);
+			}
+			
+			if(useBias){
+				biasExtraParams = new Tensor[optimizer.extraParams()];
+				for(int i = 0; i < biasExtraParams.length; i++){
+					biasExtraParams[i] = new Tensor(bias.shape(), false);
+				}
+			}
+		}
+		
+		if(regularizer == null){
+			weights = weights.sub(
+					optimizer.optimize(
+							gradWeights.div(Math.max(changeCount, 1)), weightExtraParams));
+		}else{
+			weights = weights.sub(
+					optimizer.optimize(
+							gradWeights.div(Math.max(changeCount, 1)).add(
+									regularizer.derivative(weights)), weightExtraParams));
+		}
+		gradWeights = new Tensor(gradWeights.shape(), false);
+		
 		if(useBias){
 			bias = bias.sub(
-					optimizer.optimizeBias(deltaBiasGrads.div(Math.max(changeCount, 1)), l));
-			deltaBiasGrads = new Tensor(deltaBiasGrads.shape(), false);
+					optimizer.optimize(
+							gradBias.div(Math.max(changeCount, 1)), biasExtraParams));
+			gradBias = new Tensor(gradBias.shape(), false);
 		}
 		changeCount = 0;
-	}
-	
-	@Override
-	public Activation getActivation(){
-		return activation;
 	}
 	
 	@Override

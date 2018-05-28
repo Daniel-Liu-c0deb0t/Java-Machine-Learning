@@ -3,7 +3,7 @@ package javamachinelearning.layers;
 import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
-public class AvgPoolingLayer implements Layer{
+public class AvgPoolingLayer implements FeedForwardLayer{
 	private int[] prevShape;
 	private int[] nextShape;
 	private int winWidth, winHeight;
@@ -90,7 +90,7 @@ public class AvgPoolingLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
 		double[] res = new double[prevShape[0] * prevShape[1] * prevShape[2]];
 		int outIdx = 0;
 		

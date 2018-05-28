@@ -7,9 +7,6 @@ public class MomentumOptimizer implements Optimizer{
 	private double mu; // friction to decay momentum
 	private boolean useNesterov;
 	
-	private Tensor[] vWeight;
-	private Tensor[] vBias;
-	
 	public MomentumOptimizer(){
 		this.learnRate = 0.1;
 		this.mu = 0.9;
@@ -35,16 +32,8 @@ public class MomentumOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public void init(int[][] weightShapes, int[][] biasShapes){
-		vWeight = new Tensor[weightShapes.length];
-		vBias = new Tensor[weightShapes.length];
-		
-		for(int i = 0; i < weightShapes.length; i++){
-			if(weightShapes[i] != null)
-				vWeight[i] = new Tensor(weightShapes[i], false);
-			if(biasShapes[i] != null)
-				vBias[i] = new Tensor(biasShapes[i], false);
-		}
+	public int extraParams(){
+		return 1;
 	}
 	
 	@Override
@@ -53,26 +42,15 @@ public class MomentumOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public Tensor optimizeWeight(Tensor grads, int l){
+	public Tensor optimize(Tensor grads, Tensor[] params){
+		// parameter: velocity
 		if(useNesterov){
-			Tensor prev = vWeight[l];
-			vWeight[l] = vWeight[l].mul(mu).sub(grads.mul(learnRate));
-			return prev.mul(mu).sub(vWeight[l].mul(1.0 + mu)); // is negated
+			Tensor prev = params[0];
+			params[0] = params[0].mul(mu).sub(grads.mul(learnRate));
+			return prev.mul(mu).sub(params[0].mul(1.0 + mu)); // is negated
 		}else{
-			vWeight[l] = vWeight[l].mul(mu).sub(grads.mul(learnRate));
-			return vWeight[l].mul(-1.0); // is negated
-		}
-	}
-	
-	@Override
-	public Tensor optimizeBias(Tensor grads, int l){
-		if(useNesterov){
-			Tensor prev = vBias[l];
-			vBias[l] = vBias[l].mul(mu).sub(grads.mul(learnRate));
-			return prev.mul(mu).sub(vBias[l].mul(1.0 + mu)); // is negated
-		}else{
-			vBias[l] = vBias[l].mul(mu).sub(grads.mul(learnRate));
-			return vBias[l].mul(-1.0); // is negated
+			params[0] = params[0].mul(mu).sub(grads.mul(learnRate));
+			return params[0].mul(-1.0); // is negated
 		}
 	}
 }

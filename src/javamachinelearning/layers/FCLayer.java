@@ -7,11 +7,14 @@ import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
-public class FCLayer implements ParamsLayer{
+public class FCLayer implements FeedForwardParamsLayer{
 	private Tensor weights;
-	private Tensor deltaWeightGrads;
+	private Tensor gradWeights;
+	private Tensor[] weightExtraParams; // extra optimization parameters for weights
+	
 	private Tensor bias;
-	private Tensor deltaBiasGrads;
+	private Tensor gradBias;
+	private Tensor[] biasExtraParams; // extra optimization parameters for biases
 	
 	private Activation activation;
 	private int prevSize;
@@ -43,13 +46,13 @@ public class FCLayer implements ParamsLayer{
 			if(useBias)
 				this.bias = new Tensor(new int[]{nextSize}, false);
 		}
-		this.deltaWeightGrads = new Tensor(new int[]{prevSize[0], nextSize}, false);
+		this.gradWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
 		if(useBias)
-			this.deltaBiasGrads = new Tensor(new int[]{nextSize}, false);
+			this.gradBias = new Tensor(new int[]{nextSize}, false);
 	}
 	
 	@Override
-	public ParamsLayer withParams(Tensor w, Tensor b){
+	public FeedForwardParamsLayer withParams(Tensor w, Tensor b){
 		weights = w;
 		if(useBias)
 			bias = b;
@@ -58,7 +61,7 @@ public class FCLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public ParamsLayer noBias(){
+	public FeedForwardParamsLayer noBias(){
 		useBias = false;
 		return this;
 	}
@@ -93,48 +96,64 @@ public class FCLayer implements ParamsLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
 		// error wrt layer output derivative
 		Tensor grads = error.mul(activation.derivative(nextRes));
 		
 		// error wrt weight derivative
-		if(regularizer == null){
-			deltaWeightGrads = deltaWeightGrads.add(prevRes.mulEach(grads));
-		}else{ // also add the regularization derivative if necessary
-			deltaWeightGrads = deltaWeightGrads.add(
-					prevRes.mulEach(grads).add(regularizer.derivative(weights)));
-		}
+		gradWeights = gradWeights.add(prevRes.mulEach(grads));
 		
 		// error wrt bias derivative
 		// not multiplied by previous outputs!
 		if(useBias)
-			deltaBiasGrads = deltaBiasGrads.add(grads);
+			gradBias = gradBias.add(grads);
 		
 		// new error should be affected by weights
-		Tensor nextError = weights.T().dot(grads);
+		Tensor gradInputs = weights.T().dot(grads);
 		
 		changeCount++;
 		
-		return nextError;
+		return gradInputs;
 	}
 	
 	@Override
-	public void update(Optimizer optimizer, int l){
+	public void update(Optimizer optimizer, Regularizer regularizer){
+		// initialize extra parameters
+		if(weightExtraParams == null){
+			weightExtraParams = new Tensor[optimizer.extraParams()];
+			for(int i = 0; i < weightExtraParams.length; i++){
+				weightExtraParams[i] = new Tensor(weights.shape(), false);
+			}
+			
+			if(useBias){
+				biasExtraParams = new Tensor[optimizer.extraParams()];
+				for(int i = 0; i < biasExtraParams.length; i++){
+					biasExtraParams[i] = new Tensor(bias.shape(), false);
+				}
+			}
+		}
+		
 		// handles postponed updates, by averaging accumulated gradients
-		weights = weights.sub(
-				optimizer.optimizeWeight(deltaWeightGrads.div(Math.max(changeCount, 1)), l));
-		deltaWeightGrads = new Tensor(deltaWeightGrads.shape(), false);
+		// add the regularization derivative if needed
+		if(regularizer == null){
+			weights = weights.sub(
+					optimizer.optimize(
+							gradWeights.div(Math.max(changeCount, 1)), weightExtraParams));
+		}else{
+			weights = weights.sub(
+					optimizer.optimize(
+							gradWeights.div(Math.max(changeCount, 1)).add(
+									regularizer.derivative(weights)), weightExtraParams));
+		}
+		gradWeights = new Tensor(gradWeights.shape(), false);
+		
 		if(useBias){
 			bias = bias.sub(
-					optimizer.optimizeBias(deltaBiasGrads.div(Math.max(changeCount, 1)), l));
-			deltaBiasGrads = new Tensor(deltaBiasGrads.shape(), false);
+					optimizer.optimize(
+							gradBias.div(Math.max(changeCount, 1)), biasExtraParams));
+			gradBias = new Tensor(gradBias.shape(), false);
 		}
 		changeCount = 0;
-	}
-	
-	@Override
-	public Activation getActivation(){
-		return activation;
 	}
 	
 	@Override

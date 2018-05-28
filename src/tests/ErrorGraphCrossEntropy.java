@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
 import javamachinelearning.layers.FCLayer;
-import javamachinelearning.layers.ParamsLayer;
+import javamachinelearning.layers.FeedForwardParamsLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
 import javamachinelearning.utils.Activation;
@@ -20,7 +20,7 @@ import javamachinelearning.utils.Utils;
 public class ErrorGraphCrossEntropy{
 	public static void main(String[] args) throws Exception{
 		SequentialNN nn = new SequentialNN(1);
-		ParamsLayer layer = new FCLayer(1, Activation.sigmoid).noBias();
+		FeedForwardParamsLayer layer = new FCLayer(1, Activation.sigmoid).noBias();
 		nn.add(layer);
 		
 		Tensor[] x = Utils.concat(Utils.standardDist(-0.5, -0.5, 0.1, 100), Utils.standardDist(0.5, 0.5, 0.1, 100));

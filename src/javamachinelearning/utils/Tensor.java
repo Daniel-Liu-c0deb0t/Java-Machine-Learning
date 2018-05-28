@@ -243,6 +243,14 @@ public class Tensor{
 		return data[idx];
 	}
 	
+	public Tensor get(int idx){
+		double[] res = new double[mult[0]];
+		for(int i = 0; i < mult[0]; i++){
+			res[i] = idx * mult[0] + i;
+		}
+		return new Tensor(new int[]{mult[0]}, res);
+	}
+	
 	public interface Function{
 		public double apply(double x);
 	}

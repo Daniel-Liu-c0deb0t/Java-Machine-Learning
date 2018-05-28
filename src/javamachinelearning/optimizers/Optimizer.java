@@ -3,11 +3,12 @@ package javamachinelearning.optimizers;
 import javamachinelearning.utils.Tensor;
 
 public interface Optimizer{
-	// should be called before optimizer is used
-	public void init(int[][] weightShapes, int[][] biasShapes);
-	// called every training iteration, after optimizing weights/bias
+	// called every training iteration, after optimizing weights/biases
 	public void update();
 	
-	public Tensor optimizeWeight(Tensor grads, int l);
-	public Tensor optimizeBias(Tensor grads, int l);
+	// how many extra parameters per weight/bias
+	public int extraParams();
+	
+	// some optimizers might modify the extra params!
+	public Tensor optimize(Tensor grads, Tensor[] params);
 }

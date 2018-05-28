@@ -12,7 +12,7 @@ import javamachinelearning.layers.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
-import javamachinelearning.utils.Utils;
+import javamachinelearning.utils.TensorUtils;
 
 public class TestMNISTDraw2{
 	public static void main(String[] args){
@@ -38,7 +38,7 @@ public class TestMNISTDraw2{
 		submitButton.addActionListener((e) -> {
 			Tensor data = drawablePanel.getData(28, 28);
 			Tensor result = nn.predict(data.flatten());
-			label.setText("Result: " + Utils.argMax(result));
+			label.setText("Result: " + TensorUtils.argMax(result));
 		});
 		frame.add(submitButton);
 		

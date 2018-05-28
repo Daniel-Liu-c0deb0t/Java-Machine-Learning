@@ -14,8 +14,8 @@ public class SGDOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public void init(int[][] weightShapes, int[][] biasShapes){
-		// nothing to do
+	public int extraParams(){
+		return 0;
 	}
 	
 	@Override
@@ -24,12 +24,7 @@ public class SGDOptimizer implements Optimizer{
 	}
 	
 	@Override
-	public Tensor optimizeWeight(Tensor grads, int l){
-		return grads.mul(learnRate);
-	}
-	
-	@Override
-	public Tensor optimizeBias(Tensor grads, int l){
+	public Tensor optimize(Tensor grads, Tensor[] params){
 		return grads.mul(learnRate);
 	}
 }

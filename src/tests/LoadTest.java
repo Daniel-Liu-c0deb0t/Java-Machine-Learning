@@ -1,6 +1,6 @@
 package tests;
 
-import static javamachinelearning.utils.TensorUtils.t;
+import static javamachinelearning.utils.TensorUtils.*;
 
 import java.awt.Color;
 
@@ -11,7 +11,6 @@ import javamachinelearning.graphs.GraphPanel;
 import javamachinelearning.layers.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.utils.Activation;
-import javamachinelearning.utils.Utils;
 
 public class LoadTest{
 	public static void main(String[] args){
@@ -26,7 +25,7 @@ public class LoadTest{
 		JFrame frame = new JFrame();
 		
 		Graph graph = new Graph(1000, 1000, null, null, null, (x2, y2) -> {
-			return intToColor1[Utils.argMax(net.predict(t(x2, y2)))];
+			return intToColor1[argMax(net.predict(t(x2, y2)))];
 		});
 		graph.useCustomScale(0, 1, 0, 1);
 		graph.draw();

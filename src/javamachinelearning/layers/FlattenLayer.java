@@ -3,7 +3,7 @@ package javamachinelearning.layers;
 import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
-public class FlattenLayer implements Layer{
+public class FlattenLayer implements FeedForwardLayer{
 	private int[] prevShape;
 	private int nextSize;
 	
@@ -36,7 +36,7 @@ public class FlattenLayer implements Layer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error, Regularizer regularizer){
+	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
 		return error.reshape(prevShape);
 	}
 }

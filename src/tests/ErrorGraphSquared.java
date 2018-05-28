@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
 import javamachinelearning.layers.FCLayer;
-import javamachinelearning.layers.ParamsLayer;
+import javamachinelearning.layers.FeedForwardParamsLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
 import javamachinelearning.utils.Activation;
@@ -19,7 +19,7 @@ import javamachinelearning.utils.Tensor;
 public class ErrorGraphSquared{
 	public static void main(String[] args){
 		SequentialNN nn = new SequentialNN(1);
-		ParamsLayer layer = new FCLayer(1, Activation.linear).noBias();
+		FeedForwardParamsLayer layer = new FCLayer(1, Activation.linear).noBias();
 		nn.add(layer);
 		
 		Tensor[] x = {
