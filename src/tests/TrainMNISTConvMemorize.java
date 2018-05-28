@@ -1,11 +1,11 @@
 package tests;
 
-import javamachinelearning.layers.ConvLayer;
-import javamachinelearning.layers.DropoutLayer;
-import javamachinelearning.layers.FCLayer;
-import javamachinelearning.layers.FlattenLayer;
-import javamachinelearning.layers.MaxPoolingLayer;
-import javamachinelearning.layers.ConvLayer.PaddingType;
+import javamachinelearning.layers.feedforward.ConvLayer;
+import javamachinelearning.layers.feedforward.DropoutLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
+import javamachinelearning.layers.feedforward.FlattenLayer;
+import javamachinelearning.layers.feedforward.MaxPoolingLayer;
+import javamachinelearning.layers.feedforward.ConvLayer.PaddingType;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.AdamOptimizer;
 import javamachinelearning.utils.Activation;
@@ -34,7 +34,7 @@ public class TrainMNISTConvMemorize{
 		
 		long start = System.currentTimeMillis();
 		
-		nn.fit(Utils.reshapeAll(x, 28, 28, 1), y, 20, 10, Loss.softmaxCrossEntropy, new AdamOptimizer(0.001), null, true, false, false);
+		nn.train(Utils.reshapeAll(x, 28, 28, 1), y, 20, 10, Loss.softmaxCrossEntropy, new AdamOptimizer(0.001), null, true, false, false);
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		

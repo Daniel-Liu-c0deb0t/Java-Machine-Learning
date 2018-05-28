@@ -2,7 +2,7 @@ package tests;
 
 import static javamachinelearning.utils.TensorUtils.t;
 
-import javamachinelearning.layers.FCLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.MomentumOptimizer;
 import javamachinelearning.utils.Activation;
@@ -26,7 +26,7 @@ public class LogicGates{
 				t(1),
 				t(0)
 		};
-		net.fit(x, y, 2000, 4, Loss.binaryCrossEntropy, new MomentumOptimizer(0.1, true), null, true, true, true);
+		net.train(x, y, 2000, 4, Loss.binaryCrossEntropy, new MomentumOptimizer(0.1, true), null, true, true, true);
 		
 		System.out.println(net.predict(t(0, 0)));
 		System.out.println(net.predict(t(1, 0)));

@@ -1,4 +1,4 @@
-package javamachinelearning.layers;
+package javamachinelearning.layers.recurrent;
 
 import java.nio.ByteBuffer;
 
@@ -24,38 +24,16 @@ public class GRUCell implements RecurrentCell{
 	private Tensor[] resetBParams, updateBParams, memoryBParams;
 	
 	// cached values for backpropagation
-	private Tensor reset, update, memory;
+	private Tensor[] reset, update, memory;
 	
 	private boolean useBias = true;
-	private int changeCount;
 	
-	public GRUCell(int size, Activation activation){
-		this.size = size;
+	public GRUCell(Activation activation){
 		this.activation = activation;
-		
-		resetW = new Tensor(new int[]{size, size}, true);
-		updateW = new Tensor(new int[]{size, size}, true);
-		memoryW = new Tensor(new int[]{size, size}, true);
-		
-		resetU = new Tensor(new int[]{size, size}, true);
-		updateU = new Tensor(new int[]{size, size}, true);
-		memoryU = new Tensor(new int[]{size, size}, true);
-		
-		resetB = new Tensor(new int[]{size}, false);
-		updateB = new Tensor(new int[]{size}, false);
-		memoryB = new Tensor(new int[]{size}, false);
-		
-		gradResetW = new Tensor(new int[]{size, size}, false);
-		gradUpdateW = new Tensor(new int[]{size, size}, false);
-		gradMemoryW = new Tensor(new int[]{size, size}, false);
-		
-		gradResetU = new Tensor(new int[]{size, size}, false);
-		gradUpdateU = new Tensor(new int[]{size, size}, false);
-		gradMemoryU = new Tensor(new int[]{size, size}, false);
-		
-		gradResetB = new Tensor(new int[]{size}, false);
-		gradUpdateB = new Tensor(new int[]{size}, false);
-		gradMemoryB = new Tensor(new int[]{size}, false);
+	}
+	
+	public GRUCell(){
+		this(Activation.tanh);
 	}
 	
 	@Override
@@ -80,7 +58,46 @@ public class GRUCell implements RecurrentCell{
 	}
 	
 	@Override
-	public Tensor forwardPropagate(Tensor input, Tensor prevState, boolean training){
+	public void init(int inputSize, int numTotalCells){
+		size = inputSize;
+		
+		// initialize weights/biases and their gradient accumulators
+		resetW = new Tensor(new int[]{size, size}, true);
+		updateW = new Tensor(new int[]{size, size}, true);
+		memoryW = new Tensor(new int[]{size, size}, true);
+		
+		resetU = new Tensor(new int[]{size, size}, true);
+		updateU = new Tensor(new int[]{size, size}, true);
+		memoryU = new Tensor(new int[]{size, size}, true);
+		
+		if(useBias){
+			resetB = new Tensor(new int[]{size}, false);
+			updateB = new Tensor(new int[]{size}, false);
+			memoryB = new Tensor(new int[]{size}, false);
+		}
+		
+		gradResetW = new Tensor(new int[]{size, size}, false);
+		gradUpdateW = new Tensor(new int[]{size, size}, false);
+		gradMemoryW = new Tensor(new int[]{size, size}, false);
+		
+		gradResetU = new Tensor(new int[]{size, size}, false);
+		gradUpdateU = new Tensor(new int[]{size, size}, false);
+		gradMemoryU = new Tensor(new int[]{size, size}, false);
+		
+		if(useBias){
+			gradResetB = new Tensor(new int[]{size}, false);
+			gradUpdateB = new Tensor(new int[]{size}, false);
+			gradMemoryB = new Tensor(new int[]{size}, false);
+		}
+		
+		// used to cache computed results
+		reset = new Tensor[numTotalCells];
+		update = new Tensor[numTotalCells];
+		memory = new Tensor[numTotalCells];
+	}
+	
+	@Override
+	public Tensor forwardPropagate(int t, Tensor input, Tensor prevState, boolean training){
 		// forward propagate equations
 		// omits some details regarding matrix multiplications and stuff
 		// reset = sigmoid(input * resetW + prevState * resetU + resetB)
@@ -89,35 +106,35 @@ public class GRUCell implements RecurrentCell{
 		// state = (1 - update) * memory + update * prevState
 		
 		if(useBias)
-			reset = Activation.sigmoid.activate(resetW.dot(input).add(resetU.dot(prevState)).add(resetB));
+			reset[t] = Activation.sigmoid.activate(resetW.dot(input).add(resetU.dot(prevState)).add(resetB));
 		else
-			reset = Activation.sigmoid.activate(resetW.dot(input).add(resetU.dot(prevState)));
+			reset[t] = Activation.sigmoid.activate(resetW.dot(input).add(resetU.dot(prevState)));
 		
 		if(useBias)
-			update = Activation.sigmoid.activate(updateW.dot(input).add(updateU.dot(prevState)).add(updateB));
+			update[t] = Activation.sigmoid.activate(updateW.dot(input).add(updateU.dot(prevState)).add(updateB));
 		else
-			update = Activation.sigmoid.activate(updateW.dot(input).add(updateU.dot(prevState)));
+			update[t] = Activation.sigmoid.activate(updateW.dot(input).add(updateU.dot(prevState)));
 		
 		// the activation here can be something other than tanh
 		if(useBias)
-			memory = activation.activate(memoryW.dot(input).add(memoryU.dot(prevState.mul(reset))).add(memoryB));
+			memory[t] = activation.activate(memoryW.dot(input).add(memoryU.dot(prevState.mul(reset[t]))).add(memoryB));
 		else
-			memory = activation.activate(memoryW.dot(input).add(memoryU.dot(prevState.mul(reset))));
+			memory[t] = activation.activate(memoryW.dot(input).add(memoryU.dot(prevState.mul(reset[t]))));
 		
-		return update.map(x -> 1.0 - x).mul(memory).add(update.mul(prevState));
+		return update[t].map(x -> 1.0 - x).mul(memory[t]).add(update[t].mul(prevState));
 	}
 	
 	@Override
-	public Tensor[] backPropagate(Tensor input, Tensor prevState, Tensor error){
+	public Tensor[] backPropagate(int t, Tensor input, Tensor prevState, Tensor error){
 		// first, gather gradients for the memory, reset, and update equations (multiplied by activation derivatives)
 		// second, calculate gradients wrt weights/biases
 		// third, accumulate gradients wrt prevState and inputs
 		
-		Tensor gradMemory = error.mul(update.map(x -> 1.0 - x)).mul(activation.derivative(memory));
+		Tensor gradMemory = error.mul(update[t].map(x -> 1.0 - x)).mul(activation.derivative(memory[t]));
 		
-		Tensor gradUpdate = error.mul(prevState.sub(memory)).mul(Activation.sigmoid.derivative(update));
+		Tensor gradUpdate = error.mul(prevState.sub(memory[t])).mul(Activation.sigmoid.derivative(update[t]));
 		
-		Tensor gradReset = memoryU.T().dot(gradMemory).mul(prevState).mul(Activation.sigmoid.derivative(reset));
+		Tensor gradReset = memoryU.T().dot(gradMemory).mul(prevState).mul(Activation.sigmoid.derivative(reset[t]));
 		
 		gradResetW = gradResetW.add(input.mulEach(gradReset));
 		gradResetU = gradResetU.add(prevState.mulEach(gradReset));
@@ -126,7 +143,7 @@ public class GRUCell implements RecurrentCell{
 		gradUpdateU = gradUpdateU.add(prevState.mulEach(gradUpdate));
 		
 		gradMemoryW = gradMemoryW.add(input.mulEach(gradMemory));
-		gradMemoryU = gradMemoryU.add(prevState.mul(reset).mulEach(gradMemory));
+		gradMemoryU = gradMemoryU.add(prevState.mul(reset[t]).mulEach(gradMemory));
 		
 		if(useBias){
 			gradResetB = gradResetB.add(gradReset);
@@ -138,15 +155,13 @@ public class GRUCell implements RecurrentCell{
 				updateW.T().dot(gradUpdate)).add(memoryW.T().dot(gradMemory));
 		
 		Tensor gradPrevState = resetU.T().dot(gradReset).add(
-				updateU.T().dot(gradUpdate)).add(memoryU.T().dot(gradMemory).mul(reset)).add(error.mul(update));
-		
-		changeCount++;
+				updateU.T().dot(gradUpdate)).add(memoryU.T().dot(gradMemory).mul(reset[t])).add(error.mul(update[t]));
 		
 		return new Tensor[]{gradInput, gradPrevState};
 	}
 	
 	@Override
-	public void update(Optimizer optimizer, Regularizer regularizer){
+	public void update(Optimizer optimizer, Regularizer regularizer, int changeCount){
 		// initialize all extra parameters that are used for optimization
 		if(resetWParams == null){
 			resetWParams = new Tensor[optimizer.extraParams()];
@@ -234,8 +249,6 @@ public class GRUCell implements RecurrentCell{
 			gradUpdateB = new Tensor(gradUpdateB.shape(), false);
 			gradMemoryB = new Tensor(gradMemoryB.shape(), false);
 		}
-		
-		changeCount = 0;
 	}
 	
 	@Override

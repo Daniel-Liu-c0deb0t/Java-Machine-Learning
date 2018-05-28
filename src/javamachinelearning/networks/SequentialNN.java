@@ -80,17 +80,17 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	}
 	
 	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle){
-		fit(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, false, false, null);
+	public void train(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle){
+		train(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, false, false, null);
 	}
 	
 	@Override
-	public void fit(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, boolean printNet){
-		fit(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, verbose, printNet, null);
+	public void train(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, boolean printNet){
+		train(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, verbose, printNet, null);
 	}
 	
 	@Override
-	public void fit(Tensor[] inputParam, Tensor[] targetParam, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, boolean printNet, ProgressFunction f){
+	public void train(Tensor[] inputParam, Tensor[] targetParam, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, boolean printNet, ProgressFunction f){
 		// make sure shuffling does not affect the input data
 		Tensor[] input = inputParam.clone();
 		Tensor[] target = targetParam.clone();
@@ -130,7 +130,6 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				// calculate derivative of the loss function and backpropagate
 				Tensor lossDerivative = loss.derivative(res[res.length - 1], target[j]);
 				backPropagate(res, lossDerivative);
-				optimizer.update();
 				
 				// update weights and biases if batch size is reached
 				if(j + 1 % batchSize == 0 || j == input.length - 1){
@@ -138,6 +137,8 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 						if(layers.get(k) instanceof ParamsLayer)
 							((ParamsLayer)layers.get(k)).update(optimizer, regularizer);
 					}
+					
+					optimizer.update();
 				}
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){

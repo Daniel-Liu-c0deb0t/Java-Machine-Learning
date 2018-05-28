@@ -1,7 +1,6 @@
 package javamachinelearning.networks;
 
 import javamachinelearning.layers.Layer;
-import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
 public interface NeuralNetwork{

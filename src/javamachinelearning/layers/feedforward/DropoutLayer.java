@@ -1,8 +1,7 @@
-package javamachinelearning.layers;
+package javamachinelearning.layers.feedforward;
 
 import java.util.Random;
 
-import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
 public class DropoutLayer implements FeedForwardLayer{

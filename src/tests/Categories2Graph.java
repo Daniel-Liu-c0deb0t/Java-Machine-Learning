@@ -8,7 +8,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
-import javamachinelearning.layers.FCLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.AdamOptimizer;
 import javamachinelearning.utils.Activation;
@@ -43,7 +43,7 @@ public class Categories2Graph{
 		}
 		Tensor[] y = Utils.concat(y1, y2, y3, y4);
 		
-		net.fit(x, y, 1000, 10, Loss.binaryCrossEntropy, new AdamOptimizer(0.01), null, true, true, false);
+		net.train(x, y, 1000, 10, Loss.binaryCrossEntropy, new AdamOptimizer(0.01), null, true, true, false);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

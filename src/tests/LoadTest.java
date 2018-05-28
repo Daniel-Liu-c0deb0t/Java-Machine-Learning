@@ -1,6 +1,7 @@
 package tests;
 
-import static javamachinelearning.utils.TensorUtils.*;
+import static javamachinelearning.utils.TensorUtils.argMax;
+import static javamachinelearning.utils.TensorUtils.t;
 
 import java.awt.Color;
 
@@ -8,7 +9,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
-import javamachinelearning.layers.FCLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.utils.Activation;
 

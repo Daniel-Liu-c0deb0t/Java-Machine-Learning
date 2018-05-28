@@ -1,6 +1,6 @@
 package tests;
 
-import javamachinelearning.layers.FCLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.MNISTUtils;

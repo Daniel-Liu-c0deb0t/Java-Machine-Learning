@@ -1,6 +1,7 @@
 package tests;
 
-import static javamachinelearning.utils.TensorUtils.*;
+import static javamachinelearning.utils.TensorUtils.argMax;
+import static javamachinelearning.utils.TensorUtils.t;
 
 import java.awt.Color;
 
@@ -8,7 +9,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
-import javamachinelearning.layers.FCLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
 import javamachinelearning.regularizers.L2Regularizer;
@@ -44,7 +45,7 @@ public class SaveTest{
 				t(0, 0, 0, 1)
 		};
 		
-		net.fit(x, y, 1000, 4, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), new L2Regularizer(0.1), true, true, true);
+		net.train(x, y, 1000, 4, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), new L2Regularizer(0.1), true, true, true);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

@@ -8,8 +8,8 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
-import javamachinelearning.layers.FCLayer;
-import javamachinelearning.layers.FeedForwardParamsLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
+import javamachinelearning.layers.feedforward.FeedForwardParamsLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
 import javamachinelearning.utils.Activation;
@@ -63,7 +63,7 @@ public class ErrorGraphSquared{
 		
 		layer.setWeights(t(0.01).reshape(1, 1));
 		
-		nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, false, false, (epoch, loss) -> {
+		nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, false, false, (epoch, loss) -> {
 			graph.addPoint(layer.weights().flatGet(0),
 					Loss.squared.loss(nn.predict(t(5)), t(5 * 5)), Color.green);
 			graph.draw();

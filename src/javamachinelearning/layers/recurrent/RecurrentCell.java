@@ -1,10 +1,9 @@
-package javamachinelearning.layers;
+package javamachinelearning.layers.recurrent;
 
 import java.nio.ByteBuffer;
 
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
 public interface RecurrentCell{
@@ -12,10 +11,11 @@ public interface RecurrentCell{
 	
 	public int[] nextSize();
 	public int[] prevSize();
-	public Tensor forwardPropagate(Tensor input, Tensor prevState, boolean training);
+	public void init(int inputSize, int numTotalCells);
+	public Tensor forwardPropagate(int t, Tensor input, Tensor prevState, boolean training);
 	// backpropagation should return two tensors for the input and the previous state
-	public Tensor[] backPropagate(Tensor input, Tensor prevState, Tensor error);
-	public void update(Optimizer optimizer, Regularizer regularizer);
+	public Tensor[] backPropagate(int t, Tensor input, Tensor prevState, Tensor error);
+	public void update(Optimizer optimizer, Regularizer regularizer, int changeCount);
 	public int byteSize();
 	public ByteBuffer bytes();
 	public void readBytes(ByteBuffer bb);

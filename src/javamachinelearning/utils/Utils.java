@@ -1,6 +1,7 @@
 package javamachinelearning.utils;
 
-import static javamachinelearning.utils.TensorUtils.*;
+import static javamachinelearning.utils.TensorUtils.argMax;
+import static javamachinelearning.utils.TensorUtils.t;
 
 import java.util.Arrays;
 import java.util.Random;

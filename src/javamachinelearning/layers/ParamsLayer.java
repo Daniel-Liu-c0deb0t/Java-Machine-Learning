@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
-import javamachinelearning.utils.Activation;
 
 public interface ParamsLayer extends Layer{
 	// if biases shouldn't be used

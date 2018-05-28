@@ -1,5 +1,6 @@
-package javamachinelearning.layers;
+package javamachinelearning.layers.feedforward;
 
+import javamachinelearning.layers.ParamsLayer;
 import javamachinelearning.utils.Tensor;
 
 public interface FeedForwardParamsLayer extends FeedForwardLayer, ParamsLayer{

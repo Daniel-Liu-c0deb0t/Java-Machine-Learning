@@ -1,6 +1,5 @@
 package javamachinelearning.layers;
 
-import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
 public interface Layer{

@@ -1,6 +1,8 @@
 package tests;
 
-import static javamachinelearning.utils.TensorUtils.*;
+import static javamachinelearning.utils.TensorUtils.argMax;
+import static javamachinelearning.utils.TensorUtils.oneHotEncode;
+import static javamachinelearning.utils.TensorUtils.t;
 
 import java.awt.Color;
 
@@ -8,7 +10,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
-import javamachinelearning.layers.FCLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
 import javamachinelearning.regularizers.L2Regularizer;
@@ -41,7 +43,7 @@ public class Categories4Graph{
 			y4[i] = oneHotEncode(3, 4);
 		}
 		Tensor[] y = Utils.concat(y1, y2, y3, y4);
-		net.fit(x, y, 100, 10, Loss.softmaxCrossEntropy, new SGDOptimizer(1), new L2Regularizer(0.01), true, true, false);
+		net.train(x, y, 100, 10, Loss.softmaxCrossEntropy, new SGDOptimizer(1), new L2Regularizer(0.01), true, true, false);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

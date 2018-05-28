@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
-import javamachinelearning.layers.FCLayer;
+import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
 import javamachinelearning.utils.Activation;
@@ -36,7 +36,7 @@ public class LinearGraph{
 				t(3 + 20 + 1)
 		};
 		
-		nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
+		nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
 		
 		System.out.println(nn.predict(t(5)));
 		

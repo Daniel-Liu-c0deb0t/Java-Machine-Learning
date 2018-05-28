@@ -1,6 +1,5 @@
-package javamachinelearning.layers;
+package javamachinelearning.layers.feedforward;
 
-import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Tensor;
 
 public class FlattenLayer implements FeedForwardLayer{

@@ -1,4 +1,4 @@
-package javamachinelearning.layers;
+package javamachinelearning.layers.feedforward;
 
 import java.nio.ByteBuffer;
 
