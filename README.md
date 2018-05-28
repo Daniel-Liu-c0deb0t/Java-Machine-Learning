@@ -4,15 +4,17 @@ Simple machine learning library for Java. The library is mainly for educational 
 This library recently got an overhaul that fixed many bugs and uses vectorized operations with a built-in tensor class, among many other features. The source code was also organized and comments were added.
 
 ## Features:
-- Feed-forward and backpropagration for different layers
+- Feed-forward layers
   - Fully connected
   - Convolutional (2D convolution on 3D inputs with 4D weights)
   - Max/Average Pooling
   - Dropout
   - Flatten (Conv/Pooling -> FC)
-- Adam, Adagrad, and SGD optimizers
+- Recurrent layer
+	- GRU Cells
+- Adam, Adagrad, momentum (nesterov), and SGD optimizers
 - Mini-batch gradient descent
-  - Average weight adjustments through a batch
+  - Average gradients throughout a batch
 - Sigmoid, tanh, relu, and softmax activation functions
 - L1, L2, and elastic net regularization
 - Squared loss, binary cross entropy, and multi-class cross entropy
@@ -29,7 +31,7 @@ This library recently got an overhaul that fixed many bugs and uses vectorized o
 ## Tutorial
 The API provided by this library is quite elegant (in my opinion) and very high level. A whole network can be created by initializing a `SequentialNN` class. That class provides the tools to add layers and build a complete network. When initializing that class, you need to specify the shape of the input as the parameter.
 
-Using the `add` method in `SequentialNN`, you can add layers to the sequential model. These layers will be evaluated in the order they are added during forward propagation. To forward propagate, use the predict function and provide input(s) as tensors. Tensors are multidimensional arrays that are represented in a flat, column major order format internally. However, provides a few contructors that accept (regular) row major arrays. To train a model, call the `fit` method with inputs and expected target outputs. This method has many parameters that can be changed, such as the loss function, optimizer, regularizer, etc. A callback function can even be provided for every epoch of training.
+Using the `add` method in `SequentialNN`, you can add layers to the sequential model. These layers will be evaluated in the order they are added during forward propagation. To forward propagate, use the predict function and provide input(s) as tensors. Tensors are multidimensional arrays that are represented in a flat, column major order format internally. However, it provides a few contructors that accept (regular) row major arrays. To train a model, call the `fit` method with inputs and expected target outputs. This method has many parameters that can be changed, such as the loss function, optimizer, regularizer, etc. A callback function can even be provided for every epoch of training.
 
 Here is a piece of code that does linear regression and graphs the resulting line.
 ```java
@@ -53,7 +55,7 @@ Tensor[] y = {
 	t(3 + 20 + 1)
 };
 
-nn.fit(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
+nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
 
 System.out.println(nn.predict(t(5)));
 
