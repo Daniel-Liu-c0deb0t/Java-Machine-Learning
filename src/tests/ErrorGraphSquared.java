@@ -53,19 +53,19 @@ public class ErrorGraphSquared{
 		for(int i = 0; i < n; i++){
 			double xx = i * (rangeEnd - rangeStart) / n + rangeStart;
 			xs[i] = xx;
-			layer.setWeights(t(xx).reshape(1, 1));
+			layer.setWeights(t(xx));
 			// y = 5x
-			ys[i] = Loss.squared.loss(nn.predict(t(5)), t(5 * 5));
+			ys[i] = Loss.squared.loss(nn.predict(t(5)), t(5 * 5)).reduce(0, (a, b) -> a + b);
 		}
 		graph.addLineGraph(xs, ys);
 		
 		graph.draw();
 		
-		layer.setWeights(t(0.01).reshape(1, 1));
+		layer.setWeights(t(0.01));
 		
 		nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, false, false, (epoch, loss) -> {
 			graph.addPoint(layer.weights().flatGet(0),
-					Loss.squared.loss(nn.predict(t(5)), t(5 * 5)), Color.green);
+					Loss.squared.loss(nn.predict(t(5)), t(5 * 5)).reduce(0, (a, b) -> a + b), Color.green);
 			graph.draw();
 		});
 		

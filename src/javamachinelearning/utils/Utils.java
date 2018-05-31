@@ -96,14 +96,6 @@ public class Utils{
 		return (double)totalCorrect / (double)output.length;
 	}
 	
-	public static double averageDeviation(Tensor[] output, Tensor[] target){
-		double sum = 0.0;
-		for(int i = 0; i < output.length; i++){
-			sum += Math.sqrt(Loss.squared.loss(output[i], target[i]));
-		}
-		return (double)sum / (double)output.length;
-	}
-	
 	public static int[] centerOfMass(double[][] arr){
 		double sumX = 0.0;
 		double sumY = 0.0;
@@ -205,5 +197,14 @@ public class Utils{
 			x[j] = xTemp;
 			y[j] = yTemp;
 		}
+	}
+	
+	// slides a window across a string and returns all of the substrings covered by the window
+	public static String[] slide(String s, int winSize){
+		String[] res = new String[s.length() - winSize + 1];
+		for(int i = 0; i < res.length; i++){
+			res[i] = s.substring(i, i + winSize);
+		}
+		return res;
 	}
 }

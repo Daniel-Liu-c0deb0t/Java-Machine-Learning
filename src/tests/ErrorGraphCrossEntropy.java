@@ -53,18 +53,18 @@ public class ErrorGraphCrossEntropy{
 		for(int i = 0; i < n; i++){
 			double xx = i * (rangeEnd - rangeStart) / n + rangeStart;
 			xs[i] = xx;
-			layer.setWeights(t(xx).reshape(1, 1));
-			ys[i] = Loss.binaryCrossEntropy.loss(nn.predict(t(0.3)), t(1));
+			layer.setWeights(t(xx));
+			ys[i] = Loss.binaryCrossEntropy.loss(nn.predict(t(0.3)), t(1)).reduce(0, (a, b) -> a + b);
 		}
 		graph.addLineGraph(xs, ys);
 		
 		graph.draw();
 		
-		layer.setWeights(t(0.01).reshape(1, 1));
+		layer.setWeights(t(0.01));
 		
 		nn.train(x, y, 100, 1, Loss.binaryCrossEntropy, new SGDOptimizer(1), null, false, false, false, (epoch, loss) -> {
 			graph.addPoint(layer.weights().flatGet(0),
-					Loss.binaryCrossEntropy.loss(nn.predict(t(0.3)), t(1)), Color.green);
+					Loss.binaryCrossEntropy.loss(nn.predict(t(0.3)), t(1)).reduce(0, (a, b) -> a + b), Color.green);
 			graph.draw();
 		});
 		

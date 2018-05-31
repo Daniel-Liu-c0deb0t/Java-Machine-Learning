@@ -12,7 +12,7 @@ public class FlattenLayer implements FeedForwardLayer{
 	
 	@Override
 	public int[] nextShape(){
-		return new int[]{nextSize};
+		return new int[]{1, nextSize};
 	}
 	
 	@Override
@@ -35,7 +35,7 @@ public class FlattenLayer implements FeedForwardLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
+	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
 		return error.reshape(prevShape);
 	}
 }

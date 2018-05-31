@@ -89,7 +89,7 @@ public class AvgPoolingLayer implements FeedForwardLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
+	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
 		double[] res = new double[prevShape[0] * prevShape[1] * prevShape[2]];
 		int outIdx = 0;
 		

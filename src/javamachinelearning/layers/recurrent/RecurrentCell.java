@@ -11,7 +11,7 @@ public interface RecurrentCell{
 	
 	public int[] nextSize();
 	public int[] prevSize();
-	public void init(int inputSize, int numTotalCells);
+	public void init(int inputSize, int numTimeSteps);
 	public Tensor forwardPropagate(int t, Tensor input, Tensor prevState, boolean training);
 	// backpropagation should return two tensors for the input and the previous state
 	public Tensor[] backPropagate(int t, Tensor input, Tensor prevState, Tensor error);

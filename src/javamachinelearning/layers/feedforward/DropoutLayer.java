@@ -7,13 +7,13 @@ import javamachinelearning.utils.Tensor;
 public class DropoutLayer implements FeedForwardLayer{
 	private double dropout;
 	private int[] shape;
-	private int size;
 	private Tensor mask;
 	
 	public DropoutLayer(){
 		this.dropout = 0.5;
 	}
 	
+	// chance to drop out an input
 	public DropoutLayer(double dropout){
 		this.dropout = dropout;
 	}
@@ -31,22 +31,18 @@ public class DropoutLayer implements FeedForwardLayer{
 	@Override
 	public void init(int[] prevSize){
 		shape = prevSize;
-		size = 1;
-		for(int i = 0; i < shape.length; i++){
-			size *= shape[i];
-		}
 	}
 	
 	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
 		if(training){
-			double[] arr = new double[size];
+			double[] arr = new double[input.size()];
 			Random r = new Random();
-			for(int i = 0; i < size; i++){
+			for(int i = 0; i < input.size(); i++){
 				// if not dropout, then scale the inputs
 				arr[i] = r.nextDouble() < dropout ? 0.0 : (1.0 / (1.0 - dropout));
 			}
-			mask = new Tensor(shape, arr);
+			mask = new Tensor(input.shape(), arr);
 			
 			return input.mul(mask);
 		}else{
@@ -56,7 +52,7 @@ public class DropoutLayer implements FeedForwardLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
+	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
 		// scale the gradients during backpropagation
 		return error.mul(mask);
 	}

@@ -44,8 +44,9 @@ public class Tensor{
 		}
 	}
 	
+	// will create a column vector
 	public Tensor(double[] d){
-		shape = new int[]{d.length};
+		shape = new int[]{1, d.length};
 		calcMult();
 		data = new double[size];
 		for(int i = 0; i < d.length; i++){
@@ -169,41 +170,27 @@ public class Tensor{
 	public Tensor dot(Tensor o){
 		// basically matrix multiply
 		// both must be 2D matrices
-		// second matrix can be 1D, but it will be treated as 2D
-		int[] s2;
-		if(o.shape.length == 1)
-			s2 = new int[]{1, o.shape[0]};
-		else
-			s2 = o.shape;
 		
-		double[] res = new double[s2[0] * shape[1]];
+		double[] res = new double[shape[1] * o.shape[0]];
 		int idx = 0;
 		
 		for(int i = 0; i < shape[1]; i++){
-			for(int j = 0; j < s2[0]; j++){
+			for(int j = 0; j < o.shape[0]; j++){
 				for(int k = 0; k < shape[0]; k++){
-					res[idx] += data[k * shape[1] + i] * o.data[j * s2[1] + k];
+					res[idx] += data[k * shape[1] + i] * o.data[j * o.shape[1] + k];
 				}
 				idx++;
 			}
 		}
 		
-		return new Tensor(new int[]{s2[0], shape[1]}, res);
-	}
-	
-	public Tensor mulEach(Tensor o){ // cartesian product, then multiply the pairs
-		double[] res = new double[size * o.size];
-		int idx = 0;
-		for(int i = 0; i < size; i++){
-			for(int j = 0; j < o.size; j++){
-				res[idx] = data[i] * o.data[j];
-				idx++;
-			}
-		}
-		return new Tensor(new int[]{size, o.size}, res);
+		// transpose because the array is column-wise, not row-wise
+		return new Tensor(new int[]{shape[1], o.shape[0]}, res).T();
 	}
 	
 	public Tensor T(){ // transposes 2D matrix
+		if(shape.length < 2)
+			return this;
+		
 		double[] res = new double[size];
 		int idx = 0;
 		for(int i = 0; i < shape[1]; i++){
@@ -216,7 +203,7 @@ public class Tensor{
 	}
 	
 	public Tensor flatten(){
-		return new Tensor(new int[]{size}, data);
+		return new Tensor(new int[]{1, size}, data);
 	}
 	
 	public Tensor reshape(int... s){
@@ -239,6 +226,74 @@ public class Tensor{
 		return res;
 	}
 	
+	// reduce only the last dimension
+	public Tensor reduceLast(double init, Function2 f){
+		double[] res = new double[size / shape[shape.length - 1]];
+		for(int i = 0; i < res.length; i++){
+			res[i] = init;
+		}
+		
+		for(int i = 0; i < size; i++){
+			int idx = i / shape[shape.length - 1];
+			res[idx] = f.apply(res[idx], data[i]);
+		}
+		
+		int[] newShape;
+		if(shape.length == 2){
+			newShape = new int[]{1, shape[0]};
+		}else{
+			newShape = new int[shape.length - 1];
+			for(int i = 0; i < shape.length - 1; i++){
+				newShape[i] = shape[i];
+			}
+		}
+		return new Tensor(newShape, res);
+	}
+	
+	// duplicate along last dimension + 1
+	public Tensor dupLast(int length){
+		double[] res = new double[size * length];
+		for(int i = 0; i < res.length; i++){
+			int idx = i / length;
+			res[i] = data[idx];
+		}
+		
+		int[] newShape;
+		if(shape[0] == 1 && shape.length == 2){
+			newShape = new int[]{shape[1], length};
+		}else{
+			newShape = new int[shape.length + 1];
+			for(int i = 0; i < shape.length; i++){
+				newShape[i] = shape[i];
+			}
+			newShape[shape.length] = length;
+		}
+		
+		return new Tensor(newShape, res);
+	}
+	
+	// stack copies of the tensor
+	public Tensor dupFirst(int length){
+		double[] res = new double[length * size];
+		for(int i = 0; i < res.length; i++){
+			int idx = i % size;
+			res[i] = data[idx];
+		}
+		
+		int[] newShape;
+		if(shape[0] == 1 && shape.length == 2){
+			newShape = new int[]{length, shape[1]};
+		}else{
+			newShape = new int[shape.length + 1];
+			for(int i = 0; i < shape.length; i++){
+				newShape[i + 1] = shape[i];
+			}
+			newShape[0] = length;
+		}
+		
+		return new Tensor(newShape, res);
+	}
+	
 	public double flatGet(int idx){
 		return data[idx];
 	}
@@ -248,7 +303,18 @@ public class Tensor{
 		for(int i = 0; i < mult[0]; i++){
 			res[i] = data[idx * mult[0] + i];
 		}
-		return new Tensor(new int[]{mult[0]}, res);
+		
+		int[] newShape;
+		if(shape.length == 2){
+			newShape = new int[]{1, shape[1]};
+		}else{
+			newShape = new int[shape.length - 1];
+			for(int i = 1; i < shape.length; i++){
+				newShape[i - 1] = shape[i];
+			}
+		}
+		
+		return new Tensor(newShape, res);
 	}
 	
 	public interface Function{

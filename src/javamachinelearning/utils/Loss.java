@@ -3,8 +3,8 @@ package javamachinelearning.utils;
 public interface Loss{
 	public static final Loss squared = new Loss(){
 		@Override
-		public double loss(Tensor x, Tensor t){
-			return x.sub(t).reduce(0, (a, b) -> a + b * b);
+		public Tensor loss(Tensor x, Tensor t){
+			return x.sub(t).map(val -> val * val);
 		}
 		
 		@Override
@@ -16,9 +16,9 @@ public interface Loss{
 	// multi-class classification
 	public static final Loss softmaxCrossEntropy = new Loss(){
 		@Override
-		public double loss(Tensor x, Tensor t){
+		public Tensor loss(Tensor x, Tensor t){
 			// because the target is a one hot vector
-			return -Math.log(x.flatGet(TensorUtils.argMax(t)));
+			return t.mul(x.map(val -> -Math.log(val)));
 		}
 		
 		@Override
@@ -31,12 +31,11 @@ public interface Loss{
 	// binary classification
 	public static final Loss binaryCrossEntropy = new Loss(){
 		@Override
-		public double loss(Tensor x, Tensor t){
+		public Tensor loss(Tensor x, Tensor t){
 			// because the target is 0 or 1
-			if(t.flatGet(0) == 0.0)
-				return -Math.log(1.0 - x.flatGet(0));
-			else
-				return -Math.log(x.flatGet(0));
+			Tensor a = t.mul(x.map(val -> -Math.log(val)));
+			Tensor b = t.map(val -> 1.0 - val).mul(x.map(val -> -Math.log(1.0 - val)));
+			return a.add(b);
 		}
 		
 		@Override
@@ -46,6 +45,6 @@ public interface Loss{
 		}
 	};
 	
-	public double loss(Tensor x, Tensor t);
+	public Tensor loss(Tensor x, Tensor t);
 	public Tensor derivative(Tensor x, Tensor t);
 }

@@ -18,7 +18,10 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	private int[] inputShape;
 	
 	public SequentialNN(int... inputShape){
-		this.inputShape = inputShape;
+		if(inputShape.length > 1)
+			this.inputShape = inputShape;
+		else
+			this.inputShape = new int[]{1, inputShape[0]};
 	}
 	
 	@Override
@@ -115,7 +118,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			for(int j = 0; j < input.length; j++){
 				Tensor[] res = predictTrain(input[j]);
 				
-				totalLoss += loss.loss(res[res.length - 1], target[j]);
+				totalLoss += loss.loss(res[res.length - 1], target[j]).reduce(0, (a, b) -> a + b);
 				
 				if(verbose && ((i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0) && (input.length < 10 ? 0 : (j % (input.length / 10))) == 0)){
 					System.out.print("Input: ");

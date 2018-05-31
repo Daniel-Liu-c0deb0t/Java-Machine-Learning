@@ -17,38 +17,40 @@ public class FCLayer implements FeedForwardParamsLayer{
 	private Tensor[] biasExtraParams; // extra optimization parameters for biases
 	
 	private Activation activation;
-	private int prevSize;
-	private int nextSize;
+	private int[] prevShape;
+	private int[] nextShape;
 	private int changeCount;
 	private boolean alreadyInit = false;
 	private boolean useBias = true;
 	
 	public FCLayer(int nextSize, Activation activation){
-		this.nextSize = nextSize;
+		this.nextShape = new int[]{-1, nextSize};
 		this.activation = activation;
 	}
 	
 	@Override
 	public int[] nextShape(){
-		return new int[]{nextSize};
+		return nextShape;
 	}
 	
 	@Override
 	public int[] prevShape(){
-		return new int[]{prevSize};
+		return prevShape;
 	}
 
 	@Override
-	public void init(int[] prevSize){
-		this.prevSize = prevSize[0];
+	public void init(int[] prevShape){
+		this.prevShape = prevShape;
+		this.nextShape[0] = prevShape[0];
+		
 		if(!alreadyInit){
-			this.weights = new Tensor(new int[]{prevSize[0], nextSize}, true);
+			this.weights = new Tensor(new int[]{this.prevShape[1], this.nextShape[1]}, true);
 			if(useBias)
-				this.bias = new Tensor(new int[]{nextSize}, false);
+				this.bias = new Tensor(new int[]{1, this.nextShape[1]}, false);
 		}
-		this.gradWeights = new Tensor(new int[]{prevSize[0], nextSize}, false);
+		this.gradWeights = new Tensor(new int[]{this.prevShape[1], this.nextShape[1]}, false);
 		if(useBias)
-			this.gradBias = new Tensor(new int[]{nextSize}, false);
+			this.gradBias = new Tensor(new int[]{1, this.nextShape[1]}, false);
 	}
 	
 	@Override
@@ -90,23 +92,28 @@ public class FCLayer implements FeedForwardParamsLayer{
 	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
 		Tensor x = weights.dot(input);
-		if(useBias)
-			x = x.add(bias);
+		if(useBias){
+			// duplicate bias for multiple time steps if needed
+			x = x.add(bias.dupFirst(x.shape()[0]));
+		}
 		return activation.activate(x);
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
-		// error wrt layer output derivative
-		Tensor grads = error.mul(activation.derivative(nextRes));
+	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
+		// error wrt layer output
+		Tensor grads = error.mul(activation.derivative(output));
 		
-		// error wrt weight derivative
-		gradWeights = gradWeights.add(prevRes.mulEach(grads));
+		// error wrt weight
+		gradWeights = gradWeights.add(grads.dot(input.T()));
 		
-		// error wrt bias derivative
+		// error wrt bias
 		// not multiplied by previous outputs!
-		if(useBias)
-			gradBias = gradBias.add(grads);
+		if(useBias){
+			// if error contains multiple time steps
+			// then accumulate the gradients across the time steps
+			gradBias = gradBias.add(grads.T().reduceLast(0, (a, b) -> a + b));
+		}
 		
 		// new error should be affected by weights
 		Tensor gradInputs = weights.T().dot(grads);
@@ -153,6 +160,7 @@ public class FCLayer implements FeedForwardParamsLayer{
 							gradBias.div(Math.max(changeCount, 1)), biasExtraParams));
 			gradBias = new Tensor(gradBias.shape(), false);
 		}
+		
 		changeCount = 0;
 	}
 	

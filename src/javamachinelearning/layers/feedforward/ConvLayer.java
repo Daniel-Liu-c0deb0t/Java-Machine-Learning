@@ -198,13 +198,13 @@ public class ConvLayer implements FeedForwardParamsLayer{
 	}
 	
 	@Override
-	public Tensor backPropagate(Tensor prevRes, Tensor nextRes, Tensor error){
-		Tensor grads = error.mul(activation.derivative(nextRes));
+	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
+		Tensor grads = error.mul(activation.derivative(output));
 		
 		// calculate weight gradients and bias gradients
 		double[] deltaW = new double[weights.size()];
 		double[] deltaB = new double[bias.size()];
-		int[] inMult = prevRes.mult();
+		int[] inMult = input.mult();
 		int[] wMult = weights.mult();
 		int gradIdx = 0;
 		
@@ -228,7 +228,7 @@ public class ConvLayer implements FeedForwardParamsLayer{
 								// multiply gradients by previous layer's output
 								// accumulate gradients for each weight
 								deltaW[wIdx] += grads.flatGet(gradIdx) *
-										prevRes.flatGet(x * inMult[0] + y * inMult[1] + depth);
+										input.flatGet(x * inMult[0] + y * inMult[1] + depth);
 							}
 						}
 					}
@@ -249,7 +249,7 @@ public class ConvLayer implements FeedForwardParamsLayer{
 			gradBias = gradBias.add(new Tensor(bias.shape(), deltaB));
 		
 		// calculate the gradients wrt input
-		double[] gradInputs = new double[prevRes.size()];
+		double[] gradInputs = new double[input.size()];
 		gradIdx = 0;
 		
 		for(int i = 0; i < nextShape[0] * strideX; i += strideX){

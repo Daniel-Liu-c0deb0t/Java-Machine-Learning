@@ -49,16 +49,16 @@ public class GRUCell implements RecurrentCell{
 	
 	@Override
 	public int[] nextSize(){
-		return new int[]{size};
+		return new int[]{1, size};
 	}
 	
 	@Override
 	public int[] prevSize(){
-		return new int[]{size};
+		return new int[]{1, size};
 	}
 	
 	@Override
-	public void init(int inputSize, int numTotalCells){
+	public void init(int inputSize, int numTimeSteps){
 		size = inputSize;
 		
 		// initialize weights/biases and their gradient accumulators
@@ -71,9 +71,9 @@ public class GRUCell implements RecurrentCell{
 		memoryU = new Tensor(new int[]{size, size}, true);
 		
 		if(useBias){
-			resetB = new Tensor(new int[]{size}, false);
-			updateB = new Tensor(new int[]{size}, false);
-			memoryB = new Tensor(new int[]{size}, false);
+			resetB = new Tensor(new int[]{1, size}, false);
+			updateB = new Tensor(new int[]{1, size}, false);
+			memoryB = new Tensor(new int[]{1, size}, false);
 		}
 		
 		gradResetW = new Tensor(new int[]{size, size}, false);
@@ -85,15 +85,15 @@ public class GRUCell implements RecurrentCell{
 		gradMemoryU = new Tensor(new int[]{size, size}, false);
 		
 		if(useBias){
-			gradResetB = new Tensor(new int[]{size}, false);
-			gradUpdateB = new Tensor(new int[]{size}, false);
-			gradMemoryB = new Tensor(new int[]{size}, false);
+			gradResetB = new Tensor(new int[]{1, size}, false);
+			gradUpdateB = new Tensor(new int[]{1, size}, false);
+			gradMemoryB = new Tensor(new int[]{1, size}, false);
 		}
 		
 		// used to cache computed results
-		reset = new Tensor[numTotalCells];
-		update = new Tensor[numTotalCells];
-		memory = new Tensor[numTotalCells];
+		reset = new Tensor[numTimeSteps];
+		update = new Tensor[numTimeSteps];
+		memory = new Tensor[numTimeSteps];
 	}
 	
 	@Override
@@ -136,14 +136,14 @@ public class GRUCell implements RecurrentCell{
 		
 		Tensor gradReset = memoryU.T().dot(gradMemory).mul(prevState).mul(Activation.sigmoid.derivative(reset[t]));
 		
-		gradResetW = gradResetW.add(input.mulEach(gradReset));
-		gradResetU = gradResetU.add(prevState.mulEach(gradReset));
+		gradResetW = gradResetW.add(gradReset.dot(input.T()));
+		gradResetU = gradResetU.add(gradReset.dot(prevState.T()));
 		
-		gradUpdateW = gradUpdateW.add(input.mulEach(gradUpdate));
-		gradUpdateU = gradUpdateU.add(prevState.mulEach(gradUpdate));
+		gradUpdateW = gradUpdateW.add(gradUpdate.dot(input.T()));
+		gradUpdateU = gradUpdateU.add(gradUpdate.dot(prevState.T()));
 		
-		gradMemoryW = gradMemoryW.add(input.mulEach(gradMemory));
-		gradMemoryU = gradMemoryU.add(prevState.mul(reset[t]).mulEach(gradMemory));
+		gradMemoryW = gradMemoryW.add(gradMemory.dot(input.T()));
+		gradMemoryU = gradMemoryU.add(gradMemory.dot(prevState.mul(reset[t]).T()));
 		
 		if(useBias){
 			gradResetB = gradResetB.add(gradReset);
