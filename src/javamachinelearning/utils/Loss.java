@@ -11,6 +11,11 @@ public interface Loss{
 		public Tensor derivative(Tensor x, Tensor t){
 			return x.sub(t);
 		}
+		
+		@Override
+		public String toString(){
+			return "Squared";
+		}
 	};
 	
 	// multi-class classification
@@ -25,6 +30,11 @@ public interface Loss{
 		public Tensor derivative(Tensor x, Tensor t){
 			// because the output layer has to be softmax
 			return x.sub(t);
+		}
+		
+		@Override
+		public String toString(){
+			return "Softmax Cross Entropy";
 		}
 	};
 	
@@ -42,6 +52,11 @@ public interface Loss{
 		public Tensor derivative(Tensor x, Tensor t){
 			// if output layer is sigmoid, the denominator cancels out
 			return x.sub(t).div(x.map(val -> val * (1.0 - val)));
+		}
+		
+		@Override
+		public String toString(){
+			return "Binary Cross Entropy";
 		}
 	};
 	

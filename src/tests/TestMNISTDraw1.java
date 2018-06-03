@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import javamachinelearning.drawables.MNISTDrawablePanel;
+import javamachinelearning.layers.feedforward.ActivationLayer;
 import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.utils.Activation;
@@ -19,8 +20,10 @@ public class TestMNISTDraw1{
 		// this class performs not as well as the second MNIST drawing class!
 		
 		SequentialNN nn = new SequentialNN(784);
-		nn.add(new FCLayer(300, Activation.relu));
-		nn.add(new FCLayer(10, Activation.softmax));
+		nn.add(new FCLayer(300));
+		nn.add(new ActivationLayer(Activation.relu));
+		nn.add(new FCLayer(10));
+		nn.add(new ActivationLayer(Activation.softmax));
 		nn.loadFromFile("mnist_weights_fc.nn");
 		
 		JFrame frame = new JFrame();

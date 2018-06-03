@@ -1,5 +1,6 @@
 package tests;
 
+import javamachinelearning.layers.feedforward.ActivationLayer;
 import javamachinelearning.layers.feedforward.ConvLayer;
 import javamachinelearning.layers.feedforward.DropoutLayer;
 import javamachinelearning.layers.feedforward.FCLayer;
@@ -20,21 +21,25 @@ public class TrainMNISTConvMemorize{
 		// to verify that the convolutional layers work, it is tested to memorize MNIST images
 		
 		SequentialNN nn = new SequentialNN(28, 28, 1);
-		nn.add(new ConvLayer(5, 32, PaddingType.SAME, Activation.relu));
+		nn.add(new ConvLayer(5, 32, PaddingType.SAME));
+		nn.add(new ActivationLayer(Activation.relu));
 		nn.add(new MaxPoolingLayer(2, 2));
-		nn.add(new ConvLayer(5, 64, PaddingType.SAME, Activation.relu));
+		nn.add(new ConvLayer(5, 64, PaddingType.SAME));
+		nn.add(new ActivationLayer(Activation.relu));
 		nn.add(new MaxPoolingLayer(2, 2));
 		nn.add(new FlattenLayer());
-		nn.add(new FCLayer(1024, Activation.relu));
+		nn.add(new FCLayer(1024));
+		nn.add(new ActivationLayer(Activation.relu));
 		nn.add(new DropoutLayer(0.3));
-		nn.add(new FCLayer(10, Activation.softmax));
+		nn.add(new FCLayer(10));
+		nn.add(new ActivationLayer(Activation.softmax));
 		
 		Tensor[] x = MNISTUtils.loadDataSetImages("train-images-idx3-ubyte", 100);
 		Tensor[] y = MNISTUtils.loadDataSetLabels("train-labels-idx1-ubyte", 100);
 		
 		long start = System.currentTimeMillis();
 		
-		nn.train(Utils.reshapeAll(x, 28, 28, 1), y, 20, 10, Loss.softmaxCrossEntropy, new AdamOptimizer(0.001), null, true, false, false);
+		nn.train(Utils.reshapeAll(x, 28, 28, 1), y, 20, 10, Loss.softmaxCrossEntropy, new AdamOptimizer(0.001), null, true, false);
 		
 		System.out.println("Training time: " + Utils.formatElapsedTime(System.currentTimeMillis() - start));
 		

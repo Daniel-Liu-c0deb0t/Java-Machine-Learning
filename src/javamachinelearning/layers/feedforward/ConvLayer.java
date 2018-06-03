@@ -1,10 +1,10 @@
 package javamachinelearning.layers.feedforward;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
 public class ConvLayer implements FeedForwardParamsLayer{
@@ -16,9 +16,8 @@ public class ConvLayer implements FeedForwardParamsLayer{
 	private Tensor gradBias;
 	private Tensor[] biasExtraParams;
 	
-	private int[] prevShape;
-	private int[] nextShape;
-	private Activation activation;
+	private int[] inputShape;
+	private int[] outputShape;
 	private int winWidth, winHeight;
 	private int strideX, strideY;
 	private int paddingX, paddingY;
@@ -27,7 +26,7 @@ public class ConvLayer implements FeedForwardParamsLayer{
 	private boolean alreadyInit = false;
 	private boolean useBias = true;
 	
-	public ConvLayer(int winWidth, int winHeight, int strideX, int strideY, int filterCount, int paddingX, int paddingY, Activation activation){
+	public ConvLayer(int winWidth, int winHeight, int strideX, int strideY, int filterCount, int paddingX, int paddingY){
 		this.winWidth = winWidth;
 		this.winHeight = winHeight;
 		this.strideX = strideX;
@@ -35,18 +34,17 @@ public class ConvLayer implements FeedForwardParamsLayer{
 		this.filterCount = filterCount;
 		this.paddingX = paddingX;
 		this.paddingY = paddingY;
-		this.activation = activation;
 	}
 	
-	public ConvLayer(int winSize, int stride, int filterCount, int padding, Activation activation){
-		this(winSize, winSize, stride, stride, filterCount, padding, padding, activation);
+	public ConvLayer(int winSize, int stride, int filterCount, int padding){
+		this(winSize, winSize, stride, stride, filterCount, padding, padding);
 	}
 	
-	public ConvLayer(int winSize, int filterCount, int padding, Activation activation){
-		this(winSize, 1, filterCount, padding, activation);
+	public ConvLayer(int winSize, int filterCount, int padding){
+		this(winSize, 1, filterCount, padding);
 	}
 	
-	public ConvLayer(int winWidth, int winHeight, int strideX, int strideY, int filterCount, PaddingType type, Activation activation){
+	public ConvLayer(int winWidth, int winHeight, int strideX, int strideY, int filterCount, PaddingType type){
 		if(type == PaddingType.VALID){
 			this.winWidth = winWidth;
 			this.winHeight = winHeight;
@@ -55,7 +53,6 @@ public class ConvLayer implements FeedForwardParamsLayer{
 			this.filterCount = filterCount;
 			this.paddingX = 0;
 			this.paddingY = 0;
-			this.activation = activation;
 		}else{
 			this.winWidth = winWidth;
 			this.winHeight = winHeight;
@@ -68,54 +65,53 @@ public class ConvLayer implements FeedForwardParamsLayer{
 			if((winHeight - 1) % 2 != 0)
 				throw new IllegalArgumentException("Bad sizes for convolution!");
 			this.paddingY = (winHeight - 1) / 2;
-			this.activation = activation;
 		}
 	}
 	
-	public ConvLayer(int winSize, int stride, int filterCount, PaddingType type, Activation activation){
-		this(winSize, winSize, stride, stride, filterCount, type, activation);
+	public ConvLayer(int winSize, int stride, int filterCount, PaddingType type){
+		this(winSize, winSize, stride, stride, filterCount, type);
 	}
 	
-	public ConvLayer(int winSize, int filterCount, PaddingType type, Activation activation){
-		this(winSize, 1, filterCount, type, activation);
+	public ConvLayer(int winSize, int filterCount, PaddingType type){
+		this(winSize, 1, filterCount, type);
 	}
 	
-	public ConvLayer(int winSize, int filterCount, Activation activation){
-		this(winSize, filterCount, PaddingType.VALID, activation);
-	}
-	
-	@Override
-	public int[] nextShape(){
-		return nextShape;
+	public ConvLayer(int winSize, int filterCount){
+		this(winSize, filterCount, PaddingType.VALID);
 	}
 	
 	@Override
-	public int[] prevShape(){
-		return prevShape;
+	public int[] outputShape(){
+		return outputShape;
 	}
 	
 	@Override
-	public void init(int[] prevShape){
-		this.prevShape = prevShape;
+	public int[] inputShape(){
+		return inputShape;
+	}
+	
+	@Override
+	public void init(int[] inputShape){
+		this.inputShape = inputShape;
 		
-		int temp = prevShape[0] - winWidth + paddingX * 2;
+		int temp = inputShape[0] - winWidth + paddingX * 2;
 		if(temp % strideX != 0)
 			throw new IllegalArgumentException("Bad sizes for convolution!");
 		int w = temp / strideX + 1;
 		
-		temp = prevShape[1] - winHeight + paddingY * 2;
+		temp = inputShape[1] - winHeight + paddingY * 2;
 		if(temp % strideY != 0)
 			throw new IllegalArgumentException("Bad sizes for convolution!");
 		int h = temp / strideY + 1;
 		
-		nextShape = new int[]{w, h, filterCount};
+		outputShape = new int[]{w, h, filterCount};
 		
 		if(!alreadyInit){
-			weights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, true);
+			weights = new Tensor(new int[]{winWidth, winHeight, inputShape[2], filterCount}, true);
 			if(useBias)
 				bias = new Tensor(new int[]{1, 1, filterCount}, false);
 		}
-		gradWeights = new Tensor(new int[]{winWidth, winHeight, prevShape[2], filterCount}, false);
+		gradWeights = new Tensor(new int[]{winWidth, winHeight, inputShape[2], filterCount}, false);
 		if(useBias)
 			gradBias = new Tensor(new int[]{1, 1, filterCount}, false);
 	}
@@ -158,24 +154,24 @@ public class ConvLayer implements FeedForwardParamsLayer{
 	
 	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
-		double[] res = new double[nextShape[0] * nextShape[1] * filterCount];
-		int[] inMult = input.mult(); // the mult for prevShape because input shape equals prevShape
+		double[] res = new double[outputShape[0] * outputShape[1] * filterCount];
+		int[] inMult = input.mult(); // equals the mult for inputShape because input shape equals inputShape
 		int[] wMult = weights.mult();
 		int idx = 0;
 		
-		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
-			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
+		for(int i = 0; i < outputShape[0] * strideX; i += strideX){
+			for(int j = 0; j < outputShape[1] * strideY; j += strideY){
 				for(int filter = 0; filter < filterCount; filter++){
 					// relative to each filter
 					for(int rx = 0; rx < winWidth; rx++){
 						for(int ry = 0; ry < winHeight; ry++){
-							for(int depth = 0; depth < prevShape[2]; depth++){
+							for(int depth = 0; depth < inputShape[2]; depth++){
 								// absolute positions
 								int x = i - paddingX + rx;
 								int y = j - paddingY + ry;
 								
 								// handle zero padding
-								if(x < 0 || x >= prevShape[0] || y < 0 || y >= prevShape[1])
+								if(x < 0 || x >= inputShape[0] || y < 0 || y >= inputShape[1])
 									continue;
 								
 								// multiply by weight and accumulate by addition
@@ -194,13 +190,11 @@ public class ConvLayer implements FeedForwardParamsLayer{
 			}
 		}
 		
-		return activation.activate(new Tensor(nextShape, res));
+		return new Tensor(outputShape, res);
 	}
 	
 	@Override
 	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
-		Tensor grads = error.mul(activation.derivative(output));
-		
 		// calculate weight gradients and bias gradients
 		double[] deltaW = new double[weights.size()];
 		double[] deltaB = new double[bias.size()];
@@ -208,26 +202,26 @@ public class ConvLayer implements FeedForwardParamsLayer{
 		int[] wMult = weights.mult();
 		int gradIdx = 0;
 		
-		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
-			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
+		for(int i = 0; i < outputShape[0] * strideX; i += strideX){
+			for(int j = 0; j < outputShape[1] * strideY; j += strideY){
 				for(int filter = 0; filter < filterCount; filter++){
 					// relative to each filter
 					for(int rx = 0; rx < winWidth; rx++){
 						for(int ry = 0; ry < winHeight; ry++){
-							for(int depth = 0; depth < prevShape[2]; depth++){
+							for(int depth = 0; depth < inputShape[2]; depth++){
 								// absolute positions
 								int x = i - paddingX + rx;
 								int y = j - paddingY + ry;
 								
 								// handle zero padding
-								if(x < 0 || x >= prevShape[0] || y < 0 || y >= prevShape[1])
+								if(x < 0 || x >= inputShape[0] || y < 0 || y >= inputShape[1])
 									continue;
 								
 								int wIdx = rx * wMult[0] + ry * wMult[1] + depth * wMult[2] + filter;
 								
 								// multiply gradients by previous layer's output
 								// accumulate gradients for each weight
-								deltaW[wIdx] += grads.flatGet(gradIdx) *
+								deltaW[wIdx] += error.flatGet(gradIdx) *
 										input.flatGet(x * inMult[0] + y * inMult[1] + depth);
 							}
 						}
@@ -236,7 +230,7 @@ public class ConvLayer implements FeedForwardParamsLayer{
 					// accumulate gradients for the biases
 					// one bias per filter!
 					if(useBias)
-						deltaB[filter] += grads.flatGet(gradIdx);
+						deltaB[filter] += error.flatGet(gradIdx);
 					
 					gradIdx++;
 				}
@@ -252,26 +246,26 @@ public class ConvLayer implements FeedForwardParamsLayer{
 		double[] gradInputs = new double[input.size()];
 		gradIdx = 0;
 		
-		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
-			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
+		for(int i = 0; i < outputShape[0] * strideX; i += strideX){
+			for(int j = 0; j < outputShape[1] * strideY; j += strideY){
 				for(int filter = 0; filter < filterCount; filter++){
 					// relative to each filter
 					for(int rx = 0; rx < winWidth; rx++){
 						for(int ry = 0; ry < winHeight; ry++){
-							for(int depth = 0; depth < prevShape[2]; depth++){
+							for(int depth = 0; depth < inputShape[2]; depth++){
 								// absolute positions
 								int x = i - paddingX + rx;
 								int y = j - paddingY + ry;
 								
 								// handle zero padding
-								if(x < 0 || x >= prevShape[0] || y < 0 || y >= prevShape[1])
+								if(x < 0 || x >= inputShape[0] || y < 0 || y >= inputShape[1])
 									continue;
 								
 								int inIdx = x * inMult[0] + y * inMult[1] + depth;
 								
 								// multiply gradients by each weight
 								// accumulate gradients for each input
-								gradInputs[inIdx] += grads.flatGet(gradIdx) *
+								gradInputs[inIdx] += error.flatGet(gradIdx) *
 										weights.flatGet(rx * wMult[0] + ry * wMult[1] + depth * wMult[2] + filter);
 							}
 						}
@@ -284,7 +278,7 @@ public class ConvLayer implements FeedForwardParamsLayer{
 		
 		changeCount++;
 		
-		return new Tensor(prevShape, gradInputs);
+		return new Tensor(inputShape, gradInputs);
 	}
 	
 	@Override
@@ -359,6 +353,11 @@ public class ConvLayer implements FeedForwardParamsLayer{
 			}
 			bias = new Tensor(bias.shape(), b);
 		}
+	}
+	
+	@Override
+	public String toString(){
+		return "Convolutional\tInput Shape: " + Arrays.toString(inputShape()) + "\tOutput Shape: " + Arrays.toString(outputShape());
 	}
 	
 	public enum PaddingType{

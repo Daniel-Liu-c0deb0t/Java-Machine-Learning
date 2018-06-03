@@ -11,6 +11,11 @@ public interface Activation{
 		public Tensor derivative(Tensor t){
 			return new Tensor(t.shape(), 1.0);
 		}
+		
+		@Override
+		public String toString(){
+			return "Linear";
+		}
 	};
 	
 	public static final Activation sigmoid = new Activation(){
@@ -22,6 +27,29 @@ public interface Activation{
 		@Override
 		public Tensor derivative(Tensor t){
 			return t.map(x -> x * (1.0 - x));
+		}
+		
+		@Override
+		public String toString(){
+			return "Sigmoid";
+		}
+	};
+	
+	// linear approximation of sigmoid
+	public static final Activation hardSigmoid = new Activation(){
+		@Override
+		public Tensor activate(Tensor t){
+			return t.map(x -> Math.min(Math.max(x * 0.2 + 0.5, 0.0), 1.0));
+		}
+		
+		@Override
+		public Tensor derivative(Tensor t){
+			return t.map(x -> x > 0.0 && x < 1.0 ? 0.2 : 0.0);
+		}
+		
+		@Override
+		public String toString(){
+			return "Hard Sigmoid";
 		}
 	};
 	
@@ -35,6 +63,11 @@ public interface Activation{
 		public Tensor derivative(Tensor t){
 			return t.map(x -> 1.0 - x * x);
 		}
+		
+		@Override
+		public String toString(){
+			return "Hyperbolic Tangent";
+		}
 	};
 	
 	public static final Activation relu = new Activation(){
@@ -46,6 +79,11 @@ public interface Activation{
 		@Override
 		public Tensor derivative(Tensor t){
 			return t.map(x -> x > 0.0 ? 1.0 : 0.0);
+		}
+		
+		@Override
+		public String toString(){
+			return "Rectified Linear Unit";
 		}
 	};
 	
@@ -65,10 +103,17 @@ public interface Activation{
 		
 		@Override
 		public Tensor derivative(Tensor t){
+			// because the loss function should be cross entropy
 			return new Tensor(t.shape(), 1.0);
+		}
+		
+		@Override
+		public String toString(){
+			return "Softmax";
 		}
 	};
 	
 	public Tensor activate(Tensor t);
+	// derivatives are calculated in terms of the activated output
 	public Tensor derivative(Tensor t);
 }

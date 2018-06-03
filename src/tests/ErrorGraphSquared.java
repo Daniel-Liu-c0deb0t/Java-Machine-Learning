@@ -12,14 +12,13 @@ import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.layers.feedforward.FeedForwardParamsLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.Tensor;
 
 public class ErrorGraphSquared{
 	public static void main(String[] args){
 		SequentialNN nn = new SequentialNN(1);
-		FeedForwardParamsLayer layer = new FCLayer(1, Activation.linear).noBias();
+		FeedForwardParamsLayer layer = new FCLayer(1).noBias();
 		nn.add(layer);
 		
 		Tensor[] x = {
@@ -63,7 +62,7 @@ public class ErrorGraphSquared{
 		
 		layer.setWeights(t(0.01));
 		
-		nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, false, false, (epoch, loss) -> {
+		nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, false, (epoch, loss) -> {
 			graph.addPoint(layer.weights().flatGet(0),
 					Loss.squared.loss(nn.predict(t(5)), t(5 * 5)).reduce(0, (a, b) -> a + b), Color.green);
 			graph.draw();

@@ -42,6 +42,10 @@ public class Utils{
 		System.out.println();
 	}
 	
+	public static String pad(String s, int length, char c){
+		return s + makeStr(c, length - s.length());
+	}
+	
 	public static String makeStr(char c, int n){
 		char[] result = new char[n];
 		Arrays.fill(result, c);

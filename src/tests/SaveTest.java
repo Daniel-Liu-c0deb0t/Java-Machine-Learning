@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
+import javamachinelearning.layers.feedforward.ActivationLayer;
 import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
@@ -20,8 +21,10 @@ import javamachinelearning.utils.Tensor;
 public class SaveTest{
 	public static void main(String[] args){
 		SequentialNN net = new SequentialNN(2);
-		net.add(new FCLayer(3, Activation.relu));
-		net.add(new FCLayer(4, Activation.softmax));
+		net.add(new FCLayer(3));
+		net.add(new ActivationLayer(Activation.relu));
+		net.add(new FCLayer(4));
+		net.add(new ActivationLayer(Activation.softmax));
 		
 		Tensor[] x = {
 				t(0, 0),
@@ -45,7 +48,7 @@ public class SaveTest{
 				t(0, 0, 0, 1)
 		};
 		
-		net.train(x, y, 1000, 4, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), new L2Regularizer(0.1), true, true, true);
+		net.train(x, y, 1000, 4, Loss.softmaxCrossEntropy, new SGDOptimizer(0.1), new L2Regularizer(0.1), true, true);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

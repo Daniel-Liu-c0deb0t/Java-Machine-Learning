@@ -10,6 +10,7 @@ import javamachinelearning.utils.Tensor;
 public class GRUCell implements RecurrentCell{
 	private int size;
 	private Activation activation;
+	private Activation gateActivation;
 	
 	private Tensor resetW, updateW, memoryW;
 	private Tensor resetU, updateU, memoryU;
@@ -28,12 +29,13 @@ public class GRUCell implements RecurrentCell{
 	
 	private boolean useBias = true;
 	
-	public GRUCell(Activation activation){
+	public GRUCell(Activation activation, Activation gateActivation){
 		this.activation = activation;
+		this.gateActivation = gateActivation;
 	}
 	
 	public GRUCell(){
-		this(Activation.tanh);
+		this(Activation.tanh, Activation.sigmoid);
 	}
 	
 	@Override
@@ -48,12 +50,12 @@ public class GRUCell implements RecurrentCell{
 	}
 	
 	@Override
-	public int[] nextSize(){
+	public int[] outputShape(){
 		return new int[]{1, size};
 	}
 	
 	@Override
-	public int[] prevSize(){
+	public int[] inputShape(){
 		return new int[]{1, size};
 	}
 	
@@ -106,14 +108,14 @@ public class GRUCell implements RecurrentCell{
 		// state = (1 - update) * memory + update * prevState
 		
 		if(useBias)
-			reset[t] = Activation.sigmoid.activate(resetW.dot(input).add(resetU.dot(prevState)).add(resetB));
+			reset[t] = gateActivation.activate(resetW.dot(input).add(resetU.dot(prevState)).add(resetB));
 		else
-			reset[t] = Activation.sigmoid.activate(resetW.dot(input).add(resetU.dot(prevState)));
+			reset[t] = gateActivation.activate(resetW.dot(input).add(resetU.dot(prevState)));
 		
 		if(useBias)
-			update[t] = Activation.sigmoid.activate(updateW.dot(input).add(updateU.dot(prevState)).add(updateB));
+			update[t] = gateActivation.activate(updateW.dot(input).add(updateU.dot(prevState)).add(updateB));
 		else
-			update[t] = Activation.sigmoid.activate(updateW.dot(input).add(updateU.dot(prevState)));
+			update[t] = gateActivation.activate(updateW.dot(input).add(updateU.dot(prevState)));
 		
 		// the activation here can be something other than tanh
 		if(useBias)
@@ -132,9 +134,9 @@ public class GRUCell implements RecurrentCell{
 		
 		Tensor gradMemory = error.mul(update[t].map(x -> 1.0 - x)).mul(activation.derivative(memory[t]));
 		
-		Tensor gradUpdate = error.mul(prevState.sub(memory[t])).mul(Activation.sigmoid.derivative(update[t]));
+		Tensor gradUpdate = error.mul(prevState.sub(memory[t])).mul(gateActivation.derivative(update[t]));
 		
-		Tensor gradReset = memoryU.T().dot(gradMemory).mul(prevState).mul(Activation.sigmoid.derivative(reset[t]));
+		Tensor gradReset = memoryU.T().dot(gradMemory).mul(prevState).mul(gateActivation.derivative(reset[t]));
 		
 		gradResetW = gradResetW.add(gradReset.dot(input.T()));
 		gradResetU = gradResetU.add(gradReset.dot(prevState.T()));
@@ -341,5 +343,10 @@ public class GRUCell implements RecurrentCell{
 			}
 			memoryB = new Tensor(memoryB.shape(), mB);
 		}
+	}
+	
+	@Override
+	public String toString(){
+		return "Gated Recurrent Unit";
 	}
 }

@@ -1,16 +1,10 @@
 package javamachinelearning.networks;
 
-import javamachinelearning.layers.Layer;
 import javamachinelearning.utils.Tensor;
 
 public interface NeuralNetwork{
-	public int size();
-	public Layer layer(int idx);
-	public void add(Layer l);
 	public Tensor[] predict(Tensor[] input);
 	public Tensor predict(Tensor input);
-	public Tensor[] predictTrain(Tensor input);
-	public void backPropagate(Tensor[] result, Tensor error);
 	public int[] inputShape();
 	public int[] outputShape();
 	public void saveToFile(String path);

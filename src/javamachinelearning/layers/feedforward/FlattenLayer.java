@@ -1,31 +1,33 @@
 package javamachinelearning.layers.feedforward;
 
+import java.util.Arrays;
+
 import javamachinelearning.utils.Tensor;
 
 public class FlattenLayer implements FeedForwardLayer{
-	private int[] prevShape;
-	private int nextSize;
+	private int[] inputShape;
+	private int outputSize;
 	
 	public FlattenLayer(){
 		// nothing to do
 	}
 	
 	@Override
-	public int[] nextShape(){
-		return new int[]{1, nextSize};
+	public int[] outputShape(){
+		return new int[]{1, outputSize};
 	}
 	
 	@Override
-	public int[] prevShape(){
-		return prevShape;
+	public int[] inputShape(){
+		return inputShape;
 	}
 	
 	@Override
-	public void init(int[] prevShape){
-		this.prevShape = prevShape;
-		nextSize = 1;
-		for(int i = 0; i < prevShape.length; i++){
-			nextSize *= prevShape[i];
+	public void init(int[] inputShape){
+		this.inputShape = inputShape;
+		outputSize = 1;
+		for(int i = 0; i < inputShape.length; i++){
+			outputSize *= inputShape[i];
 		}
 	}
 	
@@ -36,6 +38,11 @@ public class FlattenLayer implements FeedForwardLayer{
 	
 	@Override
 	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
-		return error.reshape(prevShape);
+		return error.reshape(inputShape);
+	}
+	
+	@Override
+	public String toString(){
+		return "Flatten\tInput Shape: " + Arrays.toString(inputShape()) + "\tOutput Shape: " + Arrays.toString(outputShape());
 	}
 }

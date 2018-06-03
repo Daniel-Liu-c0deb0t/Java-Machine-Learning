@@ -254,8 +254,7 @@ public class Tensor{
 	public Tensor dupLast(int length){
 		double[] res = new double[size * length];
 		for(int i = 0; i < res.length; i++){
-			int idx = i / length;
-			res[i] = data[idx];
+			res[i] = data[i / length];
 		}
 		
 		int[] newShape;

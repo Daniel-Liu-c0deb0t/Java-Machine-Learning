@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
+import javamachinelearning.layers.feedforward.ActivationLayer;
 import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.utils.Activation;
@@ -16,8 +17,10 @@ import javamachinelearning.utils.Activation;
 public class LoadTest{
 	public static void main(String[] args){
 		SequentialNN net = new SequentialNN(2);
-		net.add(new FCLayer(3, Activation.relu));
-		net.add(new FCLayer(4, Activation.softmax));
+		net.add(new FCLayer(3));
+		net.add(new ActivationLayer(Activation.relu));
+		net.add(new FCLayer(4));
+		net.add(new ActivationLayer(Activation.softmax));
 		// load the weights from a file
 		net.loadFromFile("saved_model_test.nn");
 		

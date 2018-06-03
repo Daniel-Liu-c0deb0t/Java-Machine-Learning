@@ -1,10 +1,10 @@
 package javamachinelearning.layers.feedforward;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Tensor;
 
 public class FCLayer implements FeedForwardParamsLayer{
@@ -16,41 +16,39 @@ public class FCLayer implements FeedForwardParamsLayer{
 	private Tensor gradBias;
 	private Tensor[] biasExtraParams; // extra optimization parameters for biases
 	
-	private Activation activation;
-	private int[] prevShape;
-	private int[] nextShape;
+	private int[] inputShape;
+	private int[] outputShape;
 	private int changeCount;
 	private boolean alreadyInit = false;
 	private boolean useBias = true;
 	
-	public FCLayer(int nextSize, Activation activation){
-		this.nextShape = new int[]{-1, nextSize};
-		this.activation = activation;
+	public FCLayer(int nextSize){
+		this.outputShape = new int[]{-1, nextSize};
 	}
 	
 	@Override
-	public int[] nextShape(){
-		return nextShape;
+	public int[] outputShape(){
+		return outputShape;
 	}
 	
 	@Override
-	public int[] prevShape(){
-		return prevShape;
+	public int[] inputShape(){
+		return inputShape;
 	}
 
 	@Override
-	public void init(int[] prevShape){
-		this.prevShape = prevShape;
-		this.nextShape[0] = prevShape[0];
+	public void init(int[] inputShape){
+		this.inputShape = inputShape;
+		this.outputShape[0] = inputShape[0];
 		
 		if(!alreadyInit){
-			this.weights = new Tensor(new int[]{this.prevShape[1], this.nextShape[1]}, true);
+			this.weights = new Tensor(new int[]{this.inputShape[1], this.outputShape[1]}, true);
 			if(useBias)
-				this.bias = new Tensor(new int[]{1, this.nextShape[1]}, false);
+				this.bias = new Tensor(new int[]{1, this.outputShape[1]}, false);
 		}
-		this.gradWeights = new Tensor(new int[]{this.prevShape[1], this.nextShape[1]}, false);
+		this.gradWeights = new Tensor(new int[]{this.inputShape[1], this.outputShape[1]}, false);
 		if(useBias)
-			this.gradBias = new Tensor(new int[]{1, this.nextShape[1]}, false);
+			this.gradBias = new Tensor(new int[]{1, this.outputShape[1]}, false);
 	}
 	
 	@Override
@@ -96,27 +94,24 @@ public class FCLayer implements FeedForwardParamsLayer{
 			// duplicate bias for multiple time steps if needed
 			x = x.add(bias.dupFirst(x.shape()[0]));
 		}
-		return activation.activate(x);
+		return x;
 	}
 	
 	@Override
 	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
-		// error wrt layer output
-		Tensor grads = error.mul(activation.derivative(output));
-		
 		// error wrt weight
-		gradWeights = gradWeights.add(grads.dot(input.T()));
+		gradWeights = gradWeights.add(error.dot(input.T()));
 		
 		// error wrt bias
 		// not multiplied by previous outputs!
 		if(useBias){
 			// if error contains multiple time steps
 			// then accumulate the gradients across the time steps
-			gradBias = gradBias.add(grads.T().reduceLast(0, (a, b) -> a + b));
+			gradBias = gradBias.add(error.T().reduceLast(0, (a, b) -> a + b));
 		}
 		
 		// new error should be affected by weights
-		Tensor gradInputs = weights.T().dot(grads);
+		Tensor gradInputs = weights.T().dot(error);
 		
 		changeCount++;
 		
@@ -142,6 +137,9 @@ public class FCLayer implements FeedForwardParamsLayer{
 		
 		// handles postponed updates, by averaging accumulated gradients
 		// add the regularization derivative if needed
+		
+		// note that averaging the weight gradients here is the same as
+		// averaging the loss gradients per mini-batch after forward propagation
 		if(regularizer == null){
 			weights = weights.sub(
 					optimizer.optimize(
@@ -200,5 +198,10 @@ public class FCLayer implements FeedForwardParamsLayer{
 			}
 			bias = new Tensor(bias.shape(), b);
 		}
+	}
+	
+	@Override
+	public String toString(){
+		return "Fully Connected\tInput Shape: " + Arrays.toString(inputShape()) + "\tOutput Shape: " + Arrays.toString(outputShape());
 	}
 }

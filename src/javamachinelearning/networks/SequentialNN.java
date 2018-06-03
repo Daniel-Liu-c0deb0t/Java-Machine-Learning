@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import javamachinelearning.layers.Layer;
 import javamachinelearning.layers.ParamsLayer;
+import javamachinelearning.layers.recurrent.RecurrentLayer;
 import javamachinelearning.optimizers.Optimizer;
 import javamachinelearning.regularizers.Regularizer;
 import javamachinelearning.utils.Loss;
@@ -24,22 +25,19 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			this.inputShape = new int[]{1, inputShape[0]};
 	}
 	
-	@Override
 	public int size(){
 		return layers.size();
 	}
-
-	@Override
+	
 	public Layer layer(int idx){
 		return layers.get(idx);
 	}
-
-	@Override
+	
 	public void add(Layer l){
-		l.init(layers.isEmpty() ? inputShape : layers.get(layers.size() - 1).nextShape());
+		l.init(layers.isEmpty() ? inputShape : layers.get(layers.size() - 1).outputShape());
 		layers.add(l);
 	}
-
+	
 	@Override
 	public Tensor[] predict(Tensor[] input){
 		Tensor[] res = new Tensor[input.length];
@@ -59,9 +57,19 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		return input;
 	}
 	
+	// predict using a specific number of time steps
+	public Tensor predict(Tensor input, int timeSteps){
+		for(int i = 0; i < layers.size(); i++){
+			if(layers.get(i) instanceof RecurrentLayer)
+				input = ((RecurrentLayer)layers.get(i)).forwardPropagate(input, timeSteps, false);
+			else
+				input = layers.get(i).forwardPropagate(input, false);
+		}
+		return input;
+	}
+	
 	// predictTrain should only be used for training!
 	// it saves the outputs for each layer
-	@Override
 	public Tensor[] predictTrain(Tensor input){
 		Tensor[] res = new Tensor[layers.size() + 1];
 		res[0] = input;
@@ -79,21 +87,21 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 	
 	@Override
 	public int[] outputShape(){
-		return layers.get(layers.size() - 1).nextShape();
+		return layers.get(layers.size() - 1).outputShape();
 	}
 	
 	@Override
 	public void train(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle){
-		train(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, false, false, null);
+		train(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, false, null);
 	}
 	
 	@Override
-	public void train(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, boolean printNet){
-		train(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, verbose, printNet, null);
+	public void train(Tensor[] input, Tensor[] target, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose){
+		train(input, target, epochs, batchSize, loss, optimizer, regularizer, shuffle, verbose, null);
 	}
 	
 	@Override
-	public void train(Tensor[] inputParam, Tensor[] targetParam, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, boolean printNet, ProgressFunction f){
+	public void train(Tensor[] inputParam, Tensor[] targetParam, int epochs, int batchSize, Loss loss, Optimizer optimizer, Regularizer regularizer, boolean shuffle, boolean verbose, ProgressFunction f){
 		// make sure shuffling does not affect the input data
 		Tensor[] input = inputParam.clone();
 		Tensor[] target = targetParam.clone();
@@ -102,13 +110,8 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 			double totalLoss = 0.0;
 			
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
-				System.out.println(Utils.makeStr('=', 30));
+				System.out.println(Utils.makeStr('=', 75));
 				System.out.println("Epoch " + i);
-				System.out.println();
-				System.out.println(Utils.makeStr('-', 5) + " Before " + Utils.makeStr('-', 5));
-				if(printNet)
-					System.out.println(toString());
-				System.out.println(Utils.makeStr('-', 18));
 				System.out.println();
 			}
 			
@@ -144,22 +147,17 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 					optimizer.update();
 				}
 			}
-			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
-				System.out.println(Utils.makeStr('-', 5) + " After " + Utils.makeStr('-', 6));
-				if(printNet)
-					System.out.println(toString());
-				System.out.println(Utils.makeStr('-', 18));
-			}
+			
 			if(i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0){
 				if(verbose){
 					System.out.println();
 				}else{
-					System.out.print("Epoch " + i + "\n\t");
+					System.out.print("Epoch " + i + "\t");
 				}
-				System.out.println("Average loss: " + Utils.format(totalLoss / input.length));
+				System.out.println("Average Loss: " + Utils.format(totalLoss / input.length));
 			}
 			if(verbose && (i == epochs - 1 || (epochs < 10 ? 0 : (i % (epochs / 10))) == 0)){
-				System.out.println(Utils.makeStr('=', 30));
+				System.out.println(Utils.makeStr('=', 75));
 			}
 			
 			if(f != null)
@@ -167,19 +165,29 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 		}
 	}
 	
-	@Override
 	public void backPropagate(Tensor[] result, Tensor error){
 		for(int i = layers.size() - 1; i >= 0; i--){
 			error = layers.get(i).backPropagate(result[i], result[i + 1], error);
 		}
 	}
 	
+	// resets the saved states of stateful recurrent layers
+	public void resetStates(){
+		for(int i = 0; i < layers.size(); i++){
+			if(layers.get(i) instanceof RecurrentLayer){
+				((RecurrentLayer)layers.get(i)).resetState();
+			}
+		}
+	}
+	
 	@Override
 	public String toString(){
 		StringBuilder b = new StringBuilder();
+		b.append("Sequential Neural Network\n");
+		b.append(Utils.makeStr('-', 75) + "\n");
 		for(int i = 0; i < layers.size(); i++){
-			b.append(layers.get(i).toString());
-			b.append("\n" + Utils.makeStr('=', 50) + "\n");
+			b.append("\n" + layers.get(i).toString());
+			b.append("\n\n" + Utils.makeStr('-', 75) + "\n");
 		}
 		return b.toString();
 	}

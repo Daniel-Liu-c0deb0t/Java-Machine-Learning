@@ -1,10 +1,12 @@
 package javamachinelearning.layers.feedforward;
 
+import java.util.Arrays;
+
 import javamachinelearning.utils.Tensor;
 
 public class MaxPoolingLayer implements FeedForwardLayer{
-	private int[] prevShape;
-	private int[] nextShape;
+	private int[] inputShape;
+	private int[] outputShape;
 	private int winWidth, winHeight;
 	private int strideX, strideY;
 	private int[][] maxIdx;
@@ -31,42 +33,42 @@ public class MaxPoolingLayer implements FeedForwardLayer{
 	}
 	
 	@Override
-	public int[] nextShape(){
-		return nextShape;
+	public int[] outputShape(){
+		return outputShape;
 	}
 	
 	@Override
-	public int[] prevShape(){
-		return prevShape;
+	public int[] inputShape(){
+		return inputShape;
 	}
 	
 	@Override
-	public void init(int[] prevShape){
-		this.prevShape = prevShape;
+	public void init(int[] inputShape){
+		this.inputShape = inputShape;
 		
-		int temp = prevShape[0] - winWidth;
+		int temp = inputShape[0] - winWidth;
 		if(temp % strideX != 0)
 			throw new IllegalArgumentException("Bad sizes for max pooling!");
 		int w = temp / strideX + 1;
 		
-		temp = prevShape[1] - winHeight;
+		temp = inputShape[1] - winHeight;
 		if(temp % strideY != 0)
 			throw new IllegalArgumentException("Bad sizes for max pooling!");
 		int h = temp / strideY + 1;
 		
-		nextShape = new int[]{w, h, prevShape[2]};
-		maxIdx = new int[nextShape[0] * nextShape[1] * nextShape[2]][2];
+		outputShape = new int[]{w, h, inputShape[2]};
+		maxIdx = new int[outputShape[0] * outputShape[1] * outputShape[2]][2];
 	}
 	
 	@Override
 	public Tensor forwardPropagate(Tensor input, boolean training){
-		double[] res = new double[nextShape[0] * nextShape[1] * nextShape[2]];
+		double[] res = new double[outputShape[0] * outputShape[1] * outputShape[2]];
 		int[] shape = input.shape();
 		int idx = 0;
 		// slide through and computes the max for each location
 		// the output should have the same depth as the input
-		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
-			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
+		for(int i = 0; i < outputShape[0] * strideX; i += strideX){
+			for(int j = 0; j < outputShape[1] * strideY; j += strideY){
 				for(int k = 0; k < shape[2]; k++){ // for each depth slice
 					double max = Double.MIN_VALUE;
 					
@@ -93,23 +95,23 @@ public class MaxPoolingLayer implements FeedForwardLayer{
 			}
 		}
 		
-		return new Tensor(nextShape, res);
+		return new Tensor(outputShape, res);
 	}
 	
 	@Override
 	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
-		double[] res = new double[prevShape[0] * prevShape[1] * prevShape[2]];
+		double[] res = new double[inputShape[0] * inputShape[1] * inputShape[2]];
 		int outIdx = 0;
 		
-		for(int i = 0; i < nextShape[0] * strideX; i += strideX){
-			for(int j = 0; j < nextShape[1] * strideY; j += strideY){
-				for(int k = 0; k < prevShape[2]; k++){ // for each depth slice
+		for(int i = 0; i < outputShape[0] * strideX; i += strideX){
+			for(int j = 0; j < outputShape[1] * strideY; j += strideY){
+				for(int k = 0; k < inputShape[2]; k++){ // for each depth slice
 					for(int rx = 0; rx < winWidth; rx++){ // relative x position
 						for(int ry = 0; ry < winHeight; ry++){ // relative y position
 							// absolute positions
 							int x = i + rx;
 							int y = j + ry;
-							int inIdx = x * prevShape[1] * prevShape[2] + y * prevShape[2] + k;
+							int inIdx = x * inputShape[1] * inputShape[2] + y * inputShape[2] + k;
 							
 							if(maxIdx[outIdx][0] == x && maxIdx[outIdx][1] == y){
 								res[inIdx] += error.flatGet(outIdx);
@@ -122,6 +124,11 @@ public class MaxPoolingLayer implements FeedForwardLayer{
 			}
 		}
 		
-		return new Tensor(prevShape, res);
+		return new Tensor(inputShape, res);
+	}
+	
+	@Override
+	public String toString(){
+		return "Max Pooling\tInput Shape: " + Arrays.toString(inputShape()) + "\tOutput Shape: " + Arrays.toString(outputShape());
 	}
 }

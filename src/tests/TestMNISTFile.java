@@ -1,5 +1,6 @@
 package tests;
 
+import javamachinelearning.layers.feedforward.ActivationLayer;
 import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.utils.Activation;
@@ -10,8 +11,10 @@ import javamachinelearning.utils.Utils;
 public class TestMNISTFile{
 	public static void main(String[] args){
 		SequentialNN nn = new SequentialNN(784);
-		nn.add(new FCLayer(300, Activation.relu));
-		nn.add(new FCLayer(10, Activation.softmax));
+		nn.add(new FCLayer(300));
+		nn.add(new ActivationLayer(Activation.relu));
+		nn.add(new FCLayer(10));
+		nn.add(new ActivationLayer(Activation.softmax));
 		nn.loadFromFile("mnist_weights_fc.nn");
 		
 		Tensor[] testX = MNISTUtils.loadDataSetImages("t10k-images-idx3-ubyte", Integer.MAX_VALUE);

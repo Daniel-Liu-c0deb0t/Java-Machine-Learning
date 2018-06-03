@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 
 import javamachinelearning.graphs.Graph;
 import javamachinelearning.graphs.GraphPanel;
+import javamachinelearning.layers.feedforward.ActivationLayer;
 import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
@@ -22,8 +23,10 @@ import javamachinelearning.utils.Utils;
 public class Categories4Graph{
 	public static void main(String[] args){
 		SequentialNN net = new SequentialNN(2);
-		net.add(new FCLayer(3, Activation.sigmoid));
-		net.add(new FCLayer(4, Activation.softmax));
+		net.add(new FCLayer(3));
+		net.add(new ActivationLayer(Activation.sigmoid));
+		net.add(new FCLayer(4));
+		net.add(new ActivationLayer(Activation.softmax));
 		
 		Tensor[] x = Utils.concat(Utils.standardDist(0, 0, 0.1, 100), Utils.standardDist(0, 1, 0.1, 100), Utils.standardDist(1, 0, 0.1, 100), Utils.standardDist(1, 1, 0.1, 100));
 		Tensor[] y1 = new Tensor[100];
@@ -43,7 +46,7 @@ public class Categories4Graph{
 			y4[i] = oneHot(3, 4);
 		}
 		Tensor[] y = Utils.concat(y1, y2, y3, y4);
-		net.train(x, y, 100, 10, Loss.softmaxCrossEntropy, new SGDOptimizer(1), new L2Regularizer(0.01), true, true, false);
+		net.train(x, y, 100, 10, Loss.softmaxCrossEntropy, new SGDOptimizer(1), new L2Regularizer(0.01), true, true);
 		
 		double[] xData = new double[x.length];
 		double[] yData = new double[x.length];

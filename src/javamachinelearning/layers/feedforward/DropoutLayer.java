@@ -19,18 +19,18 @@ public class DropoutLayer implements FeedForwardLayer{
 	}
 	
 	@Override
-	public int[] nextShape(){
+	public int[] outputShape(){
 		return shape;
 	}
 	
 	@Override
-	public int[] prevShape(){
+	public int[] inputShape(){
 		return shape;
 	}
 	
 	@Override
-	public void init(int[] prevSize){
-		shape = prevSize;
+	public void init(int[] inputShape){
+		shape = inputShape;
 	}
 	
 	@Override
@@ -55,5 +55,10 @@ public class DropoutLayer implements FeedForwardLayer{
 	public Tensor backPropagate(Tensor input, Tensor output, Tensor error){
 		// scale the gradients during backpropagation
 		return error.mul(mask);
+	}
+	
+	@Override
+	public String toString(){
+		return "Dropout Probability: " + dropout;
 	}
 }

@@ -9,7 +9,6 @@ import javamachinelearning.graphs.GraphPanel;
 import javamachinelearning.layers.feedforward.FCLayer;
 import javamachinelearning.networks.SequentialNN;
 import javamachinelearning.optimizers.SGDOptimizer;
-import javamachinelearning.utils.Activation;
 import javamachinelearning.utils.Loss;
 import javamachinelearning.utils.Tensor;
 import javamachinelearning.utils.Utils;
@@ -17,7 +16,7 @@ import javamachinelearning.utils.Utils;
 public class LinearGraph{
 	public static void main(String[] args){
 		SequentialNN nn = new SequentialNN(1);
-		nn.add(new FCLayer(1, Activation.linear));
+		nn.add(new FCLayer(1));
 		
 		// y = 5x + 3
 		Tensor[] x = {
@@ -36,7 +35,7 @@ public class LinearGraph{
 				t(3 + 20 + 1)
 		};
 		
-		nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true, true);
+		nn.train(x, y, 100, 1, Loss.squared, new SGDOptimizer(0.01), null, false, true);
 		
 		System.out.println(nn.predict(t(5)));
 		
