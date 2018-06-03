@@ -211,4 +211,15 @@ public class Utils{
 		}
 		return res;
 	}
+	
+	// remove all characters not in the alphabet
+	public static String onlyKeepAlphabetChars(String s, String alphabet){
+		StringBuilder res = new StringBuilder();
+		for(int i = 0; i < s.length(); i++){
+			if(alphabet.indexOf(s.charAt(i)) != -1){
+				res.append(s.charAt(i));
+			}
+		}
+		return res.toString();
+	}
 }
