@@ -1,9 +1,9 @@
 # Java-Machine-Learning
-Simple machine learning library for Java. The library is mainly for educational purposes, and it is way too slow to be used on actual projects.
+Simple machine learning library for Java. The library is mainly for educational purposes, and it is way too slow to be used on actual projects. If you want to download the compiled `.jar` file and include it to your own project, click [here](JavaMachineLearning.jar).
 
 This library recently got an overhaul that fixed many bugs and uses vectorized operations with a built-in tensor class, among many other features. The source code was also organized and comments were added.
 
-## Features:
+## Features
 - Feed-forward layers
   - Fully connected
   - Convolutional (2D convolution on 3D inputs with 4D weights)
@@ -225,7 +225,7 @@ she pagllidy, nothing then she
 ron to happen next. first, she tried to look down and make out what
 she was considering in her feet, for it flashed across her mind that she ought to have wondered at the sides it poct poud there she fell past it
 ```
-There are a few misspelled words here and there, but it is pretty cool nonetheless.
+There are a lot of misspelled words, but it is pretty cool nonetheless.
 
 Finally, here is the output of running the network on the entire Act I Scene I of Romeo and Juliet:
 ```
@@ -287,7 +287,7 @@ Finally, here is the output of running the network on the entire Act I Scene I o
 
   samp. i do beaut's thess sword morte and made is that we dows thee i sang the hearty saive in strun.
 ```
-As you can see there are some repetition which would probably disappear if the temperature is increased (which increases the randomness).
+As you can see there are some repetition which would probably disappear if the temperature is increased (which increases the randomness). Originally, I wanted the network to start predicting from the first line that says what act and scene it was, but the network started from somewhere else.
 
 In all of these examples, the model and hyperparameters were the same. What's cool is that the network learns the structure of the text and properly adds newlines and indents for the first and third examples. Also, I got the texts from [Project Gutenberg](http://www.gutenberg.org/).
 
