@@ -52,7 +52,7 @@ public class GRUTest{
 		// builds the network
 		// for each time step, the input is a one hot vector describing the current character
 		// for each time step, the output is a one hot vector describing the next character
-		// the recurrent layers are stateful, which means that the next input relies on the previous
+		// the recurrent layers are stateful, which means that the next state relies on the previous states
 		SequentialNN nn = new SequentialNN(winSize, alphabet.length());
 		nn.add(new RecurrentLayer(winSize, new GRUCell(), true));
 		nn.add(new DropoutLayer(0.3));
