@@ -151,7 +151,7 @@ Training this network takes around 20 minutes and it can memorize the input imag
 
 ### Recurrent Neural Networks
 
-Creating a recurrent neural network is also very simple. Currently, only GRU cells are supported, and I used that to learn and generate some Shakespeare and Alice's Adventure in Wonderland text.
+Creating a recurrent neural network is also very simple. Currently, only GRU cells are supported, and I used that to learn and generate some Shakespeare and Alice's Adventures in Wonderland text.
 
 Here are the hyperparameters used:
 ```java
