@@ -33,7 +33,7 @@ This library recently got an overhaul that fixed many bugs and uses vectorized o
 ## Tutorial
 The API provided by this library is quite elegant (in my opinion) and very high level. A whole network can be created by initializing a `SequentialNN` class. That class provides the tools to add layers and build a complete network. When initializing that class, you need to specify the shape of the input as the parameter.
 
-Using the `add` method in `SequentialNN`, you can add layers to the sequential model. These layers will be evaluated in the order they are added during forward propagation. To forward propagate, use the predict function and provide input(s) as tensors. Tensors are multidimensional arrays that are represented in a flat, column major order format internally. However, it provides a few contructors that accept (regular) row major arrays. To train a model, call the `fit` method with inputs and expected target outputs. This method has many parameters that can be changed, such as the loss function, optimizer, regularizer, etc. A callback function can even be provided for every epoch of training.
+Using the `add` method in `SequentialNN`, you can add layers to the sequential model. These layers will be evaluated in the order they are added during forward propagation. To forward propagate, use the predict function and provide input(s) as tensors. Tensors are multidimensional arrays that are represented in a flat, column major order format internally. However, it provides a few contructors that accept (regular) row major arrays. To train a model, call the `train` method with inputs and expected target outputs. This method has many parameters that can be changed, such as the loss function, optimizer, regularizer, etc. A callback function can even be provided for every epoch of training.
 
 With the addition of a `RecurrentLayer` class, inputs and outputs can span many time steps. For example, when using fully connected layer after a recurrent layer, the fully connected layer is applied to the outputs for every single time step. Another addition is a flexible `predict` function that allows a custom number of time steps to be evaluated. Recurrent layers can also be stateful throughout multiple training examples or predictions.
 
@@ -287,7 +287,7 @@ Finally, here is the output of running the network on the entire Act I Scene I o
 
   samp. i do beaut's thess sword morte and made is that we dows thee i sang the hearty saive in strun.
 ```
-As you can see there are some repetition which would probably disappear if the temperature is increased (which increases the randomness). Originally, I wanted the network to start predicting from the first line that says what act and scene it was, but the network started from somewhere else.
+As you can see there are some repetitions that would probably disappear if the temperature is increased (which increases the randomness). Originally, I wanted the network to start predicting from the first line that says what act and scene it was, but the network started from somewhere else.
 
 In all of these examples, the model and hyperparameters were the same. What's cool is that the network learns the structure of the text and properly adds newlines and indents for the first and third examples. Also, I got the texts from [Project Gutenberg](http://www.gutenberg.org/).
 
