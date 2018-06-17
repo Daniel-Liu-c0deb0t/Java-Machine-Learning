@@ -293,4 +293,6 @@ In all of these examples, the model and hyperparameters were the same. What's co
 
 Many other examples can be found in the [tests folder](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/tree/master/src/tests).
 
+I have a blog post on backpropagation and gradient descent equations [here](https://c0deb0t.wordpress.com/2018/06/17/the-math-for-gradient-descent-and-backpropagation/). It has some interesting math stuff!
+
 I also have an article that is an introduction to simple neural networks and it features this library! You can check it out [here](https://issuu.com/journys7/docs/issue-9.2-journys/24). It is for [Journys](https://www.journys.org/), a scientific writing club at school.
