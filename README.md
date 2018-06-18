@@ -1,5 +1,5 @@
-# Java-Machine-Learning
-Simple machine learning library for Java. The library is mainly for educational purposes, and it is way too slow to be used on actual projects. If you want to download the compiled `.jar` file and include it to your own project, click [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/raw/master/JavaMachineLearning.jar).
+# Java Machine Learning Library
+Simple machine learning (neural network) library for Java. The library is mainly for educational purposes, and it is way too slow to be used on actual projects. If you want to download the compiled `.jar` file and include it to your own project, click [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/raw/master/JavaMachineLearning.jar).
 
 This library recently got an overhaul that fixed many bugs and uses vectorized operations with a built-in tensor class, among many other features. The source code was also organized and comments were added.
 
