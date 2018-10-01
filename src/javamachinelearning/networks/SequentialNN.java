@@ -138,7 +138,7 @@ public class SequentialNN implements NeuralNetwork, SupervisedNeuralNetwork{
 				backPropagate(res, lossDerivative);
 				
 				// update weights and biases if batch size is reached
-				if(j + 1 % batchSize == 0 || j == input.length - 1){
+				if((j + 1) % batchSize == 0 || j == input.length - 1){
 					for(int k = 0; k < layers.size(); k++){
 						if(layers.get(k) instanceof ParamsLayer)
 							((ParamsLayer)layers.get(k)).update(optimizer, regularizer);
