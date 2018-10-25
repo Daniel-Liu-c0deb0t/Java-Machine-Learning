@@ -91,7 +91,7 @@ public interface Activation{
 		@Override
 		public Tensor activate(Tensor t){
 			// note: hard coded leaky value!
-			return t.map(x -> Math.max(0.01 * x, x));
+			return t.map(x -> x > 0.0 ? x : x * 0.01);
 		}
 
 		@Override
