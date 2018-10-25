@@ -86,6 +86,23 @@ public interface Activation{
 			return "Rectified Linear Unit";
 		}
 	};
+
+	public static final Activation leakyRelu = new Activation(){
+		@Override
+		public Tensor activate(Tensor t){
+			return t.map(x -> Math.max(0.01*x, x));
+		}
+
+		@Override
+		public Tensor derivative(Tensor t){
+			return t.map(x -> x > 0.0 ? 1.0 : 0.01);
+		}
+
+		@Override
+		public String toString(){
+			return "Leaky Rectified Linear Unit";
+		}
+	};
 	
 	public static final Activation softmax = new Activation(){
 		@Override
