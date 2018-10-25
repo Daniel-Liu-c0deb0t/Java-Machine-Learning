@@ -90,7 +90,8 @@ public interface Activation{
 	public static final Activation leakyRelu = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
-			return t.map(x -> Math.max(0.01*x, x));
+			// note: hard coded leaky value!
+			return t.map(x -> Math.max(0.01 * x, x));
 		}
 
 		@Override
