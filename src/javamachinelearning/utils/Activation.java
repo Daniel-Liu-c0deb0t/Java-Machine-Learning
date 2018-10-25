@@ -86,7 +86,7 @@ public interface Activation{
 			return "Rectified Linear Unit";
 		}
 	};
-
+	
 	public static final Activation leakyRelu = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
