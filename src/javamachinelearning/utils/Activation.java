@@ -86,7 +86,7 @@ public interface Activation{
 			return "Rectified Linear Unit";
 		}
 	};
-
+  
 	public static final Activation leakyRelu = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -121,7 +121,7 @@ public interface Activation{
 			return "Rectified Linear Unit 6";
 		}
 	};
-
+  
 	public static final Activation softmax = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
