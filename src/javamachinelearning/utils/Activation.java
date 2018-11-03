@@ -17,7 +17,7 @@ public interface Activation{
 			return "Linear";
 		}
 	};
-
+	
 	public static final Activation sigmoid = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -34,7 +34,7 @@ public interface Activation{
 			return "Sigmoid";
 		}
 	};
-
+	
 	// linear approximation of sigmoid
 	public static final Activation hardSigmoid = new Activation(){
 		@Override
@@ -52,7 +52,7 @@ public interface Activation{
 			return "Hard Sigmoid";
 		}
 	};
-
+	
 	public static final Activation tanh = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -69,7 +69,7 @@ public interface Activation{
 			return "Hyperbolic Tangent";
 		}
 	};
-
+	
 	public static final Activation relu = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -86,7 +86,7 @@ public interface Activation{
 			return "Rectified Linear Unit";
 		}
 	};
-  
+	
 	public static final Activation leakyRelu = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -104,11 +104,11 @@ public interface Activation{
 			return "Leaky Rectified Linear Unit";
 		}
 	};
-
+	
 	public static final Activation relu6 = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
-			return t.map(x -> Math.min(Math.max(0.0, x), 6));
+			return t.map(x -> Math.min(Math.max(0.0, x), 6.0));
 		}
 
 		@Override
@@ -121,7 +121,7 @@ public interface Activation{
 			return "Rectified Linear Unit 6";
 		}
 	};
-  
+	
 	public static final Activation softmax = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -147,7 +147,7 @@ public interface Activation{
 			return "Softmax";
 		}
 	};
-
+	
 	public Tensor activate(Tensor t);
 	// derivatives are calculated in terms of the activated output
 	public Tensor derivative(Tensor t);
