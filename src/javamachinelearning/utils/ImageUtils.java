@@ -47,7 +47,22 @@ public class ImageUtils {
         return data;
     }
 
+    /*
+    Convert RGB to Gray
+     */
+    public int[][] covertRGBtoGray(int[][][] colorImg) {
+        int height = colorImg.length;
+        int width = colorImg[0].length;
+        int[][] grayImg = new int[height][width];
 
+        for( int y=0 ; y<height ; y++ ) {
+            for( int x=0 ; x<width ; x++ ) {
+                // 0.2126*r + 0.7152*g + 0.0722*b;
+                grayImg[y][x] = (int)(0.2126*colorImg[y][x][0] + 0.7152*colorImg[y][x][1] + 0.0722*colorImg[y][x][2]);
+            }
+        }
+        return grayImg;
+    }
 
 
     /*
