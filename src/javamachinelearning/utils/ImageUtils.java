@@ -66,42 +66,18 @@ public class ImageUtils {
 
 
     /*
-    Read one Image and return to Tensor type
+    Read one color image and return to Tensor type
     input:
         path : Image path
     output:
-        Tensor type of a Image
+        Tensor type of a color image
      */
-    public Tensor readOneImageToTensor(String path) {
-        File f = null;
-        try {
-            f = new File(path);
-            bImage = ImageIO.read(f);
-        } catch(IOException e) {
-            System.out.println("Exception occured : " + e.getMessage());
-        }
-
-        int width = bImage.getWidth();
-        int height = bImage.getHeight();
-
-        double[][] data = new double[height][width];
-
-        for( int y=0 ; y<height ; y++ ) {
-            for( int x = 0 ; x<width ; x++ ) {
-                int p = bImage.getRGB(x,y);
-
-                // int a = (p>>24)&0xff;
-                int r = (p>>16)&0xff;
-                int g = (p>>8)&0xff;
-                int b = p&0xff;
-
-                // Reference = http://entropymine.com/imageworsener/grayscale/
-                double gray = 0.2126*r + 0.7152*g + 0.0722*b;
-                data[y][x] = gray;
-            }
-        }
+    public Tensor readColorImageToTensor(String path) {
+        int[][][] data = readColorImageFile(path);
         return new Tensor(data);
     }
+
+
 
     // For testing
     public void readOneImage_Test(String path) {
