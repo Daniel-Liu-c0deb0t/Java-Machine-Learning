@@ -72,7 +72,7 @@ public class ImageUtils {
     output:
         Tensor type of a Image
      */
-    public Tensor readOneImage(String path) {
+    public Tensor readOneImageToTensor(String path) {
         File f = null;
         try {
             f = new File(path);
