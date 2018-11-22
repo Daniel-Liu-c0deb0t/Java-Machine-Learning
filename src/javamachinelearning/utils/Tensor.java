@@ -90,6 +90,35 @@ public class Tensor{
 		calcMult();
 		this.data = data;
 	}
+
+	// Convert int Data to double Data
+	public Tensor(int[][] intD) {
+		shape = new int[]{intD[0].length, intD.length};
+		calcMult();
+		data = new double[size];
+		int idx = 0;
+		for(int i = 0; i < intD[0].length; i++){
+			for(int j = 0; j < intD.length; j++){
+				data[idx] = (double)intD[j][i];
+				idx++;
+			}
+		}
+	}
+
+	public Tensor(int[][][] intD) {
+		shape = new int[]{intD[0][0].length, intD[0].length, intD.length};
+		calcMult();
+		data = new double[size];
+		int idx = 0;
+		for(int i = 0; i < intD[0][0].length; i++){
+			for(int j = 0; j < intD[0].length; j++){
+				for(int k = 0; k < intD.length; k++){
+					data[idx] = (double)intD[k][j][i];
+					idx++;
+				}
+			}
+		}
+	}
 	
 	public int[] shape(){
 		return shape;
