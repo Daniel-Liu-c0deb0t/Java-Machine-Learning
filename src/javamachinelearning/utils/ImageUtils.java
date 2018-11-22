@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.awt.image.BufferedImage;
 
 public class ImageUtils {
-    BufferedImage bImage = null;
+    private BufferedImage bImage = null;
 
     public ImageUtils() {
 
@@ -50,7 +50,7 @@ public class ImageUtils {
     /*
     Convert RGB to Gray
      */
-    public int[][] covertRGBtoGray(int[][][] colorImg) {
+    public int[][] convertRGBtoGray(int[][][] colorImg) {
         int height = colorImg.length;
         int width = colorImg[0].length;
         int[][] grayImg = new int[height][width];
@@ -72,11 +72,19 @@ public class ImageUtils {
     output:
         Tensor type of a color image
      */
-    public Tensor readColorImageToTensor(String path) {
-        int[][][] data = readColorImageFile(path);
-        return new Tensor(data);
+    public Tensor readColorImageToTensor(String path, boolean convertGray) {
+        // Color
+        if( convertGray==false ) {
+            int[][][] data = readColorImageFile(path);
+            return new Tensor(data);
+        }
+        // Gray
+        else {
+            int[][][] data = readColorImageFile(path);
+            int[][] grayData = convertRGBtoGray(data);
+            return new Tensor(grayData);
+        }
     }
-
 
 
     // For testing

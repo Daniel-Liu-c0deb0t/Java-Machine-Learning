@@ -15,12 +15,12 @@ public class TestImageUtils {
         System.out.println(colorImg[0][0][2]);
 
         // Test convertRGBtoGray
-        int[][] grayImg = img.covertRGBtoGray(colorImg);
+        int[][] grayImg = img.convertRGBtoGray(colorImg);
         System.out.println("---Testing converted gray image---");
         System.out.println(grayImg[0][0]);
 
         // Tensor test(500x480 image)
-        Tensor imageTensor = img.readOneImage("./Images/Set14/baboon.bmp");
+        Tensor imageTensor = img.readColorImageToTensor("./Images/Set14/baboon.bmp", true);
         System.out.println("Height : " + imageTensor.shape()[1]);
         System.out.println("Width : " + imageTensor.shape()[0]);
         //System.out.println(imageTensor.toString());
