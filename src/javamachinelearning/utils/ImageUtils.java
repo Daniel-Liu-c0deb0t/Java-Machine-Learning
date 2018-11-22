@@ -12,6 +12,43 @@ public class ImageUtils {
 
     }
 
+    /*
+    Read one color image file and return to 3D int type
+    input:
+        path : Path of image file
+    output:
+        3D int array [height][width][3]
+     */
+    public int[][][] readColorImageFile(String path) {
+        File f;
+        try {
+            f = new File(path);
+            bImage = ImageIO.read(f);
+        } catch(IOException e) {
+            System.out.println("Exception occured : " + e.getMessage());
+        }
+        int width = bImage.getWidth();
+        int height = bImage.getHeight();
+        int[][][] data = new int[height][width][3];
+        for( int y=0 ; y<height ; y++ ) {
+            for( int x = 0 ; x<width ; x++ ) {
+                int p = bImage.getRGB(x,y);
+
+                // int a = (p>>24)&0xff;
+                int r = (p>>16)&0xff;
+                int g = (p>>8)&0xff;
+                int b = p&0xff;
+
+                data[y][x][0] = r;
+                data[y][x][1] = g;
+                data[y][x][2] = b;
+            }
+        }
+        return data;
+    }
+
+
+
 
     /*
     Read one Image and return to Tensor type
@@ -21,13 +58,12 @@ public class ImageUtils {
         Tensor type of a Image
      */
     public Tensor readOneImage(String path) {
-        BufferedImage bIbage = null;
         File f = null;
         try {
             f = new File(path);
             bImage = ImageIO.read(f);
         } catch(IOException e) {
-            System.out.println("Exception occured :" + e.getMessage());
+            System.out.println("Exception occured : " + e.getMessage());
         }
 
         int width = bImage.getWidth();
@@ -95,11 +131,16 @@ public class ImageUtils {
     /*
     Read many Images(in folder) and return to array of Tensor type
     input:
-        path : Image path
+        path : Image folder path
     output:
         Tensor type array of Images
      */
-    public Tensor[] readImages(String path) {
+    public Tensor[] readImages(String folderPath) {
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
+
+        for (int i = 0; i < listOfFiles.length; i++)
+            System.out.println("File " + folderPath + listOfFiles[i].getName());
         return null;
     }
 }
