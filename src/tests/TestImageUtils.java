@@ -20,6 +20,7 @@ public class TestImageUtils {
         System.out.println(grayImg[0][0]);
 
         // Tensor test(500x480 image)
+        System.out.println("---Testing read one image to tensor---");
         Tensor imageTensor = img.readColorImageToTensor("./Images/Set14/baboon.bmp", true);
         System.out.println("Height : " + imageTensor.shape()[1]);
         System.out.println("Width : " + imageTensor.shape()[0]);
@@ -28,6 +29,10 @@ public class TestImageUtils {
         // Operation test and save to "test.bmp"
         img.readOneImage_Test("./Images/Set14/baboon.bmp");
 
-        //img.readImages("./Images/Set14/");
+        System.out.println("---Testing read many images to tensors---");
+        Tensor[] tensors = img.readImages("./Images/Set14/", true);
+        for( int i=0 ; i<tensors.length ; i++ ) {
+            System.out.println(tensors[i].shape()[0] + ", " + tensors[i].shape()[1]);
+        }
     }
 }

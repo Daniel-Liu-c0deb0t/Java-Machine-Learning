@@ -66,11 +66,11 @@ public class ImageUtils {
 
 
     /*
-    Read one color image and return to Tensor type
+    Read one image and return to Tensor type
     input:
         path : Image path
     output:
-        Tensor type of a color image
+        Tensor type of a image
      */
     public Tensor readColorImageToTensor(String path, boolean convertGray) {
         // Color
@@ -134,12 +134,13 @@ public class ImageUtils {
     output:
         Tensor type array of Images
      */
-    public Tensor[] readImages(String folderPath) {
+    public Tensor[] readImages(String folderPath, boolean convertGray) {
         File folder = new File(folderPath);
         File[] listOfFiles = folder.listFiles();
-
-        for (int i = 0; i < listOfFiles.length; i++)
-            System.out.println("File " + folderPath + listOfFiles[i].getName());
-        return null;
+        Tensor[] tensors = new Tensor[listOfFiles.length];
+            for (int i = 0; i < listOfFiles.length; i++) {
+                tensors[i] = readColorImageToTensor(folderPath + listOfFiles[i].getName(), convertGray);
+            }
+        return tensors;
     }
 }
