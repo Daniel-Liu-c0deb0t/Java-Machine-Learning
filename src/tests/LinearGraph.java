@@ -48,7 +48,7 @@ public class LinearGraph{
 		
 		// try the network on new data
 		System.out.println(nn.predict(t(5)));
-		
+
 		JFrame frame = new JFrame();
 		
 		// graph the learned line

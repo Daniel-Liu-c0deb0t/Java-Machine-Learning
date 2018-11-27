@@ -121,7 +121,7 @@ public interface Activation{
 			return "Rectified Linear Unit 6";
 		}
 	};
-
+  
 	public static final Activation relu3 = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -138,7 +138,7 @@ public interface Activation{
 			return "Rectified Linear Unit 3";
 		}
 	};
-
+  
 	public static final Activation elu = new Activation(){
 		double alpha = 1.0;
 		@Override
@@ -156,7 +156,7 @@ public interface Activation{
 			return "Exponential Linear Unit";
 		}
 	};
-
+  
 	public static final Activation selu = new Activation(){
 		double alpha = 1.6732632423543772848170429916717;
 		double scale = 1.0507009873554804934193349852946;
@@ -175,7 +175,7 @@ public interface Activation{
 			return "Scaled Exponential Linear Unit";
 		}
 	};
-
+  
 	public static final Activation softmax = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -201,7 +201,7 @@ public interface Activation{
 			return "Softmax";
 		}
 	};
-	
+  
 	public Tensor activate(Tensor t);
 	// derivatives are calculated in terms of the activated output
 	public Tensor derivative(Tensor t);
