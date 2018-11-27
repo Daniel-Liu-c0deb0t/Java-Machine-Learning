@@ -138,6 +138,23 @@ public interface Activation{
 			return "Rectified Linear Unit 3";
 		}
 	};
+
+	public static final Activation elu = new Activation(){
+		@Override
+		public Tensor activate(Tensor t){
+			return t.map(x, alpha -> Math.max(alpha*(exp(x)-1.0), x));
+		}
+
+		@Override
+		public Tensor derivative(Tensor t){
+			return t.map(x, alpha -> x > 0 ? 1.0 : alpha*exp(x));
+		}
+
+		@Override
+		public String toString(){
+			return "Exponential Linear Unit";
+		}
+	};
 	
 	public static final Activation softmax = new Activation(){
 		@Override
