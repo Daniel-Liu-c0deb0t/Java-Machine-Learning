@@ -157,6 +157,25 @@ public interface Activation{
 		}
 	};
 
+	public static final Activation selu = new Activation(){
+		double alpha = 1.6732632423543772848170429916717;
+		double scale = 1.0507009873554804934193349852946;
+		@Override
+		public Tensor activate(Tensor t){
+			return t.map(x -> Math.max(scale * alpha * (Math.exp(x)-1.0), x));
+		}
+
+		@Override
+		public Tensor derivative(Tensor t){
+			return t.map(x -> x > 0 ? 1.0 : scale * alpha * Math.exp(x));
+		}
+
+		@Override
+		public String toString(){
+			return "Scaled Exponential Linear Unit";
+		}
+	};
+
 	public static final Activation softmax = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
