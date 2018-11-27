@@ -140,14 +140,15 @@ public interface Activation{
 	};
 
 	public static final Activation elu = new Activation(){
+		double alpha = 1.0;
 		@Override
 		public Tensor activate(Tensor t){
-			return t.map(x, alpha -> Math.max(alpha*(exp(x)-1.0), x));
+			return t.map(x -> Math.max(alpha * (Math.exp(x)-1.0), x));
 		}
 
 		@Override
 		public Tensor derivative(Tensor t){
-			return t.map(x, alpha -> x > 0 ? 1.0 : alpha*exp(x));
+			return t.map(x -> x > 0 ? 1.0 : alpha * Math.exp(x));
 		}
 
 		@Override
@@ -155,7 +156,7 @@ public interface Activation{
 			return "Exponential Linear Unit";
 		}
 	};
-	
+
 	public static final Activation softmax = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
