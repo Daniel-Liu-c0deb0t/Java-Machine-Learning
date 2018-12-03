@@ -32,7 +32,7 @@ public class TrainMNISTFullyConnected{
 				100, // number of epochs
 				100, // batch size
 				Loss.softmaxCrossEntropy,
-				new MomentumOptimizer(0.5, true),
+				new MomentumOptimizer(0.5),
 				new L2Regularizer(0.0001),
 				true, // shuffle the data after every epoch
 				false);

@@ -32,7 +32,7 @@ public class LogicGates{
 		
 		System.out.println(net);
 		
-		net.train(x, y, 2000, 4, Loss.binaryCrossEntropy, new MomentumOptimizer(0.1, true), null, true, true);
+		net.train(x, y, 2000, 4, Loss.binaryCrossEntropy, new MomentumOptimizer(0.1), null, true, true);
 		
 		System.out.println(net.predict(t(0, 0)));
 		System.out.println(net.predict(t(1, 0)));
