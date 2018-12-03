@@ -13,7 +13,7 @@ This library recently got an overhaul that fixed many bugs and uses vectorized o
   - Flatten (Conv/Pooling -> FC)
   - Scaling
 - Recurrent layer
-	- GRU Cells
+  - GRU Cells
 - Adam, Adagrad, momentum (nesterov), and SGD optimizers
 - Mini-batch gradient descent
   - Average gradients for each weight throughout each batch
@@ -29,6 +29,7 @@ This library recently got an overhaul that fixed many bugs and uses vectorized o
 - Save/load weights to/from files
 - Drawing GUI for MNIST
 - A bunch of testing classes and graphing examples
+- Image preprocessing
 
 ## Tutorial
 The API provided by this library is quite elegant (in my opinion) and very high level. A whole network can be created by initializing a `SequentialNN` class. That class provides the tools to add layers and build a complete network. When initializing that class, you need to specify the shape of the input as the parameter.
@@ -296,3 +297,21 @@ Many other examples can be found in the [tests folder](https://github.com/Daniel
 I have a blog post on backpropagation and gradient descent equations [here](https://c0deb0t.wordpress.com/2018/06/17/the-math-for-gradient-descent-and-backpropagation/). It has some interesting math stuff!
 
 I also have an article that is an introduction to simple neural networks and it features this library! You can check it out [here](https://issuu.com/journys7/docs/issue-9.2-journys/24). It is for [Journys](https://www.journys.org/), a scientific writing club at school.
+
+
+
+### Image load
+
+If you want to load image to Tensor, you can do following codes
+
+```
+ImageUtils imgUtils = new ImageUtils();
+Tensor imgTensor = img.readColorImageToTensor(String path, boolean convertGray)
+```
+
+And if you want to load many images to Tensor array, also you can do following codes
+
+```
+ImageUtils imgUtils = new ImagUtils()
+Tensor[] imgTensorArray = public Tensor[] readImages(String folderPath, boolean convertGray)
+```
