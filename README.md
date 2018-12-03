@@ -1,5 +1,7 @@
 # Java Machine Learning Library
-Simple machine learning (neural network) library for Java. The library is mainly for educational purposes, and it is way too slow to be used on actual projects. If you want to download the compiled `.jar` file and include it to your own project, click [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/raw/master/JavaMachineLearning.jar).
+Simple machine learning (neural network) library for Java. The library is mainly for educational purposes, and it is way too slow to be used on actual projects.
+
+(**NOTE: PROBABLY OUTDATED. Just compile from source.**) If you want to download the compiled `.jar` file and include it to your own project, click [here](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/raw/master/JavaMachineLearning.jar).
 
 This library recently got an overhaul that fixed many bugs and uses vectorized operations with a built-in tensor class, among many other features. The source code was also organized and comments were added.
 
@@ -295,10 +297,6 @@ In all of these examples, the model and hyperparameters were the same. What's co
 Many other examples can be found in the [tests folder](https://github.com/Daniel-Liu-c0deb0t/Java-Machine-Learning/tree/master/src/tests).
 
 I have a blog post on backpropagation and gradient descent equations [here](https://c0deb0t.wordpress.com/2018/06/17/the-math-for-gradient-descent-and-backpropagation/). It has some interesting math stuff!
-
-I also have an article that is an introduction to simple neural networks and it features this library! You can check it out [here](https://issuu.com/journys7/docs/issue-9.2-journys/24). It is for [Journys](https://www.journys.org/), a scientific writing club at school.
-
-
 
 ### Image load
 
