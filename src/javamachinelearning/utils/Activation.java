@@ -121,7 +121,61 @@ public interface Activation{
 			return "Rectified Linear Unit 6";
 		}
 	};
-	
+  
+	public static final Activation relu3 = new Activation(){
+		@Override
+		public Tensor activate(Tensor t){
+			return t.map(x -> Math.min(Math.max(0.0, x), 3.0));
+		}
+
+		@Override
+		public Tensor derivative(Tensor t){
+			return t.map(x -> (x > 0.0) && (x < 3.0) ? 1.0 : 0.0);
+		}
+
+		@Override
+		public String toString(){
+			return "Rectified Linear Unit 3";
+		}
+	};
+  
+	public static final Activation elu = new Activation(){
+		double alpha = 1.0;
+		@Override
+		public Tensor activate(Tensor t){
+			return t.map(x -> Math.max(alpha * (Math.exp(x)-1.0), x));
+		}
+
+		@Override
+		public Tensor derivative(Tensor t){
+			return t.map(x -> x > 0 ? 1.0 : alpha * Math.exp(x));
+		}
+
+		@Override
+		public String toString(){
+			return "Exponential Linear Unit";
+		}
+	};
+  
+	public static final Activation selu = new Activation(){
+		double alpha = 1.6732632423543772848170429916717;
+		double scale = 1.0507009873554804934193349852946;
+		@Override
+		public Tensor activate(Tensor t){
+			return t.map(x -> Math.max(scale * alpha * (Math.exp(x)-1.0), x));
+		}
+
+		@Override
+		public Tensor derivative(Tensor t){
+			return t.map(x -> x > 0 ? 1.0 : scale * alpha * Math.exp(x));
+		}
+
+		@Override
+		public String toString(){
+			return "Scaled Exponential Linear Unit";
+		}
+	};
+  
 	public static final Activation softmax = new Activation(){
 		@Override
 		public Tensor activate(Tensor t){
@@ -147,7 +201,7 @@ public interface Activation{
 			return "Softmax";
 		}
 	};
-	
+  
 	public Tensor activate(Tensor t);
 	// derivatives are calculated in terms of the activated output
 	public Tensor derivative(Tensor t);
