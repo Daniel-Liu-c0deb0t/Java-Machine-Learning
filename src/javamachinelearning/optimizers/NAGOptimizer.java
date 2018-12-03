@@ -2,21 +2,21 @@ package javamachinelearning.optimizers;
 
 import javamachinelearning.utils.Tensor;
 
-public class MomentumOptimizer implements Optimizer{
+public class NAGOptimizer implements Optimizer{
 	private double learnRate;
 	private double mu; // friction to decay momentum
 
-	public MomentumOptimizer(){
+	public NAGOptimizer(){
 		this.learnRate = 0.1;
 		this.mu = 0.9;
 	}
 
-	public MomentumOptimizer(double learnRate){
+	public NAGOptimizer(double learnRate){
 		this.learnRate = learnRate;
 		this.mu = 0.9;
 	}
 
-	public MomentumOptimizer(double learnRate, double mu){
+	public NAGOptimizer(double learnRate, double mu){
 		this.learnRate = learnRate;
 		this.mu = mu;
 	}
@@ -34,8 +34,7 @@ public class MomentumOptimizer implements Optimizer{
 	@Override
 	public Tensor optimize(Tensor grads, Tensor[] params){
 		// parameter: velocity
-		Tensor prev = params[0];
 		params[0] = params[0].mul(mu).sub(grads.mul(learnRate));
-		return prev.mul(mu).sub(params[0].mul(1.0 + mu)); // is negated
+		return params[0].mul(-1.0); // is negated
 	}
 }
