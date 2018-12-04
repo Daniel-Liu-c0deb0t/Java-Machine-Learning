@@ -16,7 +16,7 @@ This library recently got an overhaul that fixed many bugs and uses vectorized o
   - Scaling
 - Recurrent layer
   - GRU Cells
-- Adam, Adagrad, momentum (nesterov), and SGD optimizers
+- Adam, Adagrad, momentum, Nesterov, SGD, RMSProp and AdaDelta optimizers
 - Mini-batch gradient descent
   - Average gradients for each weight throughout each batch
 - Sigmoid, tanh, relu, hard sigmoid, and softmax activation functions
