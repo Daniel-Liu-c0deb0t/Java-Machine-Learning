@@ -132,12 +132,10 @@ public class Tensor{
 		return size;
 	}
 	
-	public Tensor add(Tensor o){
-		double[] res = new double[size];
+	public void add(Tensor o){
 		for(int i = 0; i < size; i++){
-			res[i] = data[i] + o.data[i];
+			data[i] += o.data[i];
 		}
-		return new Tensor(shape, res);
 	}
 	
 	public Tensor add(double d){
