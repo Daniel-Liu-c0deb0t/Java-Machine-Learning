@@ -16,7 +16,7 @@ Java를 이용한 간단한 머신 러닝(신경망) 라이브러리입니다. �
   - Scaling
 - Recurrent layer
   - GRU Cells
-- Adam, Adagrad, momentum, Nesterov, SGD, RMSProp and AdaDelta optimizers
+- Adam, Adagrad, momentum, NAG, Nesterov, SGD, RMSProp and AdaDelta optimizers
 - Mini-batch gradient descent
   - Average gradients for each weight throughout each batch
 - Sigmoid, tanh, relu, hard sigmoid, and softmax activation functions
