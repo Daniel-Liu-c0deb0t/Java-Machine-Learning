@@ -137,7 +137,7 @@ public class RecurrentLayer implements ParamsLayer{
 			
 			// accumulate the error gradient from the next layer and the next cell
 			int idx = i - (numTimeSteps - numOutputs);
-			Tensor totalError = (i >= 0) ? nextCellError.add(nextLayerError.get(idx)) : nextCellError;
+			Tensor totalError = (idx >= 0) ? nextCellError.add(nextLayerError.get(idx)) : nextCellError;
 			
 			Tensor[] arr = cell.backPropagate(i, inTensor, prevState, totalError);
 			
